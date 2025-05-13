@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StardewPathfinding", "StardewPathfinding\StardewPathfinding.csproj", "{3DA6A17F-318F-4F26-ADF3-3FB2310CDDBE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3DA6A17F-318F-4F26-ADF3-3FB2310CDDBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DA6A17F-318F-4F26-ADF3-3FB2310CDDBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DA6A17F-318F-4F26-ADF3-3FB2310CDDBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DA6A17F-318F-4F26-ADF3-3FB2310CDDBE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

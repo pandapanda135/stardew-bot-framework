@@ -1,0 +1,10 @@
+{
+  "Name": "TestPathfinding",
+  "Author": "Panda",
+  "Version": "1.0.0",
+  "Description": "Yap Yap Yap",
+  "UniqueID": "Panda.TestPathfinding",
+  "EntryDll": "StardewPathfinding.dll",
+  "MinimumApiVersion": "4.0.0",
+  "UpdateKeys": []
+}
