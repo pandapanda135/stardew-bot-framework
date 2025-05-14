@@ -1,6 +1,5 @@
 using Microsoft.Xna.Framework;
 using StardewValley;
-using StardewValley.Pathfinding;
 
 namespace StardewPathfinding.Pathfinding;
 
@@ -52,6 +51,20 @@ public class Pathfinding
             return true;
         }
         return false;
+    }
+
+    public List<PathNode> Neighbors(PathNode current)
+    {
+        List<PathNode> neighbors = new List<PathNode>();
+        for (int i = 0; i <= 4; i++)
+        {
+            int neighborX = current.X + Directions[current.X, 0];
+            int neighborY = current.X + Directions[current.Y, 1];
+
+            neighbors.Add(new PathNode(neighborX, neighborY, current.id));
+        }
+
+        return neighbors;
     }
     
     // this is so multiple types of pathing can be implemented more easily

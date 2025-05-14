@@ -8,7 +8,7 @@ public class PathNode
 
     public int? Parent; // use id for parent?
 
-    private int id;
+    public int id;
 
     public PathNode(int x,int y,int? parent)
     {
