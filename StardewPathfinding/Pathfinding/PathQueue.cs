@@ -6,11 +6,11 @@ public class PathQueue
 {
     private int total_size;
 
-    private Queue<PathNode> nodes;
+    private Queue<PathNode> _nodes = new Queue<PathNode>();
 
     public bool IsEmpty()
     {
-        if (nodes.Count == 0)
+        if (_nodes.Count == 0)
         {
             return true;
         }
@@ -19,17 +19,17 @@ public class PathQueue
     
     public void Clear()
     {
-        nodes.Clear();
+        _nodes.Clear();
     }
 
     public void Enqueue(PathNode node)
     {
-        nodes.Enqueue(node);
+        _nodes.Enqueue(node);
     }
 
     public PathNode Dequeue()
     {
-        return nodes.Dequeue();
+        return _nodes.Dequeue();
     }
 }
 
