@@ -17,9 +17,9 @@ public class Pathfinding
     // will be used to see if destroying stuff like trees is allowed in pathfinding
     public bool AllowDestruction;
 
-    public HashSet<Point> OpenList;
+    public Queue<PathNode> OpenList;
 
-    public HashSet<Point> ClosedList;
+    public HashSet<PathNode> ClosedList;
     
     private static readonly sbyte[,] Directions = new sbyte[8,2]
     {
@@ -45,7 +45,7 @@ public class Pathfinding
     public Pathfinding()
     {}
 
-    public bool CheckIfEnd(Point currentnode,Point endPoint,GameLocation location, Character character)
+    public bool CheckIfEnd(PathNode currentnode,PathNode endPoint,GameLocation location, Character character)
     {
         if (currentnode.X == endPoint.X && currentnode.Y == endPoint.Y)
         {
