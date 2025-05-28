@@ -41,7 +41,7 @@ public class Main : Mod
     private static void BreathFirstSearchTest(string name, string[] args)
     {
         Point startPoint = new Point((int)Game1.player.TilePoint.X, (int)Game1.player.TilePoint.Y);
-        Point endPoint = new Point((int)Game1.player.TilePoint.X, (int)Game1.player.TilePoint.Y);
+        Point endPoint = new Point((int)Game1.player.TilePoint.X - 5, (int)Game1.player.TilePoint.Y + 5);
         
         _stackPoint = _pathing.FindPath(startPoint, endPoint, Game1.player.currentLocation, Game1.player, 10000);
 

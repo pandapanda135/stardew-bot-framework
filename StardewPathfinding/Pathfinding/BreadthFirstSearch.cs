@@ -1,7 +1,10 @@
+using System.Reflection.Metadata.Ecma335;
+using System.Transactions;
 using Microsoft.Xna.Framework;
 using StardewPathfinding.Debug;
 using StardewPathfinding.TileInterface;
 using StardewValley;
+using StardewValley.Pathfinding;
 
 namespace StardewPathfinding.Pathfinding;
 
@@ -37,38 +40,43 @@ public class BreadthFirstSearch : Pathfinding
                  {
                      if (increase > limit)
                      {
+                         Logger.Error($"Breaking due to limit");
                          break;
                      }
-                     PathNode current = _frontier.Dequeue();
+                     PathNode current = _frontier.Dequeue(); // TODO: issue with going through same tile multiple times
 
-                     _pathfinding.ClosedList.Add(current);
-                 
-                     for (int i = 0; i <= 4; i++)
-                     {
-                         int neighborX = current.X + Directions[i, 0]; // index out of bounds error
-                         int neighborY = current.X + Directions[i, 1];
+                     Logger.Info($"Current tile {current.X},{current.Y}");
 
-                         _pathfinding.OpenList.Enqueue(new PathNode(neighborX,neighborY,current.id));
-                     }
-
-                     _pathfinding.OpenList.Reverse(); // this is done as otherwise get ugly paths
+                     // if (CheckIfEnd(current, endPoint))
+                     // {
+                     //     Logger.Info($"Ending using CheckIfEnd function");
+                     //     // _pathfinding.PathToEndPoint.Reverse(); // this is done as otherwise get ugly paths
+                     //     
+                     //     _pathfinding.PathToEndPoint.Push(current);
+                     //     return _pathfinding.PathToEndPoint;
+                     // }
                      
-                     foreach (var nextNode in _pathfinding.OpenList)
+                     if (_pathfinding.ClosedList.Contains(current) && startPointNode != current ) continue; // I think this doesn't work as the parent / id of the tile is different from the current one in the closed list
+                     
+                     _pathfinding.ClosedList.Add(current);
+                     // this is dumb but it works
+                     foreach (var node in _pathfinding.Neighbours(current).Where(node => !_pathfinding.ClosedList.Contains(node)))
                      {
-                         if (!_pathfinding.ClosedList.Contains(nextNode))
-                         {
-                             _frontier.Enqueue(nextNode);
-                             _pathfinding.ClosedList.Add(nextNode);
-                        
-                             // this is here temp just to get return out
-                             _pathfinding.PathToEndPoint.Push(nextNode);
-
-                         }
+                         _frontier.Enqueue(node);
+                         _pathfinding.PathToEndPoint.Push(current);
                      }
-
+                     
                      increase++;
                  }
-                 Logger.Debug($"This is the end point {_pathfinding.PathToEndPoint}");
+                 Logger.Debug($"This is the end point {_pathfinding.PathToEndPoint.Count}");
+                 if (_pathfinding.PathToEndPoint.Count > 0)
+                 {
+                     foreach (var pathNode in _pathfinding.PathToEndPoint)
+                     {
+                         Logger.Info($"node in end point path   {pathNode.X}   {pathNode.Y}");
+                     }
+                 }
+                 Logger.Info($"breadth first about to return");
                  return _pathfinding.PathToEndPoint;
              }
              catch (Exception e)

@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using StardewPathfinding.Debug;
 using StardewValley;
 
 namespace StardewPathfinding.Pathfinding;
@@ -16,8 +17,14 @@ public class Pathfinding
     // will be used to see if destroying stuff like trees is allowed in pathfinding
     public bool AllowDestruction;
 
+    /// <summary>
+    /// Also known as frontier, this contains nodes it will go to next
+    /// </summary>
     public Queue<PathNode>? OpenList = new Queue<PathNode>();
 
+    /// <summary>
+    /// this contains Nodes the pathfinding has already reached
+    /// </summary>
     public HashSet<PathNode>? ClosedList = new HashSet<PathNode>();
     
     protected static readonly sbyte[,] Directions = new sbyte[8,2]
@@ -44,13 +51,30 @@ public class Pathfinding
     public Pathfinding()
     {}
     
-    public bool CheckIfEnd(PathNode currentnode,PathNode endPoint,GameLocation location, Character character)
+    // ,GameLocation location, Character character
+    public static bool CheckIfEnd(PathNode currentNode,Point endPoint)
     {
-        if (currentnode.X == endPoint.X && currentnode.Y == endPoint.Y)
+        if (currentNode.X == endPoint.X && currentNode.Y == endPoint.Y)
         {
             return true;
         }
         return false;
+    }
+
+    public Queue<PathNode> Neighbours(PathNode currentNode)
+    {
+        Queue<PathNode> nextNodes = new();
+        // get tiles in cardinal directions
+        for (int i = 0; i <= 3; i++)
+        {
+            int neighborX = currentNode.X + Directions[i, 0]; // index out of bounds error
+            int neighborY = currentNode.Y + Directions[i, 1];
+
+            nextNodes.Enqueue(new PathNode(neighborX, neighborY, currentNode.id));
+            DrawFoundTiles.debugDirectionTiles.Enqueue(new PathNode(neighborX,neighborY,currentNode.id));
+        }
+
+        return nextNodes;
     }
     
     // this is so multiple types of pathing can be implemented more easily
