@@ -1,12 +1,7 @@
-using System.Collections;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.Serialization;
-using System.Transactions;
 using Microsoft.Xna.Framework;
 using StardewPathfinding.Debug;
 using StardewPathfinding.TileInterface;
 using StardewValley;
-using StardewValley.Pathfinding;
 
 namespace StardewPathfinding.Pathfinding;
 
@@ -33,7 +28,6 @@ public class BreadthFirstSearch : Pathfinding
              {
                  Logger.Info("started try of breadth first search");
                  PathNode startPointNode = new PathNode(startPoint.X, startPoint.Y, null);
-                 PathNode endPointNode = new PathNode(endPoint.X, endPoint.Y, null);
                  _frontier = new PathQueue(); // use instead of _openlist because easier
                  _frontier.Enqueue(startPointNode);
                  _pathfinding.ClosedList.Add(startPointNode);

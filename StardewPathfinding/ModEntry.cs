@@ -50,7 +50,7 @@ public class Main : Mod
         
         foreach (var node in CorrectPath)
         {
-            Logger.Info($"Node positions {node.X},{node.Y} : {node.id} : {node.Parent}   Second Stackpoint");
+            Logger.Info($"Node positions {node.X},{node.Y} : {node.id} : {node.Parent}   first Stackpoint");
         }
     }
 }
