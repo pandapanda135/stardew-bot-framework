@@ -6,11 +6,11 @@ public class PathNode
 
     public readonly int Y;
 
-    public int? Parent; // use id for parent?
+    public PathNode? Parent;
 
     public int id;
 
-    public PathNode(int x,int y,int? parent)
+    public PathNode(int x,int y,PathNode? parent)
     {
         X = x;
         Y = y;
