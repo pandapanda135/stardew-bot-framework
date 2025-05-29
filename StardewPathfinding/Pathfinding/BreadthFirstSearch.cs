@@ -1,4 +1,6 @@
+using System.Collections;
 using System.Reflection.Metadata.Ecma335;
+using System.Runtime.Serialization;
 using System.Transactions;
 using Microsoft.Xna.Framework;
 using StardewPathfinding.Debug;
@@ -31,13 +33,18 @@ public class BreadthFirstSearch : Pathfinding
              {
                  Logger.Info("started try of breadth first search");
                  PathNode startPointNode = new PathNode(startPoint.X, startPoint.Y, null);
+                 PathNode endPointNode = new PathNode(endPoint.X, endPoint.Y, null);
                  _frontier = new PathQueue(); // use instead of _openlist because easier
                  _frontier.Enqueue(startPointNode);
                  _pathfinding.ClosedList.Add(startPointNode);
-                
+
+                 bool alreadyExists = false;
+                 
                  Logger.Info("before while starts");
                  while (!_frontier.IsEmpty())
                  {
+                     alreadyExists = false;
+                     
                      if (increase > limit)
                      {
                          Logger.Error($"Breaking due to limit");
@@ -47,21 +54,33 @@ public class BreadthFirstSearch : Pathfinding
 
                      Logger.Info($"Current tile {current.X},{current.Y}");
 
-                     // if (CheckIfEnd(current, endPoint))
-                     // {
-                     //     Logger.Info($"Ending using CheckIfEnd function");
-                     //     // _pathfinding.PathToEndPoint.Reverse(); // this is done as otherwise get ugly paths
-                     //     
-                     //     _pathfinding.PathToEndPoint.Push(current);
-                     //     return _pathfinding.PathToEndPoint;
-                     // }
+                     if (CheckIfEnd(current, endPoint))
+                     {
+                         Logger.Info($"Ending using CheckIfEnd function");
+                         // _pathfinding.PathToEndPoint.Reverse(); // this is done as otherwise get ugly paths
+                         
+                         _pathfinding.PathToEndPoint.Push(current);
+                         return _pathfinding.PathToEndPoint;
+                     }
                      
-                     if (_pathfinding.ClosedList.Contains(current) && startPointNode != current ) continue; // I think this doesn't work as the parent / id of the tile is different from the current one in the closed list
+                     // next loop if current is already in ClosedList
+                     foreach (var node in _pathfinding.ClosedList)
+                     {
+                         Vector2 currentVector = new Vector2(current.X, current.Y);
+                         Vector2 nextVector = new Vector2(node.X, node.Y);
+                         if (currentVector == nextVector && startPointNode != current ) alreadyExists = true;
+                     }
+
+                     if (alreadyExists) continue;
                      
                      _pathfinding.ClosedList.Add(current);
                      // this is dumb but it works
                      foreach (var node in _pathfinding.Neighbours(current).Where(node => !_pathfinding.ClosedList.Contains(node)))
                      {
+                         if (_pathfinding.ClosedList.Contains(node))
+                         {
+                             continue;
+                         }
                          _frontier.Enqueue(node);
                          _pathfinding.PathToEndPoint.Push(current);
                      }
@@ -84,6 +103,52 @@ public class BreadthFirstSearch : Pathfinding
                  Logger.Error($"Error with breadth first search with error:  {e}");
                  return _pathfinding.PathToEndPoint;
              }
+         }
+
+         public Stack<PathNode> RebuildPath(PathNode startPoint,PathNode endPoint,Stack<PathNode> path)
+         {
+             PathNode current = endPoint;
+
+             Stack<PathNode> correctPath = new();
+
+             PathNode? previousNodeParent = current.Parent;
+             
+             Logger.Info($"previous node parent {current.id}   {current.Parent}");
+
+             while (current != startPoint)
+             {
+                 Logger.Info($"new current  {current.id}");
+                 correctPath.Push(current);
+                 if (current.Parent is not null)
+                 {
+                     current = current.Parent!;
+                     continue;
+                 }
+                 
+                 break;
+             }
+             
+             return correctPath;
+
+             
+             // foreach (var node in path)
+             // {
+             //     if (previousNodeParent == null)
+             //     { 
+             //         previousNodeParent = node;
+             //         continue;
+             //     }
+             //
+             //     if (node.Parent == previousNodeParent && previousNodeParent is (not null))
+             //     {
+             //         previousNodeParent = node;
+             //         correctPath.Push(node);
+             //         continue;
+             //     }
+             //
+             //     previousNodeParent = node;
+             // }
+
          }
      }
 }

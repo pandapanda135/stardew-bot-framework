@@ -70,8 +70,8 @@ public class Pathfinding
             int neighborX = currentNode.X + Directions[i, 0]; // index out of bounds error
             int neighborY = currentNode.Y + Directions[i, 1];
 
-            nextNodes.Enqueue(new PathNode(neighborX, neighborY, currentNode.id));
-            DrawFoundTiles.debugDirectionTiles.Enqueue(new PathNode(neighborX,neighborY,currentNode.id));
+            nextNodes.Enqueue(new PathNode(neighborX, neighborY, currentNode));
+            DrawFoundTiles.debugDirectionTiles.Enqueue(new PathNode(neighborX,neighborY,currentNode));
         }
 
         return nextNodes;
@@ -81,5 +81,7 @@ public class Pathfinding
     public interface IPathing
     {
         public Stack<PathNode> FindPath(Point startPoint, Point endPoint, GameLocation location, Character character, int limit);
+        
+        public Stack<PathNode> RebuildPath(PathNode startPoint,PathNode endNode,Stack<PathNode> path);
     }
 }

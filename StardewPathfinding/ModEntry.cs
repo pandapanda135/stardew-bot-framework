@@ -37,17 +37,25 @@ public class Main : Mod
     private static Pathfinding.Pathfinding.IPathing _pathing = new BreadthFirstSearch.Pathing();
 
     public static Stack<PathNode> _stackPoint = new Stack<PathNode>();
+    public static Stack<PathNode> CorrectPath = new Stack<PathNode>();
 
     private static void BreathFirstSearchTest(string name, string[] args)
     {
         Point startPoint = new Point((int)Game1.player.TilePoint.X, (int)Game1.player.TilePoint.Y);
-        Point endPoint = new Point((int)Game1.player.TilePoint.X - 5, (int)Game1.player.TilePoint.Y + 5);
+        Point endPoint = new Point((int)Game1.player.TilePoint.X - 10, (int)Game1.player.TilePoint.Y + 20);
         
         _stackPoint = _pathing.FindPath(startPoint, endPoint, Game1.player.currentLocation, Game1.player, 10000);
 
         foreach (var node in _stackPoint)
         {
-            Logger.Info($"Node positions {node.X},{node.Y} : {node.id} : {node.Parent}");
+            Logger.Info($"Node positions {node.X},{node.Y} : {node.id} : {node.Parent}   first Stackpoint");
+        }
+        
+        CorrectPath = _pathing.RebuildPath(new PathNode(startPoint.X,startPoint.Y,null),_stackPoint.Pop(), _stackPoint);
+        
+        foreach (var node in CorrectPath)
+        {
+            Logger.Info($"Node positions {node.X},{node.Y} : {node.id} : {node.Parent}   Second Stackpoint");
         }
     }
 }

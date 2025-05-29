@@ -35,22 +35,22 @@ public class DrawFoundTiles
 
         Vector2 tileLocation = new Vector2(Game1.tileSize, Game1.tileSize);
         // this will be used later to show path to end point
-        // foreach (PathNode tile in Main._stackPoint)
-        // {
-        //     Color tileColor = Color.Green;
-        //
-        //     // convert from tiles to screen (see stardew wiki GameFundamentals Tiles)
-        //     tileLocation.X = (int)tile.X * Game1.tileSize;
-        //     tileLocation.Y = (int)tile.Y * Game1.tileSize;
-        //
-        //     tileLocation.X -= Game1.viewport.X;
-        //     tileLocation.Y -= Game1.viewport.Y;
-        //     
-        //     tileColor *= 1f;
-        //     Game1.spriteBatch.Draw(OutLineTexture,
-        //         new Rectangle((int)tileLocation.X, (int)tileLocation.Y, Game1.tileSize,
-        //             Game1.tileSize), tileColor);
-        // }
+        foreach (PathNode tile in Main.CorrectPath)
+        {
+            Color tileColor = Color.Green;
+        
+            // convert from tiles to screen (see stardew wiki GameFundamentals Tiles)
+            tileLocation.X = (int)tile.X * Game1.tileSize;
+            tileLocation.Y = (int)tile.Y * Game1.tileSize;
+        
+            tileLocation.X -= Game1.viewport.X;
+            tileLocation.Y -= Game1.viewport.Y;
+            
+            tileColor *= 1f;
+            Game1.spriteBatch.Draw(OutLineTexture,
+                new Rectangle((int)tileLocation.X, (int)tileLocation.Y, Game1.tileSize,
+                    Game1.tileSize), tileColor);
+        }
 
         foreach (var tile in debugDirectionTiles)
         {
