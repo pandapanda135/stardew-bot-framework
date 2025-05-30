@@ -8,7 +8,7 @@ namespace StardewPathfinding.Debug;
 
 public class DrawFoundTiles
 {
-    private static Pathfinding.Pathfinding _pathfinding = new(); 
+    private static Pathfinding.AlgorithmBase _algorithmBase = new(); 
     
     public static Queue<PathNode> debugDirectionTiles = new Queue<PathNode>();
     
@@ -63,7 +63,7 @@ public class DrawFoundTiles
             tileLocation.X -= Game1.viewport.X;
             tileLocation.Y -= Game1.viewport.Y;
             
-            tileColors *= 0.05f;
+            tileColors *= 0.1f;
             Game1.spriteBatch.Draw(OutLineTexture,
                 new Rectangle((int)tileLocation.X, (int)tileLocation.Y, Game1.tileSize,
                     Game1.tileSize), tileColors);
