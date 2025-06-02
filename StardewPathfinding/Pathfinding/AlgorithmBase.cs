@@ -9,7 +9,7 @@ public class AlgorithmBase
 {
     public Character? Character;
 
-    public Stack<PathNode>? PathToEndPoint = new Stack<PathNode>();
+    public Stack<PathNode>? PathToEndPoint = new();
 
     public GameLocation? CurrentLocation;
 
@@ -44,9 +44,9 @@ public class AlgorithmBase
     // this is so multiple types of pathing can be implemented more easily
     public interface IPathing
     {
-        protected static PathQueue _frontier;
+        protected static PathQueue Frontier = new();
 
-        protected static PathPriorityQueue _priorityFrontier = new();
+        protected static PathPriorityQueue PriorityFrontier = new();
         
         public Stack<PathNode> FindPath(Point startPoint, Point endPoint, GameLocation location, Character character, int limit);
         

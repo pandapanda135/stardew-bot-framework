@@ -5,32 +5,36 @@ using StardewValley;
 
 namespace StardewPathfinding.Pathfinding.UniformCost;
 
+/// <summary>
+/// This is an implementation of Uniform Cost Search (More specifically Dijkstra's algorithm).
+/// This should be used when you want the even spread of Breadth First however with a cost on each tile.
+/// (Also this algorithm is not well optimized so be careful with use)
+/// </summary>
 public class UniformCostSearch : AlgorithmBase
 {
     
     public class Pathing : IPathing
     {
-
-        static AlgorithmBase _base = new AlgorithmBase();
+        private static AlgorithmBase _base = new AlgorithmBase();
 
         private static Graph _graph = new Graph();
 
         public Stack<PathNode> FindPath(Point startPoint, Point endPoint, GameLocation currentLocation,
             Character player, int limit)
         {
+            ClearVariables();
+            
             PathNode startNode = new PathNode(startPoint.X, startPoint.Y, null);
             
-            IPathing._priorityFrontier.Enqueue(startNode, 0);
-
+            IPathing.PriorityFrontier = new();
+            IPathing.PriorityFrontier.Enqueue(startNode, 0);
+            _base.ClosedList.Add(startNode);
+            
             int increase = 0;
 
-            _base.ClosedList.Add(startNode);
-
-            bool alreadyExists = false;
-
-            while (!IPathing._priorityFrontier.IsEmpty())
+            while (!IPathing.PriorityFrontier.IsEmpty())
             {
-                alreadyExists = false;
+                bool alreadyExists = false;
 
                 if (increase > limit)
                 {
@@ -38,7 +42,7 @@ public class UniformCostSearch : AlgorithmBase
                     break;
                 }
 
-                PathNode current = IPathing._priorityFrontier.Dequeue();
+                PathNode current = IPathing.PriorityFrontier.Dequeue();
 
                 Logger.Info($"Current tile {current.X},{current.Y}");
 
@@ -57,8 +61,10 @@ public class UniformCostSearch : AlgorithmBase
                     Vector2 currentVector = new Vector2(current.X, current.Y);
                     Vector2 nextVector = new Vector2(node.X, node.Y);
                     if (currentVector == nextVector && startNode != current) alreadyExists = true;
+                    Logger.Info($"already exists: {alreadyExists} : {node.X},{node.Y}");
+                    if (alreadyExists) break;
                 }
-
+                
                 if (alreadyExists) continue;
 
                 _base.ClosedList.Add(current);
@@ -67,12 +73,12 @@ public class UniformCostSearch : AlgorithmBase
                 {
                     int newCost = current.Cost + Graph.Cost(current, next);
                     Logger.Info($"Current cost  {current.Cost}   next cost   {next.Cost}   new cost   {newCost}");
-                    if (!IPathing._priorityFrontier.Contains(next) || newCost < next.Cost)
+                    if (!IPathing.PriorityFrontier.Contains(next) ||newCost < next.Cost) //  // cant do as PriorityQueue class has no contain method
                     {
                         Logger.Info($"adding {next} to endpath");
                         next.Cost = newCost;
                         int priority = newCost;
-                        IPathing._priorityFrontier.Enqueue(next, priority);
+                        IPathing.PriorityFrontier.Enqueue(next, priority);
                         _base.PathToEndPoint.Push(next);
                     }
                 }
@@ -116,7 +122,7 @@ public class UniformCostSearch : AlgorithmBase
 
         private void ClearVariables()
         {
-            IPathing._priorityFrontier.Clear();
+            IPathing.PriorityFrontier = new();
             _base.ClosedList!.Clear();
             _base.PathToEndPoint.Clear();
             DrawFoundTiles.debugDirectionTiles.Clear();

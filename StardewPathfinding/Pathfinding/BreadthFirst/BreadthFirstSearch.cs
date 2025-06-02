@@ -25,14 +25,14 @@ public class BreadthFirstSearch : AlgorithmBase
              
              Logger.Info("started try of breadth first search");
              PathNode startNode = new PathNode(startPoint.X, startPoint.Y, null);
-             IPathing._frontier = new PathQueue(); // use instead of _openlist because easier
-             IPathing._frontier.Enqueue(startNode);
+             IPathing.Frontier = new PathQueue(); // use instead of _openlist because easier
+             IPathing.Frontier.Enqueue(startNode);
              _base.ClosedList.Add(startNode);
 
              bool alreadyExists = false;
              
              Logger.Info("before while starts");
-             while (!IPathing._frontier.IsEmpty())
+             while (!IPathing.Frontier.IsEmpty())
              {
                  alreadyExists = false;
                  
@@ -41,7 +41,7 @@ public class BreadthFirstSearch : AlgorithmBase
                      Logger.Error($"Breaking due to limit");
                      break;
                  }
-                 PathNode current = IPathing._frontier.Dequeue(); // issue with going through same tile multiple times (This might actually be fine according to some stuff I've read I'll keep it here though)
+                 PathNode current = IPathing.Frontier.Dequeue(); // issue with going through same tile multiple times (This might actually be fine according to some stuff I've read I'll keep it here though)
 
                  Logger.Info($"Current tile {current.X},{current.Y}");
 
@@ -59,7 +59,7 @@ public class BreadthFirstSearch : AlgorithmBase
                  {
                      Vector2 currentVector = new Vector2(current.X, current.Y);
                      Vector2 nextVector = new Vector2(node.X, node.Y);
-                     if (currentVector == nextVector && startNode != current ) alreadyExists = true;
+                     if (currentVector == nextVector && startNode != current) alreadyExists = true;
                  }
 
                  if (alreadyExists) continue;
@@ -68,7 +68,7 @@ public class BreadthFirstSearch : AlgorithmBase
                  // this is dumb but it works
                  foreach (var node in _graph.Neighbours(current).Where(node => !_base.ClosedList.Contains(node)))
                  {
-                     IPathing._frontier.Enqueue(node);
+                     IPathing.Frontier.Enqueue(node);
                      _base.PathToEndPoint.Push(current);
                  }
                  
@@ -109,7 +109,7 @@ public class BreadthFirstSearch : AlgorithmBase
 
          private void ClearVariables()
          {
-             IPathing._frontier.Clear();
+             IPathing.Frontier = new();
              _base.ClosedList!.Clear();
              _base.PathToEndPoint.Clear();
              DrawFoundTiles.debugDirectionTiles.Clear();

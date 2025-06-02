@@ -16,13 +16,13 @@ public class PathNode : IComparable<PathNode>
     
     public int id;
     
-    public PathNode(int x,int y,PathNode? parent)
+    public PathNode(int x,int y,PathNode? parent,int cost = -1)
     {
         X = x;
         Y = y;
         Parent = parent;
         id = CalculateHash(x, y);
-        Cost = Random.Shared.Next(0, 6);
+        Cost = cost == -1 ? Random.Shared.Next(0, 6) : cost;
     }
     
     public static int CalculateHash(int x,int y)
