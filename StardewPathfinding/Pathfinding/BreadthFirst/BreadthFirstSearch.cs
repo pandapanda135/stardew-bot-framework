@@ -87,6 +87,8 @@ public class BreadthFirstSearch : AlgorithmBase
 
          public Stack<PathNode> RebuildPath(PathNode startPoint,PathNode endPoint,Stack<PathNode> path)
          {
+             if (!path.Contains(endPoint)) return new Stack<PathNode>();
+
              PathNode current = endPoint;
 
              Stack<PathNode> correctPath = new();

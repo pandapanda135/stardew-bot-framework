@@ -4,6 +4,7 @@ using StardewModdingAPI.Events;
 using StardewPathfinding.Debug;
 using StardewPathfinding.Pathfinding;
 using StardewPathfinding.Pathfinding.BreadthFirst;
+using StardewPathfinding.Pathfinding.GreedyBest;
 using StardewPathfinding.Pathfinding.UniformCost;
 using StardewValley;
 
@@ -28,22 +29,29 @@ public class Main : Mod
             return;
         }
 
-        if (e.Button == SButton.J)
+        if (e.Button == SButton.H)
         {
             Logger.Info("User has Pressed button to start");
 
             BreathFirstSearchKeybind(Game1.currentCursorTile);
         }
-        else if (e.Button == SButton.K)
+        else if (e.Button == SButton.J)
         {
             Logger.Info("User has Pressed button to start Uniform");
     
             UniformCostSearchKeybind(Game1.currentCursorTile);
         }
+        else if (e.Button == SButton.K)
+        {
+            Logger.Info("User has Pressed button to start Greedy");
+    
+            GreedyBestFirstKeyBind(Game1.currentCursorTile);
+        }
     }
 
     private static Pathfinding.AlgorithmBase.IPathing _breadthpathing = new BreadthFirstSearch.Pathing();
-    private static Pathfinding.AlgorithmBase.IPathing _Uniformpathing = new UniformCostSearch.Pathing();
+    private static Pathfinding.AlgorithmBase.IPathing _uniformpathing = new UniformCostSearch.Pathing();
+    private static Pathfinding.AlgorithmBase.IPathing _greedypathing = new GreedyBestFirstSearch.Pathing();
 
     public static Stack<PathNode> _stackPoint = new Stack<PathNode>();
     public static Stack<PathNode> CorrectPath = new Stack<PathNode>();
@@ -84,9 +92,22 @@ public class Main : Mod
         Point startPoint = new Point((int)Game1.player.TilePoint.X, (int)Game1.player.TilePoint.Y);
         Point endPoint = new Point((int)cursorPoint.X, (int)cursorPoint.Y);
         
-        _stackPoint = _Uniformpathing.FindPath(startPoint, endPoint, Game1.player.currentLocation, Game1.player, 10000);
+        _stackPoint = _uniformpathing.FindPath(startPoint, endPoint, Game1.player.currentLocation, Game1.player, 10000);
 
-        CorrectPath = _Uniformpathing.RebuildPath(new PathNode(startPoint.X,startPoint.Y,null),_stackPoint.Pop(), _stackPoint);
+        CorrectPath = _uniformpathing.RebuildPath(new PathNode(startPoint.X,startPoint.Y,null),_stackPoint.Pop(), _stackPoint);
+    }
+    
+    private static void GreedyBestFirstKeyBind(Vector2 cursorPoint)
+    {
+        _stackPoint.Clear();
+        CorrectPath.Clear();
+        
+        Point startPoint = new Point((int)Game1.player.TilePoint.X, (int)Game1.player.TilePoint.Y);
+        Point endPoint = new Point((int)cursorPoint.X, (int)cursorPoint.Y);
+        
+        _stackPoint = _greedypathing.FindPath(startPoint, endPoint, Game1.player.currentLocation, Game1.player, 10000);
+
+        CorrectPath = _greedypathing.RebuildPath(new PathNode(startPoint.X,startPoint.Y,null),_stackPoint.Pop(), _stackPoint);
     }
 }
     

@@ -3,16 +3,10 @@ using StardewPathfinding.Debug;
 using StardewPathfinding.Graphs;
 using StardewValley;
 
-namespace StardewPathfinding.Pathfinding.UniformCost;
+namespace StardewPathfinding.Pathfinding.GreedyBest;
 
-/// <summary>
-/// This is an implementation of Uniform Cost Search (More specifically Dijkstra's algorithm).
-/// This should be used when you want the even spread of Breadth First however with a cost on each tile.
-/// (Also this algorithm is not well optimized so be careful with use)
-/// </summary>
-public class UniformCostSearch : AlgorithmBase
+public class GreedyBestFirstSearch : AlgorithmBase
 {
-    
     public class Pathing : IPathing
     {
         private static AlgorithmBase _base = new AlgorithmBase();
@@ -20,13 +14,12 @@ public class UniformCostSearch : AlgorithmBase
         private static Graph _graph = new Graph();
 
         public Stack<PathNode> FindPath(Point startPoint, Point endPoint, GameLocation currentLocation,
-            Character player, int limit) // TODO: There is some randomness in how the path is found / rebuilt. Also early exit a while if either the x or y are out of GameLocation height / width
+            Character player, int limit)
         {
             ClearVariables();
             
             PathNode startNode = new PathNode(startPoint.X, startPoint.Y, null);
             
-            IPathing.PriorityFrontier = new();
             IPathing.PriorityFrontier.Enqueue(startNode, 0);
             _base.ClosedList.Add(startNode);
             
@@ -44,6 +37,12 @@ public class UniformCostSearch : AlgorithmBase
 
                 PathNode current = IPathing.PriorityFrontier.Dequeue();
 
+                if (current.X > currentLocation.Map.DisplayWidth / Game1.tileSize || current.Y > Game1.currentLocation.Map.DisplayHeight / Game1.tileSize || current.X < 0 || current.Y < 0)
+                {
+                    Logger.Info($"Blocking this tile: {current.X},{current.Y}     display width {currentLocation.Map.DisplayWidth}   display height {currentLocation.Map.DisplayHeight}");
+                    continue;
+                }
+                
                 Logger.Info($"Current tile {current.X},{current.Y}");
 
                 if (_graph.CheckIfEnd(current, endPoint))
@@ -56,7 +55,6 @@ public class UniformCostSearch : AlgorithmBase
                 }
 
                 // next loop if current is already in ClosedList
-                // this is dumb and can be improved
                 foreach (var node in _base.ClosedList)
                 {
                     if (current.X == node.X && current.Y == node.Y && startNode != current) alreadyExists = true;
@@ -64,20 +62,14 @@ public class UniformCostSearch : AlgorithmBase
                 }
                 
                 if (alreadyExists) continue;
-                
+
                 _base.ClosedList.Add(current);
+
                 foreach (var next in _graph.Neighbours(current).Where(node => !_base.ClosedList.Contains(node)))
                 {
-                    int newCost = current.Cost + Graph.Cost(current, next);
-                    Logger.Info($"Current cost  {current.Cost}   next cost   {next.Cost}   new cost   {newCost}");
-                    if (!IPathing.PriorityFrontier.Contains(next) ||newCost < next.Cost)
-                    {
-                        Logger.Info($"adding {next} to endpath");
-                        next.Cost = newCost;
-                        int priority = newCost;
-                        IPathing.PriorityFrontier.Enqueue(next, priority);
-                        _base.PathToEndPoint.Push(next);
-                    }
+                    int priority = PathNode.ManhattanHeuristic(new Vector2(current.X, current.Y),
+                        new Vector2(next.X, next.Y));
+                    IPathing.PriorityFrontier.Enqueue(next,priority);
                 }
 
                 increase++;
@@ -97,12 +89,10 @@ public class UniformCostSearch : AlgorithmBase
 
         public Stack<PathNode> RebuildPath(PathNode startPoint, PathNode endPoint, Stack<PathNode> path)
         {
-            if (!path.Contains(endPoint)) return new Stack<PathNode>();
-            
             PathNode current = endPoint;
 
             Stack<PathNode> correctPath = new();
-
+            
             while (current != startPoint)
             {
                 Logger.Info($"new current  {current.id}");
