@@ -23,7 +23,7 @@ public class PathNode : IComparable<PathNode>
         Y = y;
         Parent = parent;
         id = CalculateHash(x, y);
-        Cost = cost == -1 ? Random.Shared.Next(0, 6) : cost;
+        Cost = 1;
     }
     
     public static int CalculateHash(int x,int y)

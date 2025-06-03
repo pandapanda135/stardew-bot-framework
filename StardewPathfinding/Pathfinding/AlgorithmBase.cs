@@ -81,5 +81,30 @@ public class AlgorithmBase
 
             return correctPath;
         }
+
+        // if continue return null
+        public static bool NodeChecks(PathNode currentNode,PathNode startNode,Point endPoint,GameLocation location)
+        {
+            Logger.Info($"Current tile {currentNode.X},{currentNode.Y}");
+            
+            // We reduce by 1 to avoid pathfinding going along the side of the map
+            if (currentNode.X > location.Map.DisplayWidth / Game1.tileSize - 1 || currentNode.Y > Game1.currentLocation.Map.DisplayHeight / Game1.tileSize - 1 || currentNode.X < 0 || currentNode.Y < 0)
+            {
+                Logger.Info($"Blocking this tile: {currentNode.X},{currentNode.Y}     display width {location.Map.DisplayWidth}   display height {location.Map.DisplayHeight}");
+                return false;
+            }
+            
+            bool alreadyExists = false;
+            // next loop if current is already in ClosedList
+            foreach (PathNode node in Base.ClosedList)
+            {
+                if (currentNode.X == node.X && currentNode.Y == node.Y && startNode != node) alreadyExists = true;
+                if (alreadyExists) break;
+            }
+                
+            if (alreadyExists) return false;
+                
+            return true;
+        }
     }
 }

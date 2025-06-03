@@ -1,22 +1,16 @@
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using StardewPathfinding.Debug;
 using StardewPathfinding.Graphs;
 using StardewValley;
 
-namespace StardewPathfinding.Pathfinding.UniformCost;
+namespace StardewPathfinding.Pathfinding.AStar;
 
-/// <summary>
-/// This is an implementation of Uniform Cost Search (More specifically Dijkstra's algorithm).
-/// This should be used when you want the even spread of Breadth First however with a cost on each tile.
-/// (Also this algorithm is not well optimized so be careful with use)
-/// </summary>
-public class UniformCostSearch : AlgorithmBase
+public class AStarPathfinding : AlgorithmBase
 {
-    
     public class Pathing : IPathing
     {
-        public Stack<PathNode> FindPath(Point startPoint, Point endPoint, GameLocation location,
-            Character player, int limit) // TODO: There is some randomness in how the path is found / rebuilt. I think the randomness in the pathing is due to the cost of each tile being randomised
+        Stack<PathNode> AlgorithmBase.IPathing.FindPath(Point startPoint, Point endPoint, GameLocation location, Character character, int limit)
         {
             ClearVariables();
             
@@ -49,17 +43,18 @@ public class UniformCostSearch : AlgorithmBase
 
                 if (!IPathing.NodeChecks(current,startNode,endPoint, location)) continue;
                 
+                Logger.Info($"this is current: {current}");
+                
                 IPathing.Base.ClosedList.Add(current);
                 // Neighbour search
                 foreach (var next in IPathing.Graph.Neighbours(current).Where(node => !IPathing.Base.ClosedList.Contains(node)))
                 {
                     int newCost = current.Cost + Graph.Cost(current, next);
-                    Logger.Info($"Current cost  {current.Cost}   next cost   {next.Cost}   new cost   {newCost}");
                     if (!IPathing.PriorityFrontier.Contains(next) || newCost < next.Cost)
                     {
-                        Logger.Info($"adding {next} to endpath");
                         next.Cost = newCost;
-                        int priority = newCost;
+                        int priority = newCost + PathNode.ManhattanHeuristic(new Vector2(next.X, next.Y),endPoint.ToVector2());
+                        Logger.Info($"A Star estimated heuristic {priority}");
                         IPathing.PriorityFrontier.Enqueue(next, priority);
                         IPathing.Base.PathToEndPoint.Push(next);
                     }
@@ -67,7 +62,7 @@ public class UniformCostSearch : AlgorithmBase
 
                 increase++;
             }
-
+            
             if (IPathing.Base.PathToEndPoint.Count > 0)
             {
                 foreach (var pathNode in IPathing.Base.PathToEndPoint)

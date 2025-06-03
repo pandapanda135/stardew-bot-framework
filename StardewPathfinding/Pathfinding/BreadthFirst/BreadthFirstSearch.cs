@@ -31,42 +31,24 @@ public class BreadthFirstSearch : AlgorithmBase
              Logger.Info("before while starts");
              while (!IPathing.Frontier.IsEmpty())
              {
-                 alreadyExists = false;
-                 
                  if (increase > limit)
                  {
                      Logger.Error($"Breaking due to limit");
                      break;
                  }
                  PathNode current = IPathing.Frontier.Dequeue(); // issue with going through same tile multiple times (This might actually be fine according to some stuff I've read I'll keep it here though)
-                 
-                 if (current.X > location.Map.DisplayWidth / Game1.tileSize || current.Y > Game1.currentLocation.Map.DisplayHeight / Game1.tileSize || current.X < 0 || current.Y < 0)
-                 {
-                     Logger.Info($"Blocking this tile: {current.X},{current.Y}     display width {location.Map.DisplayWidth}   display height {location.Map.DisplayHeight}");
-                     continue;
-                 }
-
-                 Logger.Info($"Current tile {current.X},{current.Y}");
 
                  if (IPathing.Graph.CheckIfEnd(current, endPoint))
                  {
                      Logger.Info($"Ending using CheckIfEnd function");
                      // _pathfinding.PathToEndPoint.Reverse(); // this is done as otherwise get ugly paths
-                     
+
                      IPathing.Base.PathToEndPoint.Push(current);
                      return IPathing.Base.PathToEndPoint;
                  }
-                 
-                 // next loop if current is already in ClosedList
-                 foreach (PathNode node in IPathing.Base.ClosedList)
-                 {
-                     Vector2 currentVector = new Vector2(current.X, current.Y);
-                     Vector2 nextVector = new Vector2(node.X, node.Y);
-                     if (currentVector == nextVector && startNode != current) alreadyExists = true;
-                 }
 
-                 if (alreadyExists) continue;
-                 
+                 if (!IPathing.NodeChecks(current,startNode,endPoint, location)) continue;
+                
                  IPathing.Base.ClosedList.Add(current);
                  // this is dumb but it works
                  foreach (var node in IPathing.Graph.Neighbours(current).Where(node => !IPathing.Base.ClosedList.Contains(node)))

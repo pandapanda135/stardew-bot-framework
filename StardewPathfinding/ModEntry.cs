@@ -3,6 +3,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewPathfinding.Debug;
 using StardewPathfinding.Pathfinding;
+using StardewPathfinding.Pathfinding.AStar;
 using StardewPathfinding.Pathfinding.BreadthFirst;
 using StardewPathfinding.Pathfinding.GreedyBest;
 using StardewPathfinding.Pathfinding.UniformCost;
@@ -47,11 +48,20 @@ public class Main : Mod
     
             GreedyBestFirstKeyBind(Game1.currentCursorTile);
         }
+        else if (e.Button == SButton.U)
+        {
+            Logger.Info("User has Pressed button to start Greedy");
+    
+            AStarKeyBind(Game1.currentCursorTile);
+        }
     }
 
-    private static Pathfinding.AlgorithmBase.IPathing _breadthpathing = new BreadthFirstSearch.Pathing();
-    private static Pathfinding.AlgorithmBase.IPathing _uniformpathing = new UniformCostSearch.Pathing();
-    private static Pathfinding.AlgorithmBase.IPathing _greedypathing = new GreedyBestFirstSearch.Pathing();
+    // temp for testing
+    private static AlgorithmBase.IPathing _breadthpathing = new BreadthFirstSearch.Pathing();
+    private static AlgorithmBase.IPathing _uniformpathing = new UniformCostSearch.Pathing();
+    private static AlgorithmBase.IPathing _greedypathing = new GreedyBestFirstSearch.Pathing();
+    private static AlgorithmBase.IPathing _aStarpathing = new AStarPathfinding.Pathing();
+
 
     public static Stack<PathNode> _stackPoint = new Stack<PathNode>();
     public static Stack<PathNode> CorrectPath = new Stack<PathNode>();
@@ -108,5 +118,18 @@ public class Main : Mod
         _stackPoint = _greedypathing.FindPath(startPoint, endPoint, Game1.player.currentLocation, Game1.player, 10000);
 
         CorrectPath = _greedypathing.RebuildPath(new PathNode(startPoint.X,startPoint.Y,null),new PathNode(endPoint.X,endPoint.Y,null), _stackPoint);
+    }
+    
+    private static void AStarKeyBind(Vector2 cursorPoint)
+    {
+        _stackPoint.Clear();
+        CorrectPath.Clear();
+        
+        Point startPoint = new Point((int)Game1.player.TilePoint.X, (int)Game1.player.TilePoint.Y);
+        Point endPoint = new Point((int)cursorPoint.X, (int)cursorPoint.Y);
+        
+        _stackPoint = _aStarpathing.FindPath(startPoint, endPoint, Game1.player.currentLocation, Game1.player, 10000);
+
+        CorrectPath = _aStarpathing.RebuildPath(new PathNode(startPoint.X,startPoint.Y,null),new PathNode(endPoint.X,endPoint.Y,null), _stackPoint);
     }
 }
