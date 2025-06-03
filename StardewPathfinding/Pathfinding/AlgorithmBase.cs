@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using StardewPathfinding.Debug;
+using StardewPathfinding.Graphs;
 using StardewValley;
 using xTile.Tiles;
 
@@ -9,7 +10,7 @@ public class AlgorithmBase
 {
     public Character? Character;
 
-    public Stack<PathNode>? PathToEndPoint = new();
+    public Stack<PathNode> PathToEndPoint = new();
 
     public GameLocation? CurrentLocation;
 
@@ -26,7 +27,7 @@ public class AlgorithmBase
     /// <summary>
     /// this contains Nodes the pathfinding has already reached
     /// </summary>
-    public HashSet<PathNode>? ClosedList = new HashSet<PathNode>();
+    public HashSet<PathNode> ClosedList = new HashSet<PathNode>();
 
     public AlgorithmBase(Character character,GameLocation currentLocation,List<Point> endPoints)
     {
@@ -47,6 +48,10 @@ public class AlgorithmBase
         protected static PathQueue Frontier = new();
 
         protected static PathPriorityQueue PriorityFrontier = new();
+        
+        protected static readonly AlgorithmBase Base = new();
+
+        protected static readonly Graph Graph = new();
         
         public Stack<PathNode> FindPath(Point startPoint, Point endPoint, GameLocation location, Character character, int limit);
         

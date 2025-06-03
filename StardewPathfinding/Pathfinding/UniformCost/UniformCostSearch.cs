@@ -15,12 +15,8 @@ public class UniformCostSearch : AlgorithmBase
     
     public class Pathing : IPathing
     {
-        private static AlgorithmBase _base = new AlgorithmBase();
-
-        private static Graph _graph = new Graph();
-
         public Stack<PathNode> FindPath(Point startPoint, Point endPoint, GameLocation location,
-            Character player, int limit) // TODO: There is some randomness in how the path is found / rebuilt. Also early exit a while if either the x or y are out of GameLocation height / width
+            Character player, int limit) // TODO: There is some randomness in how the path is found / rebuilt. I think the randomness in the pathing is due to the cost of each tile being randomised
         {
             ClearVariables();
             
@@ -28,7 +24,7 @@ public class UniformCostSearch : AlgorithmBase
             
             IPathing.PriorityFrontier = new();
             IPathing.PriorityFrontier.Enqueue(startNode, 0);
-            _base.ClosedList.Add(startNode);
+            IPathing.Base.ClosedList.Add(startNode);
             
             int increase = 0;
 
@@ -52,18 +48,17 @@ public class UniformCostSearch : AlgorithmBase
 
                 Logger.Info($"Current tile {current.X},{current.Y}");
 
-                if (_graph.CheckIfEnd(current, endPoint))
+                if (IPathing.Graph.CheckIfEnd(current, endPoint))
                 {
                     Logger.Info($"Ending using CheckIfEnd function");
                     // _pathfinding.PathToEndPoint.Reverse(); // this is done as otherwise get ugly paths
 
-                    _base.PathToEndPoint.Push(current);
-                    return _base.PathToEndPoint;
+                    IPathing.Base.PathToEndPoint.Push(current);
+                    return IPathing.Base.PathToEndPoint;
                 }
 
                 // next loop if current is already in ClosedList
-                // this is dumb and can be improved
-                foreach (var node in _base.ClosedList)
+                foreach (PathNode node in IPathing.Base.ClosedList)
                 {
                     if (current.X == node.X && current.Y == node.Y && startNode != current) alreadyExists = true;
                     if (alreadyExists) break;
@@ -71,41 +66,42 @@ public class UniformCostSearch : AlgorithmBase
                 
                 if (alreadyExists) continue;
                 
-                _base.ClosedList.Add(current);
-                foreach (var next in _graph.Neighbours(current).Where(node => !_base.ClosedList.Contains(node)))
+                IPathing.Base.ClosedList.Add(current);
+                // Neighbour search
+                foreach (var next in IPathing.Graph.Neighbours(current).Where(node => !IPathing.Base.ClosedList.Contains(node)))
                 {
                     int newCost = current.Cost + Graph.Cost(current, next);
                     Logger.Info($"Current cost  {current.Cost}   next cost   {next.Cost}   new cost   {newCost}");
-                    if (!IPathing.PriorityFrontier.Contains(next) ||newCost < next.Cost)
+                    if (!IPathing.PriorityFrontier.Contains(next) || newCost < next.Cost)
                     {
                         Logger.Info($"adding {next} to endpath");
                         next.Cost = newCost;
                         int priority = newCost;
                         IPathing.PriorityFrontier.Enqueue(next, priority);
-                        _base.PathToEndPoint.Push(next);
+                        IPathing.Base.PathToEndPoint.Push(next);
                     }
                 }
 
                 increase++;
             }
 
-            if (_base.PathToEndPoint.Count > 0)
+            if (IPathing.Base.PathToEndPoint.Count > 0)
             {
-                foreach (var pathNode in _base.PathToEndPoint)
+                foreach (var pathNode in IPathing.Base.PathToEndPoint)
                 {
                     Logger.Info($"node in end point path   {pathNode.X}   {pathNode.Y}");
                 }
             }
 
             Logger.Info($"Uniform about to return");
-            return _base.PathToEndPoint;
+            return IPathing.Base.PathToEndPoint;
         }
 
         private void ClearVariables()
         {
             IPathing.PriorityFrontier = new();
-            _base.ClosedList!.Clear();
-            _base.PathToEndPoint.Clear();
+            IPathing.Base.ClosedList!.Clear();
+            IPathing.Base.PathToEndPoint.Clear();
             DrawFoundTiles.debugDirectionTiles.Clear();
         }
     }

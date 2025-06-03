@@ -1,10 +1,11 @@
 using StardewValley;
+using StardewValley.Objects;
 
 namespace StardewPathfinding.Pathfinding;
 
 public class PathQueue
 {
-    private int total_size;
+    private int TotalSize => _nodes.Count;
 
     private Queue<PathNode> _nodes = new Queue<PathNode>();
 

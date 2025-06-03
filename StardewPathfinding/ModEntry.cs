@@ -110,4 +110,3 @@ public class Main : Mod
         CorrectPath = _greedypathing.RebuildPath(new PathNode(startPoint.X,startPoint.Y,null),new PathNode(endPoint.X,endPoint.Y,null), _stackPoint);
     }
 }
-    

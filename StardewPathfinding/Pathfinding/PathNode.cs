@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using StardewPathfinding.Debug;
 using StardewValley;
 using Vector2 = Microsoft.Xna.Framework.Vector2;
 
@@ -52,6 +53,7 @@ public class PathNode : IComparable<PathNode>
 
     public static int ManhattanHeuristic(Vector2 start,Vector2 end)
     {
+        Logger.Info($"X:{start.X - end.X}   Y: {start.Y - end.Y}");
         return (int)Math.Abs(start.X - end.X) + (int)Math.Abs(start.Y - end.Y);
     }
 }

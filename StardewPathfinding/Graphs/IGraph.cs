@@ -23,7 +23,7 @@ public interface IGraph
     /// Get surrounding tiles of node given.
     /// </summary>
     /// <param name="currentNode">Node you want the neighbours of.</param>
-    /// <returns>Queue of Neighbours in order : west,east,south,north</returns>
+    /// <returns>Queue of Neighbours in order : west,east,south,north  (assuming the Neighbours do not go into an object the player can collide with.) </returns>
     public Queue<PathNode> Neighbours(PathNode currentNode);
 
     /// <summary>

@@ -10,10 +10,6 @@ namespace StardewPathfinding.Pathfinding.BreadthFirst;
 
 public class BreadthFirstSearch : AlgorithmBase
 {
-    static AlgorithmBase _base  = new AlgorithmBase();
-
-    private static Graph _graph = new Graph();
-    
     // class's custom Pathfinding will be implemented here
      public class Pathing : IPathing
      {
@@ -28,7 +24,7 @@ public class BreadthFirstSearch : AlgorithmBase
              PathNode startNode = new PathNode(startPoint.X, startPoint.Y, null);
              IPathing.Frontier = new PathQueue(); // use instead of _openlist because easier
              IPathing.Frontier.Enqueue(startNode);
-             _base.ClosedList.Add(startNode);
+             IPathing.Base.ClosedList.Add(startNode);
 
              bool alreadyExists = false;
              
@@ -52,17 +48,17 @@ public class BreadthFirstSearch : AlgorithmBase
 
                  Logger.Info($"Current tile {current.X},{current.Y}");
 
-                 if (_graph.CheckIfEnd(current, endPoint))
+                 if (IPathing.Graph.CheckIfEnd(current, endPoint))
                  {
                      Logger.Info($"Ending using CheckIfEnd function");
                      // _pathfinding.PathToEndPoint.Reverse(); // this is done as otherwise get ugly paths
                      
-                     _base.PathToEndPoint.Push(current);
-                     return _base.PathToEndPoint;
+                     IPathing.Base.PathToEndPoint.Push(current);
+                     return IPathing.Base.PathToEndPoint;
                  }
                  
                  // next loop if current is already in ClosedList
-                 foreach (var node in _base.ClosedList)
+                 foreach (PathNode node in IPathing.Base.ClosedList)
                  {
                      Vector2 currentVector = new Vector2(current.X, current.Y);
                      Vector2 nextVector = new Vector2(node.X, node.Y);
@@ -71,32 +67,32 @@ public class BreadthFirstSearch : AlgorithmBase
 
                  if (alreadyExists) continue;
                  
-                 _base.ClosedList.Add(current);
+                 IPathing.Base.ClosedList.Add(current);
                  // this is dumb but it works
-                 foreach (var node in _graph.Neighbours(current).Where(node => !_base.ClosedList.Contains(node)))
+                 foreach (var node in IPathing.Graph.Neighbours(current).Where(node => !IPathing.Base.ClosedList.Contains(node)))
                  {
                      IPathing.Frontier.Enqueue(node);
-                     _base.PathToEndPoint.Push(current);
+                     IPathing.Base.PathToEndPoint.Push(current);
                  }
                  
                  increase++;
              }
-             if (_base.PathToEndPoint.Count > 0)
+             if (IPathing.Base.PathToEndPoint.Count > 0)
              {
-                 foreach (var pathNode in _base.PathToEndPoint)
+                 foreach (var pathNode in IPathing.Base.PathToEndPoint)
                  {
                      Logger.Info($"node in end point path   {pathNode.X}   {pathNode.Y}");
                  }
              }
              Logger.Info($"breadth first about to return");
-             return _base.PathToEndPoint;
+             return IPathing.Base.PathToEndPoint;
          }
 
          private void ClearVariables()
          {
              IPathing.Frontier = new();
-             _base.ClosedList!.Clear();
-             _base.PathToEndPoint.Clear();
+             IPathing.Base.ClosedList!.Clear();
+             IPathing.Base.PathToEndPoint.Clear();
              DrawFoundTiles.debugDirectionTiles.Clear();
          }
      }

@@ -38,7 +38,7 @@ public class Graph : IGraph
         }
         return false;
     }
-
+    
     public Queue<PathNode> Neighbours(PathNode currentNode)
     {
         Queue<PathNode> nextNodes = new();
