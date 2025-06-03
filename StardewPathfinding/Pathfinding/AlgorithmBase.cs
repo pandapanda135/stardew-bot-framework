@@ -50,6 +50,31 @@ public class AlgorithmBase
         
         public Stack<PathNode> FindPath(Point startPoint, Point endPoint, GameLocation location, Character character, int limit);
         
-        public Stack<PathNode> RebuildPath(PathNode startPoint,PathNode endNode,Stack<PathNode> path);
+        public Stack<PathNode> RebuildPath(PathNode startPoint, PathNode endPoint, Stack<PathNode> path)
+        {
+            if (!path.TryPeek(out var endPointPath) || endPointPath.X != endPoint.X && endPointPath.Y != endPoint.Y)
+            {
+                Logger.Info("Ending Rebuild path early");
+                return new Stack<PathNode>();
+            }
+             
+            PathNode current = path.Pop();
+
+            Stack<PathNode> correctPath = new();
+             
+            while (current != startPoint)
+            {
+                correctPath.Push(current);
+                if (current.Parent is not null)
+                {
+                    current = current.Parent!;
+                    continue;
+                }
+                 
+                break;
+            }
+
+            return correctPath;
+        }
     }
 }

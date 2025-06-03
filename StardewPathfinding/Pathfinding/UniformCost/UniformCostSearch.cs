@@ -19,7 +19,7 @@ public class UniformCostSearch : AlgorithmBase
 
         private static Graph _graph = new Graph();
 
-        public Stack<PathNode> FindPath(Point startPoint, Point endPoint, GameLocation currentLocation,
+        public Stack<PathNode> FindPath(Point startPoint, Point endPoint, GameLocation location,
             Character player, int limit) // TODO: There is some randomness in how the path is found / rebuilt. Also early exit a while if either the x or y are out of GameLocation height / width
         {
             ClearVariables();
@@ -43,6 +43,12 @@ public class UniformCostSearch : AlgorithmBase
                 }
 
                 PathNode current = IPathing.PriorityFrontier.Dequeue();
+                
+                if (current.X > location.Map.DisplayWidth / Game1.tileSize || current.Y > Game1.currentLocation.Map.DisplayHeight / Game1.tileSize || current.X < 0 || current.Y < 0)
+                {
+                    Logger.Info($"Blocking this tile: {current.X},{current.Y}     display width {location.Map.DisplayWidth}   display height {location.Map.DisplayHeight}");
+                    continue;
+                }
 
                 Logger.Info($"Current tile {current.X},{current.Y}");
 
@@ -93,30 +99,6 @@ public class UniformCostSearch : AlgorithmBase
 
             Logger.Info($"Uniform about to return");
             return _base.PathToEndPoint;
-        }
-
-        public Stack<PathNode> RebuildPath(PathNode startPoint, PathNode endPoint, Stack<PathNode> path)
-        {
-            if (!path.Contains(endPoint)) return new Stack<PathNode>();
-            
-            PathNode current = endPoint;
-
-            Stack<PathNode> correctPath = new();
-
-            while (current != startPoint)
-            {
-                Logger.Info($"new current  {current.id}");
-                correctPath.Push(current);
-                if (current.Parent is not null)
-                {
-                    current = current.Parent!;
-                    continue;
-                }
-
-                break;
-            }
-
-            return correctPath;
         }
 
         private void ClearVariables()

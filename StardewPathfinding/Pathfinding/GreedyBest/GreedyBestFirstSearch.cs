@@ -13,7 +13,7 @@ public class GreedyBestFirstSearch : AlgorithmBase
 
         private static Graph _graph = new Graph();
 
-        public Stack<PathNode> FindPath(Point startPoint, Point endPoint, GameLocation currentLocation,
+        public Stack<PathNode> FindPath(Point startPoint, Point endPoint, GameLocation location,
             Character player, int limit)
         {
             ClearVariables();
@@ -37,9 +37,9 @@ public class GreedyBestFirstSearch : AlgorithmBase
 
                 PathNode current = IPathing.PriorityFrontier.Dequeue();
 
-                if (current.X > currentLocation.Map.DisplayWidth / Game1.tileSize || current.Y > Game1.currentLocation.Map.DisplayHeight / Game1.tileSize || current.X < 0 || current.Y < 0)
+                if (current.X > location.Map.DisplayWidth / Game1.tileSize || current.Y > Game1.currentLocation.Map.DisplayHeight / Game1.tileSize || current.X < 0 || current.Y < 0)
                 {
-                    Logger.Info($"Blocking this tile: {current.X},{current.Y}     display width {currentLocation.Map.DisplayWidth}   display height {currentLocation.Map.DisplayHeight}");
+                    Logger.Info($"Blocking this tile: {current.X},{current.Y}     display width {location.Map.DisplayWidth}   display height {location.Map.DisplayHeight}");
                     continue;
                 }
                 
@@ -85,28 +85,6 @@ public class GreedyBestFirstSearch : AlgorithmBase
 
             Logger.Info($"Uniform about to return");
             return _base.PathToEndPoint;
-        }
-
-        public Stack<PathNode> RebuildPath(PathNode startPoint, PathNode endPoint, Stack<PathNode> path)
-        {
-            PathNode current = endPoint;
-
-            Stack<PathNode> correctPath = new();
-            
-            while (current != startPoint)
-            {
-                Logger.Info($"new current  {current.id}");
-                correctPath.Push(current);
-                if (current.Parent is not null)
-                {
-                    current = current.Parent!;
-                    continue;
-                }
-
-                break;
-            }
-
-            return correctPath;
         }
 
         private void ClearVariables()

@@ -1,3 +1,4 @@
+using System.Collections;
 using Microsoft.Xna.Framework;
 using StardewPathfinding.Debug;
 using StardewPathfinding.TileInterface;
@@ -42,6 +43,12 @@ public class BreadthFirstSearch : AlgorithmBase
                      break;
                  }
                  PathNode current = IPathing.Frontier.Dequeue(); // issue with going through same tile multiple times (This might actually be fine according to some stuff I've read I'll keep it here though)
+                 
+                 if (current.X > location.Map.DisplayWidth / Game1.tileSize || current.Y > Game1.currentLocation.Map.DisplayHeight / Game1.tileSize || current.X < 0 || current.Y < 0)
+                 {
+                     Logger.Info($"Blocking this tile: {current.X},{current.Y}     display width {location.Map.DisplayWidth}   display height {location.Map.DisplayHeight}");
+                     continue;
+                 }
 
                  Logger.Info($"Current tile {current.X},{current.Y}");
 
@@ -83,30 +90,6 @@ public class BreadthFirstSearch : AlgorithmBase
              }
              Logger.Info($"breadth first about to return");
              return _base.PathToEndPoint;
-         }
-
-         public Stack<PathNode> RebuildPath(PathNode startPoint,PathNode endPoint,Stack<PathNode> path)
-         {
-             if (!path.Contains(endPoint)) return new Stack<PathNode>();
-
-             PathNode current = endPoint;
-
-             Stack<PathNode> correctPath = new();
-             
-             while (current != startPoint)
-             {
-                 Logger.Info($"new current  {current.id}");
-                 correctPath.Push(current);
-                 if (current.Parent is not null)
-                 {
-                     current = current.Parent!;
-                     continue;
-                 }
-                 
-                 break;
-             }
-             
-             return correctPath;
          }
 
          private void ClearVariables()
