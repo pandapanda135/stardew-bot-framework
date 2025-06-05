@@ -1,0 +1,10 @@
+{
+  "Name": "TestBotFramework",
+  "Author": "Panda",
+  "Version": "0.0.1",
+  "Description": "Yap Yap Yap",
+  "UniqueID": "Panda.TestBotFramework",
+  "EntryDll": "StardewBotFramework.dll",
+  "MinimumApiVersion": "4.0.0",
+  "UpdateKeys": []
+}
