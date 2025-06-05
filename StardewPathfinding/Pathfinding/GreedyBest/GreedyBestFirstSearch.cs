@@ -30,16 +30,11 @@ public class GreedyBestFirstSearch : AlgorithmBase
 
                 PathNode current = IPathing.PriorityFrontier.Dequeue();
                 
-                if (IPathing.Graph.CheckIfEnd(current, endPoint))
-                {
-                    Logger.Info($"Ending using CheckIfEnd function");
-                    // _pathfinding.PathToEndPoint.Reverse(); // this is done as otherwise get ugly paths
 
-                    IPathing.Base.PathToEndPoint.Push(current);
-                    return IPathing.Base.PathToEndPoint;
-                }
 
                 if (!IPathing.NodeChecks(current,startNode,endPoint, location)) continue;
+                
+                if (IPathing.Base.PathToEndPoint.Contains(current)) return IPathing.Base.PathToEndPoint; // this is here as cant return in NodeChecks
                 
                 IPathing.Base.ClosedList.Add(current);
 
@@ -53,14 +48,8 @@ public class GreedyBestFirstSearch : AlgorithmBase
                 increase++;
             }
 
-            if (IPathing.Base.PathToEndPoint.Count > 0)
-            {
-                foreach (var pathNode in IPathing.Base.PathToEndPoint)
-                {
-                    Logger.Info($"node in end point path   {pathNode.X}   {pathNode.Y}");
-                }
-            }
-
+            IPathing.EndDebugging();
+            
             Logger.Info($"Greedy about to return");
             return IPathing.Base.PathToEndPoint;
         }

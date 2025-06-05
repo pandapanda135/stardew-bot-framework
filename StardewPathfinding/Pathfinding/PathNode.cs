@@ -11,24 +11,18 @@ public class PathNode : IComparable<PathNode>
 
     public readonly int Y;
 
+    public Vector2 VectorLocation => new(X, Y);
+
     public PathNode? Parent;
 
     public int Cost;
-    
-    public int id;
     
     public PathNode(int x,int y,PathNode? parent,int cost = -1)
     {
         X = x;
         Y = y;
         Parent = parent;
-        id = CalculateHash(x, y);
         Cost = 1;
-    }
-    
-    public static int CalculateHash(int x,int y)
-    {
-        return 1000 * x + y;
     }
     
     /// <summary>
@@ -44,7 +38,7 @@ public class PathNode : IComparable<PathNode>
 
     public int CompareTo(PathNode? other)
     {
-        if (other.X == X && other.Y == Y && other.Parent == Parent) return 0;
+        if (other.VectorLocation == VectorLocation && other.Parent == Parent) return 0;
 
         if (other is not PathNode) return -1;
 

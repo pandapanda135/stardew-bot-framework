@@ -18,6 +18,7 @@ public class Main : Mod
         Logger.SetMonitor(Monitor);
 
         helper.Events.Input.ButtonPressed += ButtonPressed;
+        helper.Events.GameLoop.UpdateTicking += CharacterController.Update;
         helper.Events.Display.Rendered += DrawFoundTiles.OnRenderTiles;
 
         helper.ConsoleCommands.Add("first", "this is breadth First Search", BreathFirstSearchTest);
@@ -77,7 +78,7 @@ public class Main : Mod
         
         foreach (var node in CorrectPath)
         {
-            Logger.Info($"Node positions {node.X},{node.Y} : {node.id} : {node.Parent}   first Stackpoint");
+            Logger.Info($"Node positions {node.X},{node.Y} : {node.Parent}   first Stackpoint");
         }
     }
     
@@ -114,10 +115,14 @@ public class Main : Mod
         
         Point startPoint = new Point((int)Game1.player.TilePoint.X, (int)Game1.player.TilePoint.Y);
         Point endPoint = new Point((int)cursorPoint.X, (int)cursorPoint.Y);
+
+        CharacterController characterController = new CharacterController();
         
         _stackPoint = _greedypathing.FindPath(startPoint, endPoint, Game1.player.currentLocation, Game1.player, 10000);
 
         CorrectPath = _greedypathing.RebuildPath(new PathNode(startPoint.X,startPoint.Y,null),new PathNode(endPoint.X,endPoint.Y,null), _stackPoint);
+        
+        CharacterController.StartMoveCharacter(CorrectPath,Game1.player,Game1.player.currentLocation,Game1.currentGameTime);
     }
     
     private static void AStarKeyBind(Vector2 cursorPoint)

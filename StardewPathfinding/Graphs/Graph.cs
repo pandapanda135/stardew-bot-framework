@@ -32,7 +32,7 @@ public class Graph : IGraph
     
     public virtual bool CheckIfEnd(PathNode currentNode,Point endPoint)
     {
-        if (currentNode.X == endPoint.X && currentNode.Y == endPoint.Y)
+        if (currentNode.VectorLocation == endPoint.ToVector2())
         {
             return true;
         }

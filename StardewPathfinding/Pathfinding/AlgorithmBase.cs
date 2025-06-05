@@ -14,7 +14,7 @@ public class AlgorithmBase
 
     public GameLocation? CurrentLocation;
 
-    public List<Point>? EndPoints;
+    public List<PathNode>? EndPoints;
 
     // will be used to see if destroying stuff like trees is allowed in pathfinding
     public bool AllowDestruction;
@@ -29,7 +29,7 @@ public class AlgorithmBase
     /// </summary>
     public HashSet<PathNode> ClosedList = new HashSet<PathNode>();
 
-    public AlgorithmBase(Character character,GameLocation currentLocation,List<Point> endPoints)
+    public AlgorithmBase(Character character,GameLocation currentLocation,List<PathNode> endPoints)
     {
         Character = character;
         CurrentLocation = currentLocation;
@@ -57,7 +57,7 @@ public class AlgorithmBase
         
         public Stack<PathNode> RebuildPath(PathNode startPoint, PathNode endPoint, Stack<PathNode> path)
         {
-            if (!path.TryPeek(out var endPointPath) || endPointPath.X != endPoint.X && endPointPath.Y != endPoint.Y)
+            if (!path.TryPeek(out var endPointPath) || endPointPath.VectorLocation != endPoint.VectorLocation)
             {
                 Logger.Info("Ending Rebuild path early");
                 return new Stack<PathNode>();
@@ -82,10 +82,18 @@ public class AlgorithmBase
             return correctPath;
         }
 
-        // if continue return null
         public static bool NodeChecks(PathNode currentNode,PathNode startNode,Point endPoint,GameLocation location)
         {
             Logger.Info($"Current tile {currentNode.X},{currentNode.Y}");
+            
+            if (Graph.CheckIfEnd(currentNode, endPoint))
+            {
+                Logger.Info($"Ending using CheckIfEnd function");
+                // _pathfinding.PathToEndPoint.Reverse(); // this is done as otherwise get ugly paths
+
+                Base.PathToEndPoint.Push(currentNode);
+                return true;
+            }
             
             // We reduce by 1 to avoid pathfinding going along the side of the map
             if (currentNode.X > location.Map.DisplayWidth / Game1.tileSize - 1 || currentNode.Y > Game1.currentLocation.Map.DisplayHeight / Game1.tileSize - 1 || currentNode.X < 0 || currentNode.Y < 0)
@@ -101,10 +109,21 @@ public class AlgorithmBase
                 if (currentNode.X == node.X && currentNode.Y == node.Y && startNode != node) alreadyExists = true;
                 if (alreadyExists) break;
             }
-                
+            
             if (alreadyExists) return false;
                 
             return true;
+        }
+
+        public static void EndDebugging()
+        {
+            if (Base.PathToEndPoint.Count > 0)
+            {
+                foreach (var pathNode in Base.PathToEndPoint)
+                {
+                    Logger.Info($"node in end point path   {pathNode.X}   {pathNode.Y}");
+                }
+            }
         }
     }
 }
