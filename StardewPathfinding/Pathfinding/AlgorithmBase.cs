@@ -12,18 +12,15 @@ public class AlgorithmBase
 
     public Stack<PathNode> PathToEndPoint = new();
 
+    public List<Stack<PathNode>> MultipleEndPaths = new();
+
     public GameLocation? CurrentLocation;
 
     public List<PathNode>? EndPoints;
 
     // will be used to see if destroying stuff like trees is allowed in pathfinding
     public bool AllowDestruction;
-
-    /// <summary>
-    /// Also known as frontier, this contains nodes it will go to next
-    /// </summary>
-    public Queue<PathNode>? OpenList = new Queue<PathNode>();
-
+    
     /// <summary>
     /// this contains Nodes the pathfinding has already reached
     /// </summary>
@@ -40,11 +37,12 @@ public class AlgorithmBase
     {}
     
     // ,GameLocation location, Character character
-
     
     // this is so multiple types of pathing can be implemented more easily
     public interface IPathing
     {
+        // public event EventHandler ReachedGoal; // TODO: Implement Later 
+        
         protected static PathQueue Frontier = new();
 
         protected static PathPriorityQueue PriorityFrontier = new();
@@ -53,7 +51,11 @@ public class AlgorithmBase
 
         protected static readonly Graph Graph = new();
         
-        public Stack<PathNode> FindPath(Point startPoint, Point endPoint, GameLocation location, Character character, int limit);
+        public Stack<PathNode> FindPath(PathNode startPoint, PathNode endPoint, GameLocation location,
+            Character character, int limit);
+
+        public List<Stack<PathNode>> FindMultipleGoals(PathNode startNode, List<PathNode> goals, GameLocation location,
+            Character character, int limit);
         
         public Stack<PathNode> RebuildPath(PathNode startPoint, PathNode endPoint, Stack<PathNode> path)
         {
@@ -82,7 +84,8 @@ public class AlgorithmBase
             return correctPath;
         }
 
-        public static bool NodeChecks(PathNode currentNode,PathNode startNode,Point endPoint,GameLocation location)
+        public static bool NodeChecks(PathNode currentNode, PathNode startNode, PathNode endPoint,
+            GameLocation location)
         {
             Logger.Info($"Current tile {currentNode.X},{currentNode.Y}");
             
@@ -90,7 +93,7 @@ public class AlgorithmBase
             {
                 Logger.Info($"Ending using CheckIfEnd function");
                 // _pathfinding.PathToEndPoint.Reverse(); // this is done as otherwise get ugly paths
-
+                
                 Base.PathToEndPoint.Push(currentNode);
                 return true;
             }
@@ -115,6 +118,21 @@ public class AlgorithmBase
             return true;
         }
 
+        public static bool MultipleEndNodeChecks(PathNode currentNode, PathNode startNode, List<PathNode> endNodes,
+            GameLocation location)
+        {
+            for (int i = 0; i >= endNodes.Count; i++)
+            {
+                if (endNodes[i].VectorLocation == currentNode.VectorLocation)
+                {
+                    endNodes.RemoveAt(i);
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
         public static void EndDebugging()
         {
             if (Base.PathToEndPoint.Count > 0)

@@ -32,5 +32,5 @@ public interface IGraph
     /// <param name="currentNode">Node you want to find out if end</param>
     /// <param name="endPoint">The end Node as a <see cref="Microsoft.Xna.Framework.Point">Point</see></param>
     /// <returns>true if at end. False if not</returns>
-    public bool CheckIfEnd(PathNode currentNode, Point endPoint);
+    public bool CheckIfEnd(PathNode currentNode, PathNode endPoint);
 }

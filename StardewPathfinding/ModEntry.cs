@@ -20,8 +20,6 @@ public class Main : Mod
         helper.Events.Input.ButtonPressed += ButtonPressed;
         helper.Events.GameLoop.UpdateTicking += CharacterController.Update;
         helper.Events.Display.Rendered += DrawFoundTiles.OnRenderTiles;
-
-        helper.ConsoleCommands.Add("first", "this is breadth First Search", BreathFirstSearchTest);
     }
 
     public void ButtonPressed(object? sender, ButtonPressedEventArgs e)
@@ -67,28 +65,16 @@ public class Main : Mod
     public static Stack<PathNode> _stackPoint = new Stack<PathNode>();
     public static Stack<PathNode> CorrectPath = new Stack<PathNode>();
 
-    private static void BreathFirstSearchTest(string name, string[] args)
-    {
-        Point startPoint = new Point((int)Game1.player.TilePoint.X, (int)Game1.player.TilePoint.Y);
-        Point endPoint = new Point((int)Game1.player.TilePoint.X - 10, (int)Game1.player.TilePoint.Y + 20);
-        
-        _stackPoint = _breadthpathing.FindPath(startPoint, endPoint, Game1.player.currentLocation, Game1.player, 10000);
-
-        CorrectPath = _breadthpathing.RebuildPath(new PathNode(startPoint.X,startPoint.Y,null),_stackPoint.Pop(), _stackPoint);
-        
-        foreach (var node in CorrectPath)
-        {
-            Logger.Info($"Node positions {node.X},{node.Y} : {node.Parent}   first Stackpoint");
-        }
-    }
+    private static PathNode startPoint;
+    private static PathNode endPoint;
     
     private static void BreathFirstSearchKeybind(Vector2 cursorPoint)
     {
         _stackPoint.Clear();
         CorrectPath.Clear();
         
-        Point startPoint = new Point((int)Game1.player.TilePoint.X, (int)Game1.player.TilePoint.Y);
-        Point endPoint = new Point((int)cursorPoint.X, (int)cursorPoint.Y);
+        startPoint = new PathNode((int)Game1.player.TilePoint.X, (int)Game1.player.TilePoint.Y,null);
+        endPoint = new PathNode((int)cursorPoint.X,(int)cursorPoint.Y,null);
         
         _stackPoint = _breadthpathing.FindPath(startPoint, endPoint, Game1.player.currentLocation, Game1.player, 10000);
 
@@ -100,8 +86,8 @@ public class Main : Mod
         _stackPoint.Clear();
         CorrectPath.Clear();
         
-        Point startPoint = new Point((int)Game1.player.TilePoint.X, (int)Game1.player.TilePoint.Y);
-        Point endPoint = new Point((int)cursorPoint.X, (int)cursorPoint.Y);
+        startPoint = new PathNode((int)Game1.player.TilePoint.X, (int)Game1.player.TilePoint.Y,null);
+        endPoint = new PathNode((int)cursorPoint.X,(int)cursorPoint.Y,null);
         
         _stackPoint = _uniformpathing.FindPath(startPoint, endPoint, Game1.player.currentLocation, Game1.player, 10000);
 
@@ -113,8 +99,8 @@ public class Main : Mod
         _stackPoint.Clear();
         CorrectPath.Clear();
         
-        Point startPoint = new Point((int)Game1.player.TilePoint.X, (int)Game1.player.TilePoint.Y);
-        Point endPoint = new Point((int)cursorPoint.X, (int)cursorPoint.Y);
+        startPoint = new PathNode((int)Game1.player.TilePoint.X, (int)Game1.player.TilePoint.Y,null);
+        endPoint = new PathNode((int)cursorPoint.X,(int)cursorPoint.Y,null);
 
         CharacterController characterController = new CharacterController();
         
@@ -130,8 +116,8 @@ public class Main : Mod
         _stackPoint.Clear();
         CorrectPath.Clear();
         
-        Point startPoint = new Point((int)Game1.player.TilePoint.X, (int)Game1.player.TilePoint.Y);
-        Point endPoint = new Point((int)cursorPoint.X, (int)cursorPoint.Y);
+        startPoint = new PathNode((int)Game1.player.TilePoint.X, (int)Game1.player.TilePoint.Y,null);
+        endPoint = new PathNode((int)cursorPoint.X,(int)cursorPoint.Y,null);
         
         _stackPoint = _aStarpathing.FindPath(startPoint, endPoint, Game1.player.currentLocation, Game1.player, 10000);
 

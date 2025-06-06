@@ -30,9 +30,9 @@ public class Graph : IGraph
         // need to set up queue system so we can get neighbors of a tile in this file using direction (or could do this Pathfinding)
     }
     
-    public virtual bool CheckIfEnd(PathNode currentNode,Point endPoint)
+    public virtual bool CheckIfEnd(PathNode currentNode,PathNode endPoint)
     {
-        if (currentNode.VectorLocation == endPoint.ToVector2())
+        if (currentNode.VectorLocation == endPoint.VectorLocation)
         {
             return true;
         }

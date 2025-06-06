@@ -12,11 +12,10 @@ namespace StardewPathfinding.Pathfinding.UniformCost;
 /// </summary>
 public class UniformCostSearch : AlgorithmBase
 {
-    
     public class Pathing : IPathing
     {
-        public Stack<PathNode> FindPath(Point startPoint, Point endPoint, GameLocation location,
-            Character player, int limit) // TODO: There is some randomness in how the path is found / rebuilt. I think the randomness in the pathing is due to the cost of each tile being randomised
+        public Stack<PathNode> FindPath(PathNode startPoint, PathNode endPoint, GameLocation location,
+            Character player, int limit) // There is some randomness in how the path is found / rebuilt. I think the randomness in the pathing is due to the cost of each tile being randomised
         {
             ClearVariables();
             
@@ -40,7 +39,7 @@ public class UniformCostSearch : AlgorithmBase
 
                 if (!IPathing.NodeChecks(current,startNode,endPoint, location)) continue;
                 
-                if (IPathing.Base.PathToEndPoint.Contains(current) && current.VectorLocation == endPoint.ToVector2()) return IPathing.Base.PathToEndPoint; // this is here as cant return in NodeChecks
+                if (IPathing.Base.PathToEndPoint.Contains(current) && current.VectorLocation == endPoint.VectorLocation) return IPathing.Base.PathToEndPoint; // this is here as cant return in NodeChecks
                 
                 IPathing.Base.ClosedList.Add(current);
                 // Neighbour search

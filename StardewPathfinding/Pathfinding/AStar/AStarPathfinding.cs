@@ -10,7 +10,8 @@ public class AStarPathfinding : AlgorithmBase
 {
     public class Pathing : IPathing
     {
-        Stack<PathNode> AlgorithmBase.IPathing.FindPath(Point startPoint, Point endPoint, GameLocation location, Character character, int limit)
+        Stack<PathNode> AlgorithmBase.IPathing.FindPath(PathNode startPoint, PathNode endPoint, GameLocation location,
+            Character character, int limit)
         {
             ClearVariables();
             
@@ -34,7 +35,7 @@ public class AStarPathfinding : AlgorithmBase
 
                 if (!IPathing.NodeChecks(current,startNode,endPoint, location)) continue;
                 
-                if (IPathing.Base.PathToEndPoint.Contains(current) && current.VectorLocation == endPoint.ToVector2()) return IPathing.Base.PathToEndPoint; // this is here as cant return in NodeChecks
+                if (IPathing.Base.PathToEndPoint.Contains(current) && current.VectorLocation == endPoint.VectorLocation) return IPathing.Base.PathToEndPoint; // this is here as cant return in NodeChecks
                 
                 Logger.Info($"this is current: {current}");
                 
@@ -46,7 +47,7 @@ public class AStarPathfinding : AlgorithmBase
                     if (!IPathing.PriorityFrontier.Contains(next) || newCost < next.Cost)
                     {
                         next.Cost = newCost;
-                        int priority = newCost + PathNode.ManhattanHeuristic(new Vector2(next.X, next.Y),endPoint.ToVector2());
+                        int priority = newCost + PathNode.ManhattanHeuristic(new Vector2(next.X, next.Y),endPoint.VectorLocation);
                         Logger.Info($"A Star estimated heuristic {priority}");
                         IPathing.PriorityFrontier.Enqueue(next, priority);
                         IPathing.Base.PathToEndPoint.Push(next);

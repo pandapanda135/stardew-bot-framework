@@ -8,7 +8,7 @@ public class GreedyBestFirstSearch : AlgorithmBase
 {
     public class Pathing : IPathing
     {
-        public Stack<PathNode> FindPath(Point startPoint, Point endPoint, GameLocation location,
+        public Stack<PathNode> FindPath(PathNode startPoint, PathNode endPoint, GameLocation location,
             Character player, int limit)
         {
             ClearVariables();
@@ -40,7 +40,7 @@ public class GreedyBestFirstSearch : AlgorithmBase
 
                 foreach (var next in IPathing.Graph.Neighbours(current).Where(node => !IPathing.Base.ClosedList.Contains(node)))
                 {
-                    int priority = PathNode.ManhattanHeuristic(new Vector2(next.X, next.Y),endPoint.ToVector2());
+                    int priority = PathNode.ManhattanHeuristic(new Vector2(next.X, next.Y),endPoint.VectorLocation);
                     Logger.Info($"heuristic: {priority}");
                     IPathing.PriorityFrontier.Enqueue(next,priority);
                 }
