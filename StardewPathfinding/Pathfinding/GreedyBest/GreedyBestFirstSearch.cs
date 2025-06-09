@@ -30,19 +30,18 @@ public class GreedyBestFirstSearch : AlgorithmBase
 
                 PathNode current = IPathing.PriorityFrontier.Dequeue();
                 
-
-
                 if (!IPathing.NodeChecks(current,startNode,endPoint, location)) continue;
                 
-                if (IPathing.Base.PathToEndPoint.Contains(current)) return IPathing.Base.PathToEndPoint; // this is here as cant return in NodeChecks
+                if (IPathing.Base.PathToEndPoint.Contains(current) && current.VectorLocation == endPoint.VectorLocation) return IPathing.Base.PathToEndPoint;
                 
                 IPathing.Base.ClosedList.Add(current);
 
                 foreach (var next in IPathing.Graph.Neighbours(current).Where(node => !IPathing.Base.ClosedList.Contains(node)))
                 {
-                    int priority = PathNode.ManhattanHeuristic(new Vector2(next.X, next.Y),endPoint.VectorLocation);
+                    int priority = PathNode.ManhattanHeuristic(next.VectorLocation.ToVector2(),endPoint.VectorLocation.ToVector2());
                     Logger.Info($"heuristic: {priority}");
                     IPathing.PriorityFrontier.Enqueue(next,priority);
+                    IPathing.Base.PathToEndPoint.Push(next);
                 }
 
                 increase++;

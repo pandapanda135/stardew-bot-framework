@@ -11,7 +11,7 @@ public class PathNode : IComparable<PathNode>
 
     public readonly int Y;
 
-    public Vector2 VectorLocation => new(X, Y);
+    public Point VectorLocation => new(X, Y);
 
     public PathNode? Parent;
 
@@ -22,7 +22,15 @@ public class PathNode : IComparable<PathNode>
         X = x;
         Y = y;
         Parent = parent;
-        Cost = 1;
+        Cost = 1; // cost == -1 ? Random.Shared.Next(0, 6) : cost
+    }
+
+    public PathNode(Point vector, PathNode? parent, int cost = -1)
+    {
+        X = vector.X;
+        Y = vector.Y;
+        Parent = parent;
+        Cost = 1; // cost == -1 ? Random.Shared.Next(0, 6) : cost
     }
     
     /// <summary>

@@ -84,7 +84,7 @@ public class Main : Mod
         
         StackPoint = _breadthpathing.FindPath(startPoint, endPoint, Game1.player.currentLocation, Game1.player, 10000);
 
-        CorrectPath = _breadthpathing.RebuildPath(new PathNode(startPoint.X,startPoint.Y,null),new PathNode(endPoint.X,endPoint.Y,null), StackPoint);
+        CorrectPath = _breadthpathing.RebuildPath(startPoint,endPoint, StackPoint);
     }
     
     
@@ -108,7 +108,7 @@ public class Main : Mod
 
         Logger.Info($"StackPoint length: {StackPoint.Count}");
         
-        CorrectPath = _breadthpathing.RebuildMultiplePaths(new PathNode(startPoint.X,startPoint.Y,null),endNodes, StackPoint);
+        CorrectPath = _breadthpathing.RebuildMultiplePaths(startPoint,endNodes, StackPoint);
         
         Logger.Info($"CorrectPath length: {CorrectPath.Count}");
     }
@@ -123,7 +123,7 @@ public class Main : Mod
         
         StackPoint = _uniformpathing.FindPath(startPoint, endPoint, Game1.player.currentLocation, Game1.player, 10000);
 
-        CorrectPath = _uniformpathing.RebuildPath(new PathNode(startPoint.X,startPoint.Y,null),new PathNode(endPoint.X,endPoint.Y,null), StackPoint);
+        CorrectPath = _uniformpathing.RebuildPath(startPoint,endPoint, StackPoint);
     }
     
     private static void GreedyBestFirstKeyBind(Vector2 cursorPoint)
@@ -133,12 +133,10 @@ public class Main : Mod
         
         startPoint = new PathNode((int)Game1.player.TilePoint.X, (int)Game1.player.TilePoint.Y,null);
         endPoint = new PathNode((int)cursorPoint.X,(int)cursorPoint.Y,null);
-
-        CharacterController characterController = new CharacterController();
         
         StackPoint = _greedypathing.FindPath(startPoint, endPoint, Game1.player.currentLocation, Game1.player, 10000);
 
-        CorrectPath = _greedypathing.RebuildPath(new PathNode(startPoint.X,startPoint.Y,null),new PathNode(endPoint.X,endPoint.Y,null), StackPoint);
+        CorrectPath = _greedypathing.RebuildPath(startPoint,endPoint, StackPoint);
         
         CharacterController.StartMoveCharacter(CorrectPath,Game1.player,Game1.player.currentLocation,Game1.currentGameTime);
     }
@@ -153,6 +151,6 @@ public class Main : Mod
         
         StackPoint = _aStarpathing.FindPath(startPoint, endPoint, Game1.player.currentLocation, Game1.player, 10000);
 
-        CorrectPath = _aStarpathing.RebuildPath(new PathNode(startPoint.X,startPoint.Y,null),new PathNode(endPoint.X,endPoint.Y,null), StackPoint);
+        CorrectPath = _aStarpathing.RebuildPath(startPoint,endPoint, StackPoint);
     }
 }

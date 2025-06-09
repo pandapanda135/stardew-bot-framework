@@ -47,7 +47,7 @@ public class AStarPathfinding : AlgorithmBase
                     if (!IPathing.PriorityFrontier.Contains(next) || newCost < next.Cost)
                     {
                         next.Cost = newCost;
-                        int priority = newCost + PathNode.ManhattanHeuristic(new Vector2(next.X, next.Y),endPoint.VectorLocation);
+                        int priority = newCost + PathNode.ManhattanHeuristic(new Vector2(next.X, next.Y),endPoint.VectorLocation.ToVector2());
                         Logger.Info($"A Star estimated heuristic {priority}");
                         IPathing.PriorityFrontier.Enqueue(next, priority);
                         IPathing.Base.PathToEndPoint.Push(next);

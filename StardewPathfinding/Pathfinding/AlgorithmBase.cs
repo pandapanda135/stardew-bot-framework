@@ -1,9 +1,7 @@
-using Microsoft.Xna.Framework;
 using StardewPathfinding.Debug;
 using StardewPathfinding.Graphs;
+using StardewPathfinding.Pathfinding.Queues;
 using StardewValley;
-using StardewValley.Quests;
-using xTile.Tiles;
 
 namespace StardewPathfinding.Pathfinding;
 

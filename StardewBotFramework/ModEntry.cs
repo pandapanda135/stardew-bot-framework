@@ -4,6 +4,7 @@ using StardewBotFramework.Debug;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewPathfinding.Pathfinding;
+using StardewPathfinding.Pathfinding.AStar;
 using StardewPathfinding.Pathfinding.BreadthFirst;
 using StardewPathfinding.Pathfinding.GreedyBest;
 using StardewValley;
@@ -14,12 +15,15 @@ namespace StardewBotFramework;
 
 public class Main : Mod
 {
+    public static Stack<PathNode> PathNodes = new();
+    
     public override void Entry(IModHelper helper)
     {
         Logger.SetMonitor(Monitor);
 
         helper.Events.Input.ButtonPressed += ButtonPressed;
         helper.Events.GameLoop.UpdateTicking += CharacterController.Update;
+        helper.Events.Display.Rendered += DrawFoundTiles.OnRenderTiles;
     }
 
     public void ButtonPressed(object? sender, ButtonPressedEventArgs e)
@@ -38,17 +42,24 @@ public class Main : Mod
             Vector2 testPosition = Game1.currentCursorTile;
 
             AlgorithmBase.IPathing algorithmBase = new GreedyBestFirstSearch.Pathing();
-            Stack<PathNode> goals = new Stack<PathNode>();
-            Queue<IBot.Actions> actionsQueue = new Queue<IBot.Actions>();
+            Stack<PathNode> goals = new();
+            Queue<IBot.Actions> actionsQueue = new();
             
-            goals.Push(new PathNode((int)testPosition.X, (int)testPosition.Y, null));
+            goals.Push(new PathNode(testPosition.ToPoint(), null));
             actionsQueue.Enqueue(IBot.Actions.Movement);
-            
+
             PathfindingBot testBot = new PathfindingBot(algorithmBase,goals);
+
+            testBot.OnBotFinished += PathfindingFinished;
             
             testBot.SpecifyLocations(Game1.currentLocation,Game1.player,actionsQueue);
         }
     }
 
     // temp for testing
+    
+    private static void PathfindingFinished()
+    {
+        Logger.Info($"Pathfinding event invoked");
+    }
 }

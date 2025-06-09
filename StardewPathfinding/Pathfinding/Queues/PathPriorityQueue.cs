@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using StardewPathfinding.Debug;
 
-namespace StardewPathfinding.Pathfinding;
+namespace StardewPathfinding.Pathfinding.Queues;
 
 public class PathPriorityQueue : PriorityQueue<PathNode,int>
 {

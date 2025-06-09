@@ -7,6 +7,9 @@ namespace StardewPathfinding.Pathfinding;
 
 public class CharacterController
 {
+	public delegate void OnPathfindingFinished();
+	public static event OnPathfindingFinished OnGoalReached;
+	
 	private static bool _movingCharacter = false;
 
 	private static Stack<PathNode> _endPath = new();
@@ -23,7 +26,7 @@ public class CharacterController
 		// {
 		// 	_movingCharacter = false;
 		// }
-		
+
 		if (_endPath.Count < 1) _movingCharacter = false;
 		
 		if (!_movingCharacter) return;
@@ -59,6 +62,7 @@ public class CharacterController
 			_character.stopWithoutChangingFrame();
 			if (_endPath.Count == 0)
 			{
+				OnGoalReached.Invoke();
 				_character.Halt();
 			}
 
@@ -91,5 +95,5 @@ public class CharacterController
 		_character.MovePosition(time, Game1.viewport, _currentLocation);
 	}
 
-	public static bool IsMoving() => _movingCharacter;
+	private static bool IsMoving() => _movingCharacter;
 }

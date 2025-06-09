@@ -6,8 +6,9 @@ using StardewValley;
 
 namespace StardewBotFramework;
 
-public class PathfindingBot : IBot
+class PathfindingBot : IBot
 {
+    public event IBot.BotFinishedEventHandler? OnBotFinished;
     public AlgorithmBase.IPathing PathfindingAlgorithm { get; set; }
     public Stack<PathNode> Goals { get; set; }
     
@@ -20,19 +21,17 @@ public class PathfindingBot : IBot
     public void SpecifyLocations(GameLocation location, Character character,
         Queue<IBot.Actions> actions)
     {
-        PathNode currentTile = new PathNode(Game1.player.TilePoint.X, Game1.player.TilePoint.X, null);
-
+        PathNode currentTile = new PathNode(Game1.player.TilePoint, null);
+        
         if (Goals.Count == 1 && actions.Count == 1)
         {
-            var path = GetSingleGoal(currentTile, location, character, actions.Dequeue()); 
+            var path = GetSingleGoal(currentTile, location, character, actions.Dequeue());
             if (path.Count > 0)
             {
-                foreach (var node in path)
-                {
-                    Logger.Info($"node X: {node.X}  node Y: {node.Y}");
-                }
                 Logger.Info($"Successfully got through single goal");
                 CharacterController.StartMoveCharacter(path,Game1.player,Game1.player.currentLocation,Game1.currentGameTime);
+                Main.PathNodes = path;
+                if (OnBotFinished != null) OnBotFinished.Invoke();
                 return;
             }
             
