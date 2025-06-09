@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework;
 using StardewPathfinding.Debug;
 using StardewPathfinding.Graphs;
 using StardewValley;
+using StardewValley.Quests;
 using xTile.Tiles;
 
 namespace StardewPathfinding.Pathfinding;
@@ -12,11 +13,11 @@ public class AlgorithmBase
 
     public Stack<PathNode> PathToEndPoint = new();
 
-    public List<Stack<PathNode>> MultipleEndPaths = new();
+    public Stack<PathNode> MultipleEndPaths = new();
 
     public GameLocation? CurrentLocation;
 
-    public List<PathNode>? EndPoints;
+    public List<PathNode>? Goals;
 
     // will be used to see if destroying stuff like trees is allowed in pathfinding
     public bool AllowDestruction;
@@ -26,11 +27,11 @@ public class AlgorithmBase
     /// </summary>
     public HashSet<PathNode> ClosedList = new HashSet<PathNode>();
 
-    public AlgorithmBase(Character character,GameLocation currentLocation,List<PathNode> endPoints)
+    public AlgorithmBase(Character character,GameLocation currentLocation,List<PathNode> goals)
     {
         Character = character;
         CurrentLocation = currentLocation;
-        EndPoints = endPoints;
+        Goals = goals;
     }
 
     public AlgorithmBase()
@@ -47,6 +48,8 @@ public class AlgorithmBase
 
         protected static PathPriorityQueue PriorityFrontier = new();
         
+        protected static Stack<PathNode> TemporaryStack = new();
+        
         protected static readonly AlgorithmBase Base = new();
 
         protected static readonly Graph Graph = new();
@@ -54,7 +57,7 @@ public class AlgorithmBase
         public Stack<PathNode> FindPath(PathNode startPoint, PathNode endPoint, GameLocation location,
             Character character, int limit);
 
-        public List<Stack<PathNode>> FindMultipleGoals(PathNode startNode, List<PathNode> goals, GameLocation location,
+        public Stack<PathNode> FindMultipleGoals(PathNode startNode, List<PathNode> goals, GameLocation location,
             Character character, int limit);
         
         public Stack<PathNode> RebuildPath(PathNode startPoint, PathNode endPoint, Stack<PathNode> path)
@@ -64,11 +67,11 @@ public class AlgorithmBase
                 Logger.Info("Ending Rebuild path early");
                 return new Stack<PathNode>();
             }
-             
+
             PathNode current = path.Pop();
 
             Stack<PathNode> correctPath = new();
-             
+
             while (current != startPoint)
             {
                 correctPath.Push(current);
@@ -77,13 +80,43 @@ public class AlgorithmBase
                     current = current.Parent!;
                     continue;
                 }
-                 
+                
                 break;
             }
 
             return correctPath;
         }
 
+        public Stack<PathNode> RebuildMultiplePaths(PathNode startPoint, List<PathNode> goals, Stack<PathNode> path)
+        {
+            Stack<PathNode> correctPath = new();
+
+            foreach (var goal in goals)
+            {
+                // if (!path.TryPeek(out var endPointPath) || endPointPath.VectorLocation != goal.VectorLocation)
+                // {
+                //     Logger.Info($"Ending Rebuild path early due to {endPointPath.VectorLocation} , {endPointPath.Parent}");
+                //     return new Stack<PathNode>();
+                // }
+
+                PathNode current = path.Pop();
+                
+                while (current != startPoint)
+                {
+                    correctPath.Push(current);
+                    if (current.Parent is not null)
+                    {
+                        current = current.Parent!;
+                        continue;
+                    }
+                
+                    break;
+                }
+            }
+            
+            return correctPath;
+        }
+        
         public static bool NodeChecks(PathNode currentNode, PathNode startNode, PathNode endPoint,
             GameLocation location)
         {
@@ -114,23 +147,40 @@ public class AlgorithmBase
             }
             
             if (alreadyExists) return false;
-                
+
             return true;
         }
 
-        public static bool MultipleEndNodeChecks(PathNode currentNode, PathNode startNode, List<PathNode> endNodes,
+        public static bool MultipleEndNodeChecks(PathNode currentNode, PathNode startNode,
             GameLocation location)
         {
-            for (int i = 0; i >= endNodes.Count; i++)
+            foreach (var endNode in Base.Goals!)
             {
-                if (endNodes[i].VectorLocation == currentNode.VectorLocation)
+                if (Graph.CheckIfEnd(currentNode,endNode))
                 {
-                    endNodes.RemoveAt(i);
+                    Base.MultipleEndPaths.Push(currentNode);
+                    Base.Goals.Remove(endNode);
                     return true;
                 }
             }
+
+            if (currentNode.X > location.Map.DisplayWidth / Game1.tileSize - 1 || currentNode.Y > Game1.currentLocation.Map.DisplayHeight / Game1.tileSize - 1 || currentNode.X < 0 || currentNode.Y < 0)
+            {
+                Logger.Info($"Blocking this tile: {currentNode.X},{currentNode.Y}     display width {location.Map.DisplayWidth}   display height {location.Map.DisplayHeight}");
+                return false;
+            }
             
-            return false;
+            bool alreadyExists = false;
+            // next loop if current is already in ClosedList
+            foreach (PathNode node in Base.ClosedList)
+            {
+                if (currentNode.X == node.X && currentNode.Y == node.Y && startNode != node) alreadyExists = true;
+                if (alreadyExists) break;
+            }
+            
+            if (alreadyExists) return false;
+            
+            return true;
         }
         
         public static void EndDebugging()

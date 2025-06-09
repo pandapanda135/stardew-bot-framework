@@ -63,6 +63,11 @@ public class AStarPathfinding : AlgorithmBase
             return IPathing.Base.PathToEndPoint;
         }
 
+        public Stack<PathNode> FindMultipleGoals(PathNode startNode, List<PathNode> goals, GameLocation location, Character character, int limit)
+        {
+            throw new NotImplementedException();
+        }
+
         private void ClearVariables()
         {
             IPathing.PriorityFrontier = new();

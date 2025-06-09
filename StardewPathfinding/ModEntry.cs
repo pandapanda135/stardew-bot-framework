@@ -35,6 +35,12 @@ public class Main : Mod
 
             BreathFirstSearchKeybind(Game1.currentCursorTile);
         }
+        if (e.Button == SButton.Y)
+        {
+            Logger.Info("User has Pressed button to start");
+
+            MultipleBreathFirstSearchKeybind(Game1.currentCursorTile);
+        }
         else if (e.Button == SButton.J)
         {
             Logger.Info("User has Pressed button to start Uniform");
@@ -62,41 +68,67 @@ public class Main : Mod
     private static AlgorithmBase.IPathing _aStarpathing = new AStarPathfinding.Pathing();
 
 
-    public static Stack<PathNode> _stackPoint = new Stack<PathNode>();
+    public static Stack<PathNode> StackPoint = new Stack<PathNode>();
     public static Stack<PathNode> CorrectPath = new Stack<PathNode>();
-
+    
     private static PathNode startPoint;
     private static PathNode endPoint;
     
     private static void BreathFirstSearchKeybind(Vector2 cursorPoint)
     {
-        _stackPoint.Clear();
+        StackPoint.Clear();
         CorrectPath.Clear();
         
         startPoint = new PathNode((int)Game1.player.TilePoint.X, (int)Game1.player.TilePoint.Y,null);
         endPoint = new PathNode((int)cursorPoint.X,(int)cursorPoint.Y,null);
         
-        _stackPoint = _breadthpathing.FindPath(startPoint, endPoint, Game1.player.currentLocation, Game1.player, 10000);
+        StackPoint = _breadthpathing.FindPath(startPoint, endPoint, Game1.player.currentLocation, Game1.player, 10000);
 
-        CorrectPath = _breadthpathing.RebuildPath(new PathNode(startPoint.X,startPoint.Y,null),new PathNode(endPoint.X,endPoint.Y,null), _stackPoint);
+        CorrectPath = _breadthpathing.RebuildPath(new PathNode(startPoint.X,startPoint.Y,null),new PathNode(endPoint.X,endPoint.Y,null), StackPoint);
+    }
+    
+    
+    private static void MultipleBreathFirstSearchKeybind(Vector2 cursorPoint)
+    {
+        StackPoint.Clear();
+        CorrectPath.Clear();
+        
+        startPoint = new PathNode((int)Game1.player.TilePoint.X, (int)Game1.player.TilePoint.Y,null);
+        endPoint = new PathNode((int)cursorPoint.X,(int)cursorPoint.Y,null);
+
+        Point currentpos = Game1.player.TilePoint;
+
+        List<PathNode> endNodes = new List<PathNode>()
+        {
+            new PathNode(currentpos.X - 5, currentpos.Y + 5, null),
+            new PathNode(currentpos.X + 5, currentpos.Y - 5, null)
+        };
+        
+        StackPoint = _breadthpathing.FindMultipleGoals(startPoint, endNodes, Game1.player.currentLocation, Game1.player, 10000);
+
+        Logger.Info($"StackPoint length: {StackPoint.Count}");
+        
+        CorrectPath = _breadthpathing.RebuildMultiplePaths(new PathNode(startPoint.X,startPoint.Y,null),endNodes, StackPoint);
+        
+        Logger.Info($"CorrectPath length: {CorrectPath.Count}");
     }
     
     private static void UniformCostSearchKeybind(Vector2 cursorPoint)
     {
-        _stackPoint.Clear();
+        StackPoint.Clear();
         CorrectPath.Clear();
         
         startPoint = new PathNode((int)Game1.player.TilePoint.X, (int)Game1.player.TilePoint.Y,null);
         endPoint = new PathNode((int)cursorPoint.X,(int)cursorPoint.Y,null);
         
-        _stackPoint = _uniformpathing.FindPath(startPoint, endPoint, Game1.player.currentLocation, Game1.player, 10000);
+        StackPoint = _uniformpathing.FindPath(startPoint, endPoint, Game1.player.currentLocation, Game1.player, 10000);
 
-        CorrectPath = _uniformpathing.RebuildPath(new PathNode(startPoint.X,startPoint.Y,null),new PathNode(endPoint.X,endPoint.Y,null), _stackPoint);
+        CorrectPath = _uniformpathing.RebuildPath(new PathNode(startPoint.X,startPoint.Y,null),new PathNode(endPoint.X,endPoint.Y,null), StackPoint);
     }
     
     private static void GreedyBestFirstKeyBind(Vector2 cursorPoint)
     {
-        _stackPoint.Clear();
+        StackPoint.Clear();
         CorrectPath.Clear();
         
         startPoint = new PathNode((int)Game1.player.TilePoint.X, (int)Game1.player.TilePoint.Y,null);
@@ -104,23 +136,23 @@ public class Main : Mod
 
         CharacterController characterController = new CharacterController();
         
-        _stackPoint = _greedypathing.FindPath(startPoint, endPoint, Game1.player.currentLocation, Game1.player, 10000);
+        StackPoint = _greedypathing.FindPath(startPoint, endPoint, Game1.player.currentLocation, Game1.player, 10000);
 
-        CorrectPath = _greedypathing.RebuildPath(new PathNode(startPoint.X,startPoint.Y,null),new PathNode(endPoint.X,endPoint.Y,null), _stackPoint);
+        CorrectPath = _greedypathing.RebuildPath(new PathNode(startPoint.X,startPoint.Y,null),new PathNode(endPoint.X,endPoint.Y,null), StackPoint);
         
         CharacterController.StartMoveCharacter(CorrectPath,Game1.player,Game1.player.currentLocation,Game1.currentGameTime);
     }
     
     private static void AStarKeyBind(Vector2 cursorPoint)
     {
-        _stackPoint.Clear();
+        StackPoint.Clear();
         CorrectPath.Clear();
         
         startPoint = new PathNode((int)Game1.player.TilePoint.X, (int)Game1.player.TilePoint.Y,null);
         endPoint = new PathNode((int)cursorPoint.X,(int)cursorPoint.Y,null);
         
-        _stackPoint = _aStarpathing.FindPath(startPoint, endPoint, Game1.player.currentLocation, Game1.player, 10000);
+        StackPoint = _aStarpathing.FindPath(startPoint, endPoint, Game1.player.currentLocation, Game1.player, 10000);
 
-        CorrectPath = _aStarpathing.RebuildPath(new PathNode(startPoint.X,startPoint.Y,null),new PathNode(endPoint.X,endPoint.Y,null), _stackPoint);
+        CorrectPath = _aStarpathing.RebuildPath(new PathNode(startPoint.X,startPoint.Y,null),new PathNode(endPoint.X,endPoint.Y,null), StackPoint);
     }
 }
