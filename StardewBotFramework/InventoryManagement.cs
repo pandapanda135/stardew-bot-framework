@@ -1,50 +1,150 @@
-using System.Xml;
+using Netcode;
 using StardewValley;
+using StardewValley.Objects.Trinkets;
 
 namespace StardewBotFramework;
 
 public class InventoryManagement
 {
-    const int ToolBarCount = 12;
+    const int HotBarCount = 12;
+    const int MaxInventorySpace = Farmer.maxInventorySpace;
     public int CurrentItemSlotCount = Game1.player.MaxItems;
 
     private static readonly int[] EquippableSlots = new int[]{37,38,39,40,41,42}; // temporary so I don't forget need to do more digging in how the game handles it though
 
-    #region Methods
-
-        public static void ThrowItem(Item item, int quantity)
+    // Items in Inventory should IList<Item> (presumably 0-35)
+    
+    #region GeneralMethods
+        /// <summary>
+        /// Drop item from local player inventory, will always drop full stack.
+        /// </summary>
+        /// <param name="item"><see cref="Item"/> to be removed.</param>
+        public static void ThrowItem(Item item)
         {
-            
+            Game1.player.dropItem(item);
         }
 
-        public static void ThrowStack(Item item)
+        /// <summary>
+        /// Bin item in local player inventory, will always remove full stack.
+        /// </summary>
+        /// <param name="item"><see cref="Item"/> to be removed.</param>
+        public static void BinItem(Item item)
         {
-            
+            Utility.trashItem(item);
         }
 
-        public static void BinItem(Item item, int quantity) // maybe roll both this and bin stack together?
+        /// <summary>
+        /// Will add item to position in player inventory
+        /// </summary>
+        /// <param name="item">Item to be moved in inventory</param>
+        /// <param name="position">Position to be moved in inventory from 0-35</param>
+        /// <returns>If the item was fully added to the inventory, returns <c>null</c>. If it replaced an item stack previously at that position, returns the replaced item stack. Else returns the input item with its stack reduced to the amount that couldn't be added. If it is not already in inventory will return item param</returns>
+        public static Item MoveItem(Item item, int position) // maybe change this to int of slot not 100% sure on that due to being able to change inventory
         {
+            if (!Game1.player.Items.Contains(item)) return item;
             
+            return Utility.addItemToInventory(item, position, Game1.player.Items, null);
         }
 
-        public static void BinStack(Item item)
+        /// <summary>
+        /// Shift toolbar one step
+        /// </summary>
+        /// <param name="right">if true will shift to the right else left</param>
+        public static void SelectInventoryRowForToolbar(bool right) // row of items should probably be from 0-2 or 1-3 
         {
-            
+            Game1.player.shiftToolbar(right);
         }
 
-        public static void MoveItem(Item item, int column, int row) // maybe change this to int of slot not 100% sure on that due to being able to change inventory
+        /// <summary>
+        /// Change currently selected slot in Toolbar
+        /// </summary>
+        /// <param name="slot">index to be selected from 0-11 else it will return</param>
+        public static void SelectSlot(int slot)
         {
-            
-        }
+            if (slot < 0 || slot > 11)
+            {
+                return;
+            }
 
-        public static void SelectRow(int row) // row of items to be used in gameplay
-        {
-            
+            Game1.player.CurrentToolIndex = slot;
         }
+    #endregion
 
-        public static void SelectSlot(int slot) // slot in inventory to select from 0-9 (if I remember correctly)
+    #region Trinkets
+
+    /// <summary>
+    /// Returns all currently equipped <see cref="Trinket"/> by <see cref="Farmer"/>
+    /// </summary>
+    /// <param name="player">player you want to know the trinkets of</param>
+    /// <returns><see cref="NetList{T,TField}"/> of Trinkets</returns>
+    public static NetList<Trinket, NetRef<Trinket>> GetCurrentEquippedTrinkets(Farmer player)
+    {
+        return player.trinketItems;
+    }
+
+    /// <summary>
+    /// Equip trinket in specified slot, If existing trinket is already in that slot will move it into inventory. If inventory is full will drop old trinket. 
+    /// </summary>
+    /// <param name="newTrinket">Trinket to be equipped</param>
+    /// <param name="slot">slot to be equipped in can get amount of slots with Game1.player.stats.Get("trinketSlots")</param>
+    public static void EquipTrinket(Trinket newTrinket, int slot)
+    {
+        Trinket oldTrinket = Game1.player.trinketItems[slot]; 
+        
+        Game1.player.trinketItems[slot] = newTrinket;
+
+        // if (Game1.player.trinketItems.Count > Game1.player.stats.Get("trinketSlots"))
+
+        if (oldTrinket == null && Game1.player.trinketItems.Count > Game1.player.stats.Get("trinketSlots")) return;
+
+        if (Utility.canItemBeAddedToThisInventoryList(oldTrinket, Game1.player.Items))
+            Game1.player.addItemToInventory(oldTrinket);
+
+        Game1.player.dropItem(oldTrinket);
+    }
+
+    /// <summary>
+    /// Remove existing trinket for player inventory.
+    /// </summary>
+    /// <param name="trinket">trinket to be removed.</param>
+    public static void RemoveTrinket(Trinket trinket)
+    {
+        if (!Game1.player.trinketItems.Contains(trinket)) return;
+
+        int trinketIndex = Game1.player.trinketItems.IndexOf(trinket);
+        
+        Trinket oldTrinket = Game1.player.trinketItems[trinketIndex]; 
+        
+        Game1.player.trinketItems.RemoveAt(trinketIndex);
+
+        if (Utility.canItemBeAddedToThisInventoryList(oldTrinket, Game1.player.Items))
         {
-            
+            Game1.player.addItemToInventory(oldTrinket);
+            return;
         }
+        Game1.player.dropItem(oldTrinket);
+    }
+
+    
+    /// <summary>
+    /// Remove existing trinket for player inventory at specified slot.
+    /// </summary>
+    /// <param name="slot">The slot you want the trinket to be removed from</param>
+    public static void RemoveTrinket(int slot)
+    {
+        if (slot > Game1.player.stats.Get("trinketSlots") || Game1.player.trinketItems[slot] == null) return;
+        
+        Trinket trinket = Game1.player.trinketItems[slot];
+        
+        Game1.player.trinketItems.RemoveAt(slot);
+        
+        if (Utility.canItemBeAddedToThisInventoryList(trinket, Game1.player.Items))
+        {
+            Game1.player.addItemToInventory(trinket);
+            return;
+        }
+        Game1.player.dropItem(trinket);
+    }
+    
     #endregion
 }
