@@ -19,9 +19,13 @@ public class InventoryManagement
         /// Drop item from local player inventory, will always drop full stack.
         /// </summary>
         /// <param name="item"><see cref="Item"/> to be removed.</param>
-        public static void ThrowItem(Item item)
+        /// <returns>true if dropped successfully else return false.</returns>
+        public static bool ThrowItem(Item item)
         {
+            if (!Game1.player.Items.Contains(item)) return false;
+                
             Game1.player.dropItem(item);
+            return true;
         }
 
         /// <summary>
