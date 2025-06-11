@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
+using StardewBotFramework.Source;
 using StardewPathfinding.Pathfinding;
 using StardewPathfinding.Pathfinding.BreadthFirst;
 using StardewValley;

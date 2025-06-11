@@ -11,7 +11,7 @@ using StardewValley;
 using StardewValley.Pathfinding;
 using PathNode = StardewPathfinding.Pathfinding.PathNode;
 
-namespace StardewBotFramework;
+namespace StardewBotFramework.Source;
 
 public class Main : Mod
 {
@@ -33,27 +33,27 @@ public class Main : Mod
             return;
         }
 
-        if (e.Button == SButton.H)
-        {
-            Logger.Info("User has Pressed button to create bot");
-
-            // put creation of bot here (this will be for pathfinding)
-
-            Vector2 testPosition = Game1.currentCursorTile;
-
-            AlgorithmBase.IPathing algorithmBase = new GreedyBestFirstSearch.Pathing();
-            Stack<PathNode> goals = new();
-            Queue<IBot.Actions> actionsQueue = new();
-            
-            goals.Push(new PathNode(testPosition.ToPoint(), null));
-            actionsQueue.Enqueue(IBot.Actions.Movement);
-
-            PathfindingBot testBot = new PathfindingBot(algorithmBase,goals);
-
-            testBot.OnBotFinished += PathfindingFinished;
-            
-            testBot.SpecifyLocations(Game1.currentLocation,Game1.player,actionsQueue);
-        }
+        // if (e.Button == SButton.H)
+        // {
+        //     Logger.Info("User has Pressed button to create bot");
+        //
+        //     // put creation of bot here (this will be for pathfinding)
+        //
+        //     Vector2 testPosition = Game1.currentCursorTile;
+        //
+        //     AlgorithmBase.IPathing algorithmBase = new GreedyBestFirstSearch.Pathing();
+        //     Stack<PathNode> goals = new();
+        //     Queue<IBot.Actions> actionsQueue = new();
+        //     
+        //     goals.Push(new PathNode(testPosition.ToPoint(), null));
+        //     actionsQueue.Enqueue(IBot.Actions.Movement);
+        //
+        //     PathfindingBot testBot = new PathfindingBot(algorithmBase,goals);
+        //
+        //     testBot.OnBotFinished += PathfindingFinished;
+        //     
+        //     testBot.SpecifyLocations(Game1.currentLocation,Game1.player,actionsQueue);
+        // }
     }
 
     // temp for testing

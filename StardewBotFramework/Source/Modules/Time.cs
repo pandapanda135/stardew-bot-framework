@@ -1,3 +1,4 @@
+using StardewBotFramework.Debug;
 using StardewValley;
 using StardewValley.Extensions;
 
@@ -13,8 +14,9 @@ public class Time
     /// <summary>
     /// Returns state of year as a string
     /// </summary>
-    public static string GetStateOfYearString()
+    public string GetStateOfYearString()
     {
+        Logger.Info($"Year: {Game1.year} Season: {Game1.season} Day: {Game1.dayOfMonth}");
         return $"Year: {Game1.year} Season: {Game1.season} Day: {Game1.dayOfMonth}";
     }
 
@@ -25,7 +27,7 @@ public class Time
     /// Int array in format: Year,Season,Day of month. Season will be represented as:
     /// Spring,Summer,Fall,Winter from 0-3
     /// </returns>
-    public static int[] GetStateOfYear()
+    public int[] GetStateOfYear()
     {
         return new [] { Game1.year, (int)Game1.season, Game1.dayOfMonth };
     }
@@ -35,7 +37,7 @@ public class Time
     /// </summary>
     /// <returns>will return an int of time, check the wiki for how to use it.
     /// https://stardewvalleywiki.com/Modding:Modder_Guide/Game_Fundamentals#Time_format</returns>
-    public static string GetTimeString()
+    public string GetTimeString()
     {
         return Game1.getTimeOfDayString(Game1.timeOfDay);
     }
@@ -45,7 +47,7 @@ public class Time
     /// </summary>
     /// <returns>will return an int of time, check the wiki for how to use it.
     /// https://stardewvalleywiki.com/Modding:Modder_Guide/Game_Fundamentals#Time_format</returns>
-    public static int GetTime()
+    public int GetTime()
     {
         return Game1.timeOfDay;
     }
@@ -54,7 +56,7 @@ public class Time
     /// If is currently past midnight
     /// </summary>
     /// <returns>True if GetTime is less than 2000 (midnight) else false</returns>
-    public static bool IsDay()
+    public bool IsDay()
     {
         if (GetTime() >= 2000) return false;
 

@@ -1,4 +1,5 @@
 using StardewBotFramework.Debug;
+using StardewBotFramework.Source.Modules;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -14,6 +15,9 @@ public class StardewClient
     #region Modules
 
     public InventoryManagement Inventory { get; }
+    public Time Time { get; }
+    public Player Player { get; }
+    public Chat Chat { get; }
 
     #endregion
 
@@ -26,6 +30,9 @@ public class StardewClient
         Logger.SetMonitor(_monitor); // this is here because I prefer it :)
         
         Inventory = new InventoryManagement();
+        Time = new Time();
+        Player = new Player();
+        Chat = new Chat();
 
         _helper.Events.GameLoop.GameLaunched += OnGameLaunch;
     }
@@ -41,7 +48,7 @@ public class StardewClient
     internal IMonitor Monitor => _monitor;
     internal IMultiplayerHelper Multiplayer => _multiplayer;
 
-    public Farmer Player => Game1.player;
-    public GameLocation CurrentLocation => Game1.currentLocation;
+    public static Farmer Farmer => Game1.player;
+    public static GameLocation CurrentLocation => Game1.currentLocation;
 
 }
