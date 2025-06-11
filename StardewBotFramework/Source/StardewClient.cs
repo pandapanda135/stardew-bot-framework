@@ -35,7 +35,7 @@ public class StardewClient
         Logger.Log($"Game launched setting up bot");
     }
     
-    // this will be used to make it
+    // internal stuff
     
     internal IModHelper Helper => _helper;
     internal IMonitor Monitor => _monitor;

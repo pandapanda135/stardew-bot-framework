@@ -1,5 +1,3 @@
-using StardewValley;
-
 namespace StardewBotFramework.Source.Modules;
 
 public delegate EventHandler OnItemCollected();
