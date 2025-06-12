@@ -44,5 +44,9 @@ internal sealed class ModEntry : Mod
             _bot.Chat.SendPublicMessage("happy");
             // _bot.Chat.UseEmote("heart");
         }
+        // else if (e.Button == SButton.K)
+        // {
+        //     _bot.Chat.ChangeColour("red");
+        // }
     }
 }
