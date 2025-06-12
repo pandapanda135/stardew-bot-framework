@@ -1,3 +1,4 @@
+using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
 using StardewValley;
 using StardewValley.Menus;
@@ -8,8 +9,6 @@ public class Chat
 {
     private ChatBox _chat = new ChatBox();
     
-    List<string> emoteList = new (){ "happy","sad","heart" };
-    
     /// <summary>
     /// Send chat message to everyone including the current player, This will also work in single-player.
     /// </summary>
@@ -18,22 +17,32 @@ public class Chat
     {
         try
         {
-            _chat.textBoxEnter(message);
+            Game1.chatBox.textBoxEnter(message);
         }
-        catch (Exception e) // issue with parseText idk why
+        catch (Exception e)
         {
-            Logger.Info($"separate other error");
+            Logger.Warning($"separate other error");
             Logger.Error($"{e}");
-            Logger.Error($"issue with {message}");
+            Logger.Error($"issue with {message} from {Game1.player.UniqueMultiplayerID}  using {LocalizedContentManager.CurrentLanguageCode}");
         }
     }
 
-    public void SendPrivateMessage(string message,long playerId)
+    /// <summary>
+    /// Send private message to specific user, This only works in multiplayer. Has not been tested.
+    /// </summary>
+    /// <param name="playerName">This should be the same as you would use if you were inputting the command yourself.</param>
+    /// <param name="message">The message to the player.</param>
+    public void SendPrivateMessage(string playerName,string message)
     {
-        string[] messageArray = { message };
-        ChatCommands.DefaultHandlers.Message(messageArray, _chat); // hasn't been tested if works
+        string formattedMessage = $"/dm {playerName} {message}";
+        
+        Game1.chatBox.textBoxEnter(formattedMessage); // Not tested looks good to me though
     }
 
+    /// <summary>
+    /// Use emote you can access current available emote using Farmer.EMOTES.
+    /// </summary>
+    /// <param name="emote">the name of the emote this should be the same a normal player would use</param>
     public void UseEmote(string emote) // can access emotes with Farmer.EMOTES
     {
         emote = emote.ToLower();
@@ -48,5 +57,23 @@ public class Chat
         {
             Logger.Error($"{emote} is not a valid emote");
         }
+    }
+
+    /// <summary>
+    /// Change colour of chat messages for this player.
+    /// </summary>
+    /// <param name="colour">available colours, you can see available colours here https://stardewvalleywiki.com/Multiplayer#Chat under color-list.</param>
+    /// <returns>Will return false if colour is not available in the game else true.</returns>
+    public bool ChangeColour(string colour)
+    {
+        colour = colour.ToLower();
+        
+        if (ChatMessage.getColorFromName(colour) == Color.White && colour != "white")
+        {
+            return false;
+        }
+        
+        Game1.player.defaultChatColor = colour;
+        return true;
     }
 }
