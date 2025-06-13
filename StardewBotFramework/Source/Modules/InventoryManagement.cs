@@ -3,7 +3,7 @@ using StardewValley;
 using StardewValley.Inventories;
 using StardewValley.Objects.Trinkets;
 
-namespace StardewBotFramework;
+namespace StardewBotFramework.Source.Modules;
 
 public class InventoryManagement
 {

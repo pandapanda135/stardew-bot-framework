@@ -24,7 +24,7 @@ public class Goal
     /// <summary>
     /// Check if node is at end
     /// </summary>
-    /// <param name="node">Node you want to find out if end</param>
+    /// <param name="node">The node you want to now if it is end</param>
     /// <returns>true if end otherwise false </returns>
     public bool IsEnd(PathNode node)
     {

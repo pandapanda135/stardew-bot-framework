@@ -36,15 +36,14 @@ public class PathNode : IComparable<PathNode>
     /// <summary>
     /// Returns if Tile at x and y has collisions
     /// </summary>
-    /// <param name="x"></param>
-    /// <param name="y"></param>
     /// <returns>if true is not passable else Passable </returns>
     public static bool IsNotPassable(int x, int y)
     {
+        // TODO: Issue with crashing due to changing non-concurrent collection without exclusive access.
         return Game1.currentLocation.isCollidingPosition(new Rectangle(x * Game1.tileSize + 1, y * Game1.tileSize + 1, 62, 62), Game1.viewport, isFarmer: true, -1, glider: false, Game1.player);
     }
 
-    public int CompareTo(PathNode? other)
+    public int CompareTo(PathNode? other) // why is this nullable?
     {
         if (other.VectorLocation == VectorLocation && other.Parent == Parent) return 0;
 

@@ -47,14 +47,14 @@ public class AlgorithmBase
 
         protected static readonly Graph Graph = new();
         
-        public Task<Stack<PathNode>> FindPath(PathNode startPoint, PathNode endPoint, GameLocation location,
+        public Task FindPath(PathNode startPoint, Goal goal, GameLocation location,
             Character character, int limit);
 
-        public Stack<PathNode> RebuildPath(PathNode startPoint, PathNode endPoint, Stack<PathNode> path)
+        public static Stack<PathNode> RebuildPath(PathNode startPoint, Goal goal, Stack<PathNode> path)
         {
-            if (!path.TryPeek(out var endPointPath) || endPointPath.VectorLocation != endPoint.VectorLocation)
+            if (!path.TryPeek(out var pathEndPoint) || pathEndPoint.VectorLocation != goal.VectorLocation)
             {
-                Logger.Info("Ending Rebuild path early");
+                Logger.Error($"Ending Rebuild path early end path: {path.Count}   goal: {goal.VectorLocation}");
                 return new Stack<PathNode>();
             }
 
@@ -77,12 +77,12 @@ public class AlgorithmBase
             return correctPath;
         }
         
-        public static bool NodeChecks(PathNode currentNode, PathNode startNode, PathNode endPoint,
+        public static bool NodeChecks(PathNode currentNode, PathNode startNode, Goal goal,
             GameLocation location)
         {
             Logger.Info($"Current tile {currentNode.X},{currentNode.Y}");
             
-            if (Graph.CheckIfEnd(currentNode, endPoint)) // TODO: Change this to goal's IfEnd
+            if (goal.IsEnd(currentNode)) // put GoalReached here (I think)
             {
                 Logger.Info($"Ending using CheckIfEnd function");
                 // _pathfinding.PathToEndPoint.Reverse(); // this is done as otherwise get ugly paths
@@ -99,18 +99,8 @@ public class AlgorithmBase
             }
 
             // check if node == current and node is not start if none return true else false
-            return Equals(Base.ClosedList.Where(node => node.X == currentNode.X && node.Y == currentNode.Y && node != startNode), ImmutableList<PathNode>.Empty);
+            return !Equals(Base.ClosedList.Where(node => node.X == currentNode.X && node.Y == currentNode.Y && node != startNode), ImmutableList<PathNode>.Empty);
         }
-
-        public static void EndDebugging()
-        {
-            if (Base.PathToEndPoint.Count > 0)
-            {
-                foreach (var pathNode in Base.PathToEndPoint)
-                {
-                    Logger.Info($"node in end point path   {pathNode.X}   {pathNode.Y}");
-                }
-            }
-        }
+        
     }
 }

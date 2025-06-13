@@ -2,9 +2,9 @@
 using StardewModdingAPI.Events;
 using StardewBotFramework.Source;
 using StardewBotFramework.Debug;
+using StardewBotFramework.Source.Modules.Pathfinding.Base;
 using StardewValley;
-using StardewValley.Inventories;
-using Object = StardewValley.Object;
+using Point = Microsoft.Xna.Framework.Point;
 
 namespace BotTesting;
 
@@ -27,7 +27,7 @@ internal sealed class ModEntry : Mod
         helper.Events.Input.ButtonPressed += ButtonPressed;
     }
 
-    private void ButtonPressed(object? sender, ButtonPressedEventArgs e)
+    private async void ButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (!Context.IsWorldReady)
         {
@@ -41,12 +41,14 @@ internal sealed class ModEntry : Mod
         }
         else if (e.Button == SButton.J)
         {
+            _bot.Chat.ChangeColour("red");
             _bot.Chat.SendPublicMessage("happy");
-            // _bot.Chat.UseEmote("heart");
+            _bot.Chat.UseEmote("heart");
         }
-        // else if (e.Button == SButton.K)
-        // {
-        //     _bot.Chat.ChangeColour("red");
-        // }
+        else if (e.Button == SButton.K)
+        {
+            Goal end = new Goal.GoalPosition((int)Game1.currentCursorTile.X, (int)Game1.currentCursorTile.Y);
+            await _bot.Pathfinding.Goto(end, false);
+        }
     }
 }

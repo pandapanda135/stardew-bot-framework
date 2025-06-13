@@ -1,5 +1,7 @@
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Modules;
+using StardewBotFramework.Source.Modules.Pathfinding;
+using StardewBotFramework.Source.Modules.Pathfinding.Base;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -18,6 +20,8 @@ public class StardewClient
     public Time Time { get; }
     public Player Player { get; }
     public Chat Chat { get; }
+    public Pathfinder Pathfinding { get; }
+
 
     #endregion
 
@@ -33,8 +37,10 @@ public class StardewClient
         Time = new Time();
         Player = new Player();
         Chat = new Chat();
+        Pathfinding = new Pathfinder();
 
         _helper.Events.GameLoop.GameLaunched += OnGameLaunch;
+        _helper.Events.GameLoop.UpdateTicking += CharacterController.Update;
     }
 
     private void OnGameLaunch(object sender, GameLaunchedEventArgs e)

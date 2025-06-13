@@ -46,7 +46,7 @@ public class CharacterController
 		MoveCharacter(time);
 	}
 	
-	private static async Task MoveCharacter(GameTime time)
+	private static void MoveCharacter(GameTime time)
 	{
 		PathNode node = _endPath.Peek();
 		Rectangle targetTile = new Rectangle(node.X * 64, node.Y * 64, 64, 64);
@@ -59,7 +59,7 @@ public class CharacterController
 			_character.stopWithoutChangingFrame();
 			if (_endPath.Count == 0)
 			{
-				OnGoalReached.Invoke();
+				// OnGoalReached.Invoke();
 				_character.Halt();
 			}
 
