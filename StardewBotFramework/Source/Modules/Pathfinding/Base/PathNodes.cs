@@ -33,20 +33,15 @@ public class PathNode : IComparable<PathNode>
         Cost = 1; // cost == -1 ? Random.Shared.Next(0, 6) : cost
     }
     
-    /// <summary>
-    /// Returns if Tile at x and y has collisions
-    /// </summary>
-    /// <returns>if true is not passable else Passable </returns>
+    [Obsolete("Use IPathing.collisionMap")]
     public static bool IsNotPassable(int x, int y)
     {
-        // TODO: Issue with crashing due to changing non-concurrent collection without exclusive access. Because we run this in an asynchronous method
-        // however error comes from Neighbours in Graph As this is a method in game we cannot change the hashmap to be concurrent
         return Game1.currentLocation.isCollidingPosition(new Rectangle(x * Game1.tileSize + 1, y * Game1.tileSize + 1, 62, 62), Game1.viewport, isFarmer: true, -1, glider: false, Game1.player);
     }
 
     public int CompareTo(PathNode? other)
     {
-        if (other.VectorLocation == VectorLocation && other.Parent == Parent) return 0;
+        if (other.VectorLocation == VectorLocation && other.Parent.Equals(Parent)) return 0;
 
         if (other is not PathNode) return -1;
 

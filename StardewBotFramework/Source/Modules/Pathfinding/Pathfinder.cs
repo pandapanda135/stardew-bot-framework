@@ -18,6 +18,8 @@ public class Pathfinder
     {
         AlgorithmBase.IPathing pathfinder = new BreadthFirstSearch.Pathing();
 
+        pathfinder.BuildCollisionMap(Game1.currentLocation);
+        
         PathNode start = new PathNode(Game1.player.TilePoint.X, Game1.player.TilePoint.Y, null);
         
         await pathfinder.FindPath(start,goal,Game1.currentLocation,Game1.player,100000);

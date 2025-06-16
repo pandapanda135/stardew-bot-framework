@@ -46,6 +46,14 @@ public class BreadthFirstSearch : AlgorithmBase
             IPathing.Frontier.Enqueue(startNode);
             IPathing.Base.ClosedList.Add(startNode);
             Logger.Info("before while starts");
+
+            // check if goal is blocked before pathfinding
+            if (IPathing.collisionMap.IsBlocked(goal.X, goal.Y))
+            {
+                Logger.Info($"goal is not an available tile");
+                return new Stack<PathNode>();
+            }
+            
             while (!IPathing.Frontier.IsEmpty())
             {
                 if (increase > limit)
@@ -54,9 +62,7 @@ public class BreadthFirstSearch : AlgorithmBase
                     break;
                 }
 
-                PathNode
-                    current = IPathing.Frontier
-                        .Dequeue(); // issue with going through same tile multiple times (This might actually be fine according to some stuff I've read I'll keep it here though)
+                PathNode current = IPathing.Frontier.Dequeue(); // issue with going through same tile multiple times (This might actually be fine according to some stuff I've read I'll keep it here though)
 
                 if (!IPathing.NodeChecks(current, startNode, goal, location)) continue;
 
@@ -69,7 +75,7 @@ public class BreadthFirstSearch : AlgorithmBase
                 }
 
                 Queue<PathNode> neighbours = IPathing.Graph.Neighbours(current).Result;
-                foreach (var node in neighbours.Where(node => !IPathing.Base.ClosedList.Contains(node) && !IPathing.BlockedTiles.Contains((node.X,node.Y))))
+                foreach (var node in neighbours.Where(node => !IPathing.Base.ClosedList.Contains(node) && !IPathing.collisionMap.IsBlocked(node.X,node.Y)))
                 {
                     Logger.Info($"in foreach this is node: {node.X},{node.Y}");
                     IPathing.Frontier.Enqueue(node);
