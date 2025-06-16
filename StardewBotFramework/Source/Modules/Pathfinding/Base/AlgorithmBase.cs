@@ -1,6 +1,13 @@
+using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using StardewBotFramework.Debug;
+using StardewModdingAPI;
+using StardewModdingAPI.Events;
 using StardewValley;
+using StardewValley.Menus;
+using xTile.Dimensions;
+using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace StardewBotFramework.Source.Modules.Pathfinding.Base;
 
@@ -42,38 +49,50 @@ public class AlgorithmBase
         protected static PathPriorityQueue PriorityFrontier = new();
         
         protected static Stack<PathNode> TemporaryStack = new();
+
+        public static ConcurrentQueue<CollisionCheck> PendingCollisionChecks = new();
         
         protected static readonly AlgorithmBase Base = new();
 
         protected static readonly Graph Graph = new();
-        
-        public Task FindPath(PathNode startPoint, Goal goal, GameLocation location,
+
+        protected static HashSet<(int x, int y)> BlockedTiles = new();
+
+        public Task<Stack<PathNode>> FindPath(PathNode startPoint, Goal goal, GameLocation location,
             Character character, int limit);
 
         public static Stack<PathNode> RebuildPath(PathNode startPoint, Goal goal, Stack<PathNode> path)
         {
             if (!path.TryPeek(out var pathEndPoint) || pathEndPoint.VectorLocation != goal.VectorLocation)
             {
-                Logger.Error($"Ending Rebuild path early end path: {path.Count}   goal: {goal.VectorLocation}");
+                if (pathEndPoint is null)
+                {
+                    Logger.Error($"Ending Rebuild path early end path: {path.Count} goal: {goal.VectorLocation}");
+                    return new Stack<PathNode>();
+                }
+                Logger.Error($"Ending Rebuild path early end path: {path.Count}  last entry in path: {pathEndPoint.VectorLocation}   goal: {goal.VectorLocation}");
                 return new Stack<PathNode>();
             }
 
             PathNode current = path.Pop();
 
             Stack<PathNode> correctPath = new();
-
-            while (current != startPoint)
+            
+            Logger.Info($"starting while loop in rebuildPath");
+            while (!current.Equals(startPoint))
             {
                 correctPath.Push(current);
                 if (current.Parent is not null)
                 {
+                    Logger.Info($"{current.VectorLocation} checking parent");
                     current = current.Parent!;
                     continue;
                 }
                 
                 break;
             }
-
+            
+            Logger.Info($"Ending RebuildPath");
             return correctPath;
         }
         
@@ -101,6 +120,38 @@ public class AlgorithmBase
             // check if node == current and node is not start if none return true else false
             return !Equals(Base.ClosedList.Where(node => node.X == currentNode.X && node.Y == currentNode.Y && node != startNode), ImmutableList<PathNode>.Empty);
         }
-        
+
+        public static void Update(object? sender, UpdateTickingEventArgs e)
+        {
+            if (!Context.IsWorldReady)
+            {
+                return;
+            }
+            BlockedTiles.Clear();
+            for (int x = 0; x < Game1.currentLocation.Map.DisplayHeight; x++)
+            {
+                for (int y = 0; y < Game1.currentLocation.Map.DisplayHeight; y++)
+                {
+                    Rectangle rect = new Rectangle(x * 64, y * 64, 64, 64);
+                    if (Game1.currentLocation.isCollidingPosition(rect, Game1.viewport, true, 0,
+                            false, Game1.player)) BlockedTiles.Add((x, y));
+                }
+            }
+
+            // while (PendingCollisionChecks.TryDequeue(out CollisionCheck? value))
+            // {
+            //     try
+            //     {
+            //         bool result = value.Location.isCollidingPosition(value.Position,
+            //             value.Viewport, value.IsFarmer, 0, false, value.Character);
+            //         value.CompletionSource.SetResult(result);
+            //     }
+            //     catch (Exception ex)
+            //     {
+            //         Logger.Error(ex.ToString());
+            //         throw;
+            //     }
+            // }
+        }
     }
 }

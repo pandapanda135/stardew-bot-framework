@@ -39,11 +39,12 @@ public class PathNode : IComparable<PathNode>
     /// <returns>if true is not passable else Passable </returns>
     public static bool IsNotPassable(int x, int y)
     {
-        // TODO: Issue with crashing due to changing non-concurrent collection without exclusive access.
+        // TODO: Issue with crashing due to changing non-concurrent collection without exclusive access. Because we run this in an asynchronous method
+        // however error comes from Neighbours in Graph As this is a method in game we cannot change the hashmap to be concurrent
         return Game1.currentLocation.isCollidingPosition(new Rectangle(x * Game1.tileSize + 1, y * Game1.tileSize + 1, 62, 62), Game1.viewport, isFarmer: true, -1, glider: false, Game1.player);
     }
 
-    public int CompareTo(PathNode? other) // why is this nullable?
+    public int CompareTo(PathNode? other)
     {
         if (other.VectorLocation == VectorLocation && other.Parent == Parent) return 0;
 
@@ -52,6 +53,17 @@ public class PathNode : IComparable<PathNode>
         return 1;
     }
 
+    public override bool Equals(object? obj)
+    {
+        if (obj is not PathNode other) return false;
+        return VectorLocation == other.VectorLocation;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(X, Y);
+    }
+    
     public static int ManhattanHeuristic(Vector2 start,Vector2 end)
     {
         Logger.Info($"X:{start.X - end.X}   Y: {start.Y - end.Y}");

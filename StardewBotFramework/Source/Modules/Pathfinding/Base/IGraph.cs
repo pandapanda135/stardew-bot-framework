@@ -21,5 +21,5 @@ public interface IGraph
     /// </summary>
     /// <param name="currentNode">Node you want the neighbours of.</param>
     /// <returns>Queue of Neighbours in order : west,east,south,north  (assuming the Neighbours do not go into an object the player can collide with.) </returns>
-    public Queue<PathNode> Neighbours(PathNode currentNode);
+    public Task<Queue<PathNode>> Neighbours(PathNode currentNode);
 }

@@ -41,6 +41,7 @@ public class StardewClient
 
         _helper.Events.GameLoop.GameLaunched += OnGameLaunch;
         _helper.Events.GameLoop.UpdateTicking += CharacterController.Update;
+        _helper.Events.GameLoop.UpdateTicking += AlgorithmBase.IPathing.Update;
     }
 
     private void OnGameLaunch(object sender, GameLaunchedEventArgs e)
