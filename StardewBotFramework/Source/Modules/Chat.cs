@@ -40,25 +40,25 @@ public class Chat
     }
 
     /// <summary>
-    /// Use emote you can access current available emote using Farmer.EMOTES.
+    /// Use emote you can get see all emotes https://stardewvalleywiki.com/Multiplayer/Emotes.
     /// </summary>
-    /// <param name="emote">the name of the emote this should be the same a normal player would use</param>
-    public void UseEmote(string emote) // can access emotes with Farmer.EMOTES
+    /// <param name="emote">the name of the emote this should be the same a normal player would use. You can see them here</param>
+    public bool UseEmote(string emote) // can access emotes with Farmer.EMOTES
     {
         emote = emote.ToLower();
 
-        string message = "/emote " + emote;
-
-        try
+        foreach (var emoteType in Farmer.EMOTES)
         {
+            if (emoteType.emoteString != emote) continue;
+            
+            string message = "/emote " + emote;
             _chat.textBoxEnter(message);
+            return true;
         }
-        catch (Exception e)
-        {
-            Logger.Error($"{emote} is not a valid emote");
-        }
-    }
 
+        return false;
+    }
+        
     /// <summary>
     /// Change colour of chat messages for this player.
     /// </summary>
@@ -68,12 +68,17 @@ public class Chat
     {
         colour = colour.ToLower();
         
+        // default return from getColor is white.
         if (ChatMessage.getColorFromName(colour) == Color.White && colour != "white")
         {
             return false;
         }
         
-        Game1.player.defaultChatColor = colour;
+        string message = "/color " + colour;
+        _chat.textBoxEnter(message);
+        
+        // Couldn't get changing default player color to work with the method we use for chatting
+        // Game1.player.defaultChatColor = chatColour;
         return true;
     }
 }

@@ -1,0 +1,10 @@
+{
+  "Name": "BotTesting",
+  "Author": "Panda",
+  "Version": "0.0.1",
+  "Description": "This is for testing development of Bot Framework",
+  "UniqueID": "Panda.BotTesting",
+  "EntryDll": "BotTesting.dll",
+  "MinimumApiVersion": "4.0.0",
+  "UpdateKeys": []
+}
