@@ -10,7 +10,7 @@ namespace StardewBotFramework.Source.Modules;
 public class Player
 {
     /// <summary>
-    /// Changes direction the player is facing
+    /// Changes direction the player sprite is facing
     /// </summary>
     /// <param name="direction">Goes 0-3 from North,East,South,West</param>
     public void ChangeFacingDirection(int direction)
@@ -42,9 +42,9 @@ public class Player
         
     }
     
-    public Point BotPixelPosition()
+    public Vector2 BotPixelPosition()
     {
-        return Game1.player.Position.ToPoint();
+        return Game1.player.Position;
     }
 
     public Point BotTilePosition()

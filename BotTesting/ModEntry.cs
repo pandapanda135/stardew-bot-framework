@@ -2,6 +2,7 @@
 using StardewModdingAPI.Events;
 using StardewBotFramework.Source;
 using StardewBotFramework.Debug;
+using StardewBotFramework.Source.Modules;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
 using StardewValley;
 
@@ -24,6 +25,7 @@ internal sealed class ModEntry : Mod
         
         // Monitor.Log($"Start setting events",LogLevel.Debug);
         helper.Events.Input.ButtonPressed += ButtonPressed;
+        helper.ConsoleCommands.Add("chat", $"", ChatCommand);
         helper.ConsoleCommands.Add("colour", "White, red, blue, green, jade, yellowgreen, pink, purple, yellow, orange, brown, gray, cream, salmon, peach, aqua, jungle, plum", ColourCommand);
         helper.ConsoleCommands.Add("emote", $"", EmoteCommand);
         helper.ConsoleCommands.Add("craft", $"", CraftCommand);
@@ -57,6 +59,17 @@ internal sealed class ModEntry : Mod
         }
     }
 
+    private void ChatCommand(string arg, string[] args)
+    {
+        string message = "";
+        foreach (var word in args)
+        {
+            message += word + " ";
+        }
+        
+        _bot.Chat.SendPublicMessage(message);
+    }
+    
     private void ColourCommand(string arg, string[] args)
     {
         if (!_bot.Chat.ChangeColour(args[0]))

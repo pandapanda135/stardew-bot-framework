@@ -7,8 +7,6 @@ namespace StardewBotFramework.Source.Modules;
 
 public class Chat
 {
-    private ChatBox _chat = new ChatBox();
-    
     /// <summary>
     /// Send chat message to everyone including the current player, This will also work in single-player.
     /// </summary>
@@ -52,7 +50,7 @@ public class Chat
             if (emoteType.emoteString != emote) continue;
             
             string message = "/emote " + emote;
-            _chat.textBoxEnter(message);
+            Game1.chatBox.textBoxEnter(message);
             return true;
         }
 
@@ -75,9 +73,9 @@ public class Chat
         }
         
         string message = "/color " + colour;
-        _chat.textBoxEnter(message);
+        Game1.chatBox.textBoxEnter(message);
         
-        // Couldn't get changing default player color to work with the method we use for chatting
+        // Couldn't get changing default player color to work this way
         // Game1.player.defaultChatColor = chatColour;
         return true;
     }
