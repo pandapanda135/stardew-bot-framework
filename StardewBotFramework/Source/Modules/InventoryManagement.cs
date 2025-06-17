@@ -1,7 +1,9 @@
 using Netcode;
 using StardewValley;
 using StardewValley.Inventories;
+using StardewValley.Menus;
 using StardewValley.Objects.Trinkets;
+using Logger = StardewBotFramework.Debug.Logger;
 
 namespace StardewBotFramework.Source.Modules;
 
@@ -32,6 +34,7 @@ public class InventoryManagement
         if (!Game1.player.Items.Contains(item)) return false;
             
         Game1.player.dropItem(item);
+        Game1.player.removeItemFromInventory(item);
         return true;
     }
 
@@ -49,14 +52,32 @@ public class InventoryManagement
     /// </summary>
     /// <param name="item">Item to be moved in inventory</param>
     /// <param name="position">Position to be moved in inventory from 0-35</param>
+    /// <param name="callbackMethod">The callback to invoke when an item is added to the inventory.</param>
     /// <returns>If the item was fully added to the inventory, returns <c>null</c>. If it replaced an item stack previously at that position, returns the replaced item stack. Else returns the input item with its stack reduced to the amount that couldn't be added. If it is not already in inventory will return item param</returns>
-    public Item MoveItem(Item item, int position) // maybe change this to int of slot not 100% sure on that due to being able to change inventory
+    public Item MoveItem(Item item, int position,ItemGrabMenu.behaviorOnItemSelect? callbackMethod = null) // maybe change this to int of slot not 100% sure on that due to being able to change inventory
     {
         if (!Game1.player.Items.Contains(item)) return item;
-        
-        return Utility.addItemToInventory(item, position, Game1.player.Items, null);
+
+        return Utility.addItemToInventory(item, position, Game1.player.Items, callbackMethod);
     }
 
+    /// <summary>
+    /// Will add item to bot's inventory if there is space for it.
+    /// </summary>
+    /// <param name="item">Item to be added to inventory.</param>
+    /// <returns>If item was fully added to inventory will return null. Otherwise, will either return the same item that was given or item with a lowered stack</returns>
+    public Item? AddItemToInventory(Item item)
+    {
+        if (!Game1.player.addItemToInventoryBool(item)) // if true could not add any of the item to the inventory
+        {
+            if (item.Stack == 0)
+                return null;
+            
+            return item;
+        }
+        return item;
+    }
+    
     /// <summary>
     /// Shift toolbar one step
     /// </summary>
@@ -157,5 +178,51 @@ public class InventoryManagement
         Game1.player.dropItem(trinket);
     }
     
+    #endregion
+
+    #region Crafting
+
+    /// <summary>
+    /// Get all unlocked <see cref="CraftingRecipe"/> of this player
+    /// </summary>
+    /// <returns>A List of <see cref="CraftingRecipe"/></returns>
+    public List<CraftingRecipe> PossibleCrafts()
+    {
+        List<CraftingRecipe> unlockedRecipes = new();
+        foreach (SerializableDictionary<string,int> craftingRecipe in Game1.player.craftingRecipes)
+        {
+            foreach (KeyValuePair<string,int> kvp in craftingRecipe) // value of this is how many have been made this is not used though
+            {
+                CraftingRecipe recipe = new CraftingRecipe(kvp.Key); // give name of item
+                if (!unlockedRecipes.Contains(recipe))
+                {
+                    Logger.Info(recipe.name);
+                    unlockedRecipes.Add(recipe);
+                }
+            }
+        }
+        
+        return unlockedRecipes;
+    }
+
+    /// <summary>
+    /// Craft specified item if you have the items
+    /// </summary>
+    /// <param name="item">The item to craft</param>
+    public void CraftItem(CraftingRecipe item)
+    {
+        Item crafted = item.createItem();
+
+        item.consumeIngredients(null);
+        
+        // replicate game
+        Game1.playSound("coin");
+        
+        Logger.Info($"currentItem: {Game1.player.CurrentItem} current tool index: {Game1.player.CurrentToolIndex}");
+        
+        if (Game1.player.CurrentItem == null) MoveItem(crafted, Game1.player.CurrentToolIndex);
+        
+        AddItemToInventory(crafted);
+    }
     #endregion
 }

@@ -34,6 +34,14 @@ public class Player
         return true;
     }
 
+    /// <summary>
+    /// Will use currently held item.
+    /// </summary>
+    public void UseItem()
+    {
+        
+    }
+    
     public Point BotPixelPosition()
     {
         return Game1.player.Position.ToPoint();

@@ -26,6 +26,7 @@ internal sealed class ModEntry : Mod
         helper.Events.Input.ButtonPressed += ButtonPressed;
         helper.ConsoleCommands.Add("colour", "White, red, blue, green, jade, yellowgreen, pink, purple, yellow, orange, brown, gray, cream, salmon, peach, aqua, jungle, plum", ColourCommand);
         helper.ConsoleCommands.Add("emote", $"", EmoteCommand);
+        helper.ConsoleCommands.Add("craft", $"", CraftCommand);
     }
 
     private async void ButtonPressed(object? sender, ButtonPressedEventArgs e)
@@ -50,6 +51,10 @@ internal sealed class ModEntry : Mod
             Goal end = new Goal.GoalPosition((int)Game1.currentCursorTile.X, (int)Game1.currentCursorTile.Y);
             await _bot.Pathfinding.Goto(end, false);
         }
+        else if (e.Button == SButton.U)
+        {
+            _bot.Inventory.PossibleCrafts();
+        }
     }
 
     private void ColourCommand(string arg, string[] args)
@@ -64,7 +69,25 @@ internal sealed class ModEntry : Mod
     {
         if (!_bot.Chat.UseEmote(args[0]))
         {
+            
             Logger.Error($"\"{args[0]}\" is not an available emote");
+        }
+    }
+
+    // this works doesn't update player's sprite though 
+    private void CraftCommand(string arg, string[] args)
+    {
+        args[0] = args[0].ToLower();
+        
+        List<CraftingRecipe> craftingRecipes = _bot.Inventory.PossibleCrafts();
+        
+        foreach (var recipe in craftingRecipes)
+        {
+            if (recipe.name.ToLower() == args[0])
+            {
+                Logger.Info($"making {args[0]}");
+                _bot.Inventory.CraftItem(recipe);
+            }
         }
     }
 }
