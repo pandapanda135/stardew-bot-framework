@@ -13,6 +13,11 @@ public class CollisionMap
     public void AddBlockedTile(int x, int y) => BlockedTiles.Add((x, y));
 
     /// <summary>
+    /// Remove a tile from the list.
+    /// </summary>
+    public void RemoveBlockedTile(int x, int y) => BlockedTiles.Remove((x, y));
+
+    /// <summary>
     /// If the provided tile has collisions
     /// </summary>
     /// <returns>true if it has collisions otherwise false</returns>

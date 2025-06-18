@@ -1,6 +1,5 @@
 using Microsoft.Xna.Framework;
 using StardewValley;
-using StardewValley.Buildings;
 using Object = StardewValley.Object;
 
 namespace StardewBotFramework.Source.Modules;
@@ -36,12 +35,31 @@ public class Player
     }
 
     /// <summary>
-    /// Will use currently held item.
+    /// Will use currently held tool.
     /// </summary>
-    public void UseItem()
+    /// <param name="direction">This acts as a shortcut to <see cref="ChangeFacingDirection"/>. If this is not set or not a valid value the tool will be used in the currently facing direction</param>
+    public void UseTool(int direction = -1)
     {
-        
+        if (direction > 0 && direction < 4) // should account for if user uses a none valid value
+        {
+            ChangeFacingDirection(direction);
+        }
+        Game1.player.BeginUsingTool(); // Object.performToolAction
     }
+
+    /// <summary>
+    /// Try to add item to an object (e.g. input for machine, placed on a table)
+    /// </summary>
+    /// <param name="addObject">Object to add to</param>
+    /// <param name="item">Item to add</param>
+    /// <returns>Usually returns whether the item was accepted by the object.</returns>
+    public bool AddItemToObject(Object addObject,Item item)
+    {
+        return addObject.performObjectDropInAction(item, false, StardewClient.Farmer);
+    }
+    
+    // could use CheckForActionOn{item} in Object.cs for alot of the items
+    // or could just use CheckForAction
     
     public Vector2 BotPixelPosition()
     {

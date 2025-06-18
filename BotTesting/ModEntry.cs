@@ -3,7 +3,6 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewBotFramework.Source;
 using StardewBotFramework.Debug;
-using StardewBotFramework.Source.Modules;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
 using StardewValley;
 using StardewValley.Buildings;
@@ -12,7 +11,7 @@ namespace BotTesting;
 
 internal sealed class ModEntry : Mod
 {
-    private StardewClient _bot;
+    private StardewClient _bot = null!;
     
     public override void Entry(IModHelper helper)
     {
@@ -76,6 +75,25 @@ internal sealed class ModEntry : Mod
                     $"door x: {locationBuilding.tileX.Value + locationBuilding.humanDoor.X}  door Y: {locationBuilding.tileY.Value + locationBuilding.humanDoor.Y}"); // this gets door position
                 // Building.doAction()
             }
+        }
+        else if (e.Button == SButton.Y)
+        {
+            _bot.Player.UseTool();
+        }
+        else if (e.Button == SButton.O)
+        {
+                foreach (var locationObjectDict in Game1.currentLocation.objects)
+                {
+                    foreach (var kvp in locationObjectDict)
+                    {
+                        Logger.Info($"tile: {kvp.Key} object: {kvp.Value.name}");
+                        if (kvp.Key == Game1.currentCursorTile)
+                        {
+                            _bot.Player.AddItemToObject(kvp.Value, Game1.player.CurrentItem);
+                        }
+                    }
+                }
+                
         }
     }
 
