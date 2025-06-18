@@ -1,10 +1,12 @@
-﻿using StardewModdingAPI;
+﻿using Microsoft.Xna.Framework;
+using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewBotFramework.Source;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Modules;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
 using StardewValley;
+using StardewValley.Buildings;
 
 namespace BotTesting;
 
@@ -29,6 +31,7 @@ internal sealed class ModEntry : Mod
         helper.ConsoleCommands.Add("colour", "White, red, blue, green, jade, yellowgreen, pink, purple, yellow, orange, brown, gray, cream, salmon, peach, aqua, jungle, plum", ColourCommand);
         helper.ConsoleCommands.Add("emote", $"", EmoteCommand);
         helper.ConsoleCommands.Add("craft", $"", CraftCommand);
+        helper.ConsoleCommands.Add("building", $"", BuildingCommand);
     }
 
     private async void ButtonPressed(object? sender, ButtonPressedEventArgs e)
@@ -57,6 +60,22 @@ internal sealed class ModEntry : Mod
         else if (e.Button == SButton.U)
         {
             _bot.Inventory.PossibleCrafts();
+        }
+        else if (e.Button == SButton.I)
+        {
+            Logger.Info($"\n IMPORTANT:cursor tile: {Game1.currentCursorTile.X}, {Game1.currentCursorTile.Y}");
+
+            foreach (Building locationBuilding in Game1.currentLocation.buildings)
+            {
+                // can find where door for building are using this
+                Logger.Info(locationBuilding.textureName());
+                Logger.Info($"{locationBuilding.humanDoor.X}, {locationBuilding.humanDoor.Y}");
+                Logger.Info(
+                    $"{locationBuilding.tileX}, {locationBuilding.tileY} \n {locationBuilding.tilesWide}, {locationBuilding.tilesHigh}");
+                Logger.Info(
+                    $"door x: {locationBuilding.tileX.Value + locationBuilding.humanDoor.X}  door Y: {locationBuilding.tileY.Value + locationBuilding.humanDoor.Y}"); // this gets door position
+                // Building.doAction()
+            }
         }
     }
 
@@ -101,6 +120,27 @@ internal sealed class ModEntry : Mod
             {
                 Logger.Info($"making {args[0]}");
                 _bot.Inventory.CraftItem(recipe);
+            }
+        }
+    }
+
+    private void BuildingCommand(string arg, string[] args)
+    {
+        int x = int.Parse(args[0]);
+        int y = int.Parse(args[1]);
+        Vector2 tileVector = new Vector2(x, y);
+
+        foreach (var building in Game1.currentLocation.buildings)
+        {
+            Vector2 buildingDoorVector = new Vector2(building.tileX.Value + building.humanDoor.X,
+                building.tileY.Value + building.humanDoor.Y);
+            if (buildingDoorVector == tileVector)
+            {
+                _bot.Building.DoBuildingAction(building, tileVector);
+                if (building.textureName() == "Buildings\\Coop")
+                {
+                    _bot.Building.UseAnimalDoor(building);
+                }
             }
         }
     }

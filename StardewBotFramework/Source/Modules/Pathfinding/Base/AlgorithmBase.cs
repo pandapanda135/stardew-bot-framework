@@ -47,11 +47,7 @@ public class AlgorithmBase
         protected static PathQueue Frontier = new();
 
         protected static PathPriorityQueue PriorityFrontier = new();
-
-        protected static Stack<PathNode> TemporaryStack = new();
-
-        public static ConcurrentQueue<CollisionMap> PendingCollisionChecks = new();
-
+        
         protected static readonly AlgorithmBase Base = new();
 
         protected static readonly Graph Graph = new();
@@ -96,6 +92,10 @@ public class AlgorithmBase
             return correctPath;
         }
 
+        /// <summary>
+        /// This will do checks to the node to check for conditions these include: if it is at the end, if it is larger than map 
+        /// </summary>
+        /// <returns>will return true for either is end or if it is not in ClosedList yet else will return false for if it is larger than map or if already in ClosedList</returns>
         public static bool NodeChecks(PathNode currentNode, PathNode startNode, Goal goal,
             GameLocation location)
         {
@@ -127,7 +127,7 @@ public class AlgorithmBase
         }
 
         /// <summary>
-        /// Build precomputed collision map this should be run before any type of pathfinding due to the dynamic nature of the world
+        /// Build collision map this should be run before any type of pathfinding due to the dynamic nature of the world.
         /// </summary>
         /// <param name="location">the <see cref="GameLocation"/> you want the collision map of</param>
         /// <param name="maxX">Max X of the current location, you should only use if you are looking for a subset of a location</param>
@@ -139,8 +139,8 @@ public class AlgorithmBase
             int minY = 0)
         {
             // remove one as to not go around map
-            maxX = location.Map.DisplayWidth / Game1.tileSize - 1;
-            maxY = location.Map.DisplayHeight / Game1.tileSize - 1; 
+            maxX = location.Map.DisplayWidth / Game1.tileSize;
+            maxY = location.Map.DisplayHeight / Game1.tileSize; 
 
             Logger.Error($"size of map {maxX},{maxY}");
             var map = new CollisionMap();
@@ -149,11 +149,11 @@ public class AlgorithmBase
             {
                 for (int y = minY; y <= maxY; y++)
                 {
-                    Rectangle rect = new Rectangle(x * 64, y * 64, 64, 64);
+                    Rectangle rect = new Rectangle(x * Game1.tileSize + 1, y * Game1.tileSize + 1, 62, 62);
                     if (!Game1.currentLocation.isCollidingPosition(rect, Game1.viewport, true, 0, false, Game1.player))
                         continue;
                     Logger.Error($"adding {x},{y} to blockedTiles");
-                    map._blockedTiles.Add((x,y));
+                    map.BlockedTiles.Add((x,y));
                 }
             }
 

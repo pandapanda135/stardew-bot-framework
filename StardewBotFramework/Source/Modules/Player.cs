@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using StardewValley;
+using StardewValley.Buildings;
 using Object = StardewValley.Object;
 
 namespace StardewBotFramework.Source.Modules;

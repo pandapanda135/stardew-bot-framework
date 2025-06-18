@@ -65,13 +65,13 @@ public class BreadthFirstSearch : AlgorithmBase
 
                 IPathing.Base.ClosedList.Add(current);
 
-                if (IPathing.Base.PathToEndPoint.Contains(current) && goal.IsEnd(current))
+                if (goal.IsEnd(current))
                 {
                     Logger.Info($"breaking as current is equal to goal");
                     break; // this is here as cant return in NodeChecks. This checks if this is goal
                 }
 
-                Queue<PathNode> neighbours = IPathing.Graph.Neighbours(current).Result;
+                Queue<PathNode> neighbours = IPathing.Graph.Neighbours(current);
                 foreach (var node in neighbours.Where(node => !IPathing.Base.ClosedList.Contains(node) && !IPathing.collisionMap.IsBlocked(node.X,node.Y)))
                 {
                     Logger.Info($"in foreach this is node: {node.X},{node.Y}");
@@ -91,7 +91,6 @@ public class BreadthFirstSearch : AlgorithmBase
     
          private void ClearVariables()
          {
-             IPathing.PendingCollisionChecks.Clear();
              IPathing.Frontier = new();
              IPathing.Base.ClosedList.Clear();
              IPathing.Base.PathToEndPoint.Clear();

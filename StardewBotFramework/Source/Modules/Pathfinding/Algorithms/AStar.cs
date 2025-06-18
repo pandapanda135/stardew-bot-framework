@@ -61,7 +61,7 @@ public class AStar : AlgorithmBase
                 
                 IPathing.Base.ClosedList.Add(current);
                 
-                if (IPathing.Base.PathToEndPoint.Contains(current) && goal.IsEnd(current))
+                if (goal.IsEnd(current))
                 {
                     Logger.Info($"breaking as current is equal to goal");
                     break; // this is here as cant return in NodeChecks. This checks if this is goal
@@ -69,7 +69,7 @@ public class AStar : AlgorithmBase
                 
                 Logger.Info($"this is current: {current}");
                 // Neighbour search
-                Queue<PathNode> neighbours = IPathing.Graph.Neighbours(current).Result;
+                Queue<PathNode> neighbours = IPathing.Graph.Neighbours(current);
                 foreach (var next in neighbours.Where(node => !IPathing.Base.ClosedList.Contains(node) && !IPathing.collisionMap.IsBlocked(node.X,node.Y)))
                 {
                     int newCost = current.Cost + Graph.Cost(current, next);
@@ -93,7 +93,6 @@ public class AStar : AlgorithmBase
         #endregion
         private void ClearVariables()
         {
-            IPathing.PendingCollisionChecks.Clear();
             IPathing.Frontier = new();
             IPathing.Base.ClosedList.Clear();
             IPathing.Base.PathToEndPoint.Clear();

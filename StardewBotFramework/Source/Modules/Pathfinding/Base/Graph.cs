@@ -7,7 +7,7 @@ namespace StardewBotFramework.Source.Modules.Pathfinding.Base;
 
 public class Graph : IGraph
 {
-    public async Task<Queue<PathNode>> Neighbours(PathNode currentNode)
+    public Queue<PathNode> Neighbours(PathNode currentNode)
     {
         Queue<PathNode> nextNodes = new();
         // get tiles in cardinal directions
@@ -30,6 +30,6 @@ public class Graph : IGraph
     /// <returns>the cost between the current node and next as an integer </returns>
     public static int Cost(PathNode current, PathNode next)
     {
-        return next.Cost;
+        return current.Cost - next.Cost;
     }
 }

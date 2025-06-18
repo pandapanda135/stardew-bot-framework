@@ -22,6 +22,8 @@ public class StardewClient
     public Chat Chat { get; }
     public Pathfinder Pathfinding { get; }
 
+    public Buildings Building { get; }
+
 
     #endregion
 
@@ -38,7 +40,8 @@ public class StardewClient
         Player = new Player();
         Chat = new Chat();
         Pathfinding = new Pathfinder();
-
+        Building = new Buildings();
+        
         _helper.Events.GameLoop.GameLaunched += OnGameLaunch;
         _helper.Events.GameLoop.UpdateTicking += CharacterController.Update;
     }

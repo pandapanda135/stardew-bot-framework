@@ -63,9 +63,9 @@ public class Goal
     /// <summary>
     /// A position the bot should stand next to, meant for chests and items like it.
     /// </summary>
-    public class GetToBlock : Goal
+    public class GetToTile : Goal
     {
-        public GetToBlock(int x,int y)
+        public GetToTile(int x,int y)
         {
             X = x;
             Y = y;
