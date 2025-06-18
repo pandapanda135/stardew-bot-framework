@@ -1,23 +1,20 @@
-using System.Collections;
+using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
 using StardewValley;
-using StardewValley.Objects;
 
 namespace StardewBotFramework.Source.Modules.Pathfinding.Algorithms;
 
-public class BreadthFirstSearch : AlgorithmBase
+public class AStar : AlgorithmBase
 {
     public class Pathing : IPathing
     {
-        #region PathFinding
-
-        // make this run asynchronously so we can await it when using bot as don't want running actions when pathfinding or just make character controller async (as don't want moving while dropping items as an example)
+        #region Pathfinding
+        
         async Task<Stack<PathNode>> IPathing.FindPath(PathNode startPoint, Goal goal, GameLocation location,
             Character character, int limit)
         {
-
-            Stack<PathNode> correctPath = await Task.Run(() => RunBreadthFirst(startPoint, goal, location, character, limit));
+            Stack<PathNode> correctPath = await Task.Run(() => RunAStar(startPoint, goal, location, character, limit));
             
             if (correctPath.Count == 0)
             {
@@ -30,20 +27,19 @@ public class BreadthFirstSearch : AlgorithmBase
             return correctPath;
         }
 
-        private Stack<PathNode> RunBreadthFirst(PathNode startPoint, Goal goal, GameLocation location,
+        private Stack<PathNode> RunAStar(PathNode startPoint, Goal goal, GameLocation location,
             Character character,int limit)
         {
-            Logger.Info("started RunBreadthFirst");
             ClearVariables();
-
+            
             PathNode startNode = new PathNode(startPoint.X, startPoint.Y, null);
             
-            IPathing.Frontier = new();
-            IPathing.Frontier.Enqueue(startNode);
+            IPathing.PriorityFrontier = new();
+            IPathing.PriorityFrontier.Enqueue(startNode, 0);
             IPathing.Base.ClosedList.Add(startNode);
             
             int increase = 0;
-            
+
             // check if goal is blocked before pathfinding
             if (IPathing.collisionMap.IsBlocked(goal.X, goal.Y))
             {
@@ -51,7 +47,7 @@ public class BreadthFirstSearch : AlgorithmBase
                 return new Stack<PathNode>();
             }
             
-            while (!IPathing.Frontier.IsEmpty())
+            while (!IPathing.PriorityFrontier.IsEmpty())
             {
                 if (increase > limit)
                 {
@@ -59,42 +55,48 @@ public class BreadthFirstSearch : AlgorithmBase
                     break;
                 }
 
-                PathNode current = IPathing.Frontier.Dequeue(); // issue with going through same tile multiple times (This might actually be fine according to some stuff I've read I'll keep it here though)
+                PathNode current = IPathing.PriorityFrontier.Dequeue();
 
-                if (!IPathing.NodeChecks(current, startNode, goal, location)) continue;
-
+                if (!IPathing.NodeChecks(current,startNode,goal, location)) continue;
+                
                 IPathing.Base.ClosedList.Add(current);
-
+                
                 if (IPathing.Base.PathToEndPoint.Contains(current) && goal.IsEnd(current))
                 {
                     Logger.Info($"breaking as current is equal to goal");
                     break; // this is here as cant return in NodeChecks. This checks if this is goal
                 }
-
+                
+                Logger.Info($"this is current: {current}");
+                // Neighbour search
                 Queue<PathNode> neighbours = IPathing.Graph.Neighbours(current).Result;
-                foreach (var node in neighbours.Where(node => !IPathing.Base.ClosedList.Contains(node) && !IPathing.collisionMap.IsBlocked(node.X,node.Y)))
+                foreach (var next in neighbours.Where(node => !IPathing.Base.ClosedList.Contains(node) && !IPathing.collisionMap.IsBlocked(node.X,node.Y)))
                 {
-                    Logger.Info($"in foreach this is node: {node.X},{node.Y}");
-                    IPathing.Frontier.Enqueue(node);
-                    IPathing.Base.PathToEndPoint.Push(current);
+                    int newCost = current.Cost + Graph.Cost(current, next);
+                    if (!IPathing.PriorityFrontier.Contains(next) || newCost < next.Cost)
+                    {
+                        next.Cost = newCost;
+                        int priority = newCost + PathNode.ManhattanHeuristic(new Vector2(next.X, next.Y),goal.VectorLocation.ToVector2());
+                        Logger.Info($"A Star estimated heuristic {priority}");
+                        IPathing.PriorityFrontier.Enqueue(next, priority);
+                        IPathing.Base.PathToEndPoint.Push(next);
+                    }
                 }
 
                 increase++;
             }
             
-            Logger.Info($"breadth first about to return");
-
+            Logger.Info($"Uniform about to return");
             return IPathing.RebuildPath(startNode, goal, IPathing.Base.PathToEndPoint);
         }
         
-    #endregion
-    
-         private void ClearVariables()
-         {
-             IPathing.PendingCollisionChecks.Clear();
-             IPathing.Frontier = new();
-             IPathing.Base.ClosedList.Clear();
-             IPathing.Base.PathToEndPoint.Clear();
-         }
-     }
+        #endregion
+        private void ClearVariables()
+        {
+            IPathing.PendingCollisionChecks.Clear();
+            IPathing.Frontier = new();
+            IPathing.Base.ClosedList.Clear();
+            IPathing.Base.PathToEndPoint.Clear();
+        }
+    }
 }

@@ -28,7 +28,7 @@ public class CharacterController
 		if (_endPath.Count < 1) _movingCharacter = false;
 		
 		if (!_movingCharacter) return;
-		
+
 		MoveCharacter(_time);
 	}
 
@@ -92,5 +92,5 @@ public class CharacterController
 		_character.MovePosition(time, Game1.viewport, _currentLocation);
 	}
 
-	private static bool IsMoving() => _movingCharacter;
+	public static bool IsMoving() => _movingCharacter;
 }
