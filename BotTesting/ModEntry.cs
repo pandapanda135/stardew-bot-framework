@@ -33,6 +33,8 @@ internal sealed class ModEntry : Mod
         helper.ConsoleCommands.Add("building", $"", BuildingCommand);
     }
 
+    private readonly List<string> _desObjects = new List<string>() { "rock","twig","Rock","Twig","Weeds","weeds" };
+    
     private async void ButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (!Context.IsWorldReady)
@@ -53,7 +55,8 @@ internal sealed class ModEntry : Mod
         else if (e.Button == SButton.K)
         {
             Goal end = new Goal.GoalPosition((int)Game1.currentCursorTile.X, (int)Game1.currentCursorTile.Y);
-            await _bot.Pathfinding.Goto(end, false);
+            _bot.Pathfinding.DestructibleObjects = _desObjects;
+            await _bot.Pathfinding.Goto(end,false, true);
             _bot.Chat.SendPublicMessage("This should send after the bot has path-found :)");
         }
         else if (e.Button == SButton.U)

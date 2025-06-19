@@ -2,6 +2,8 @@ using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
 using StardewValley;
+using StardewValley.Network;
+using Object = StardewValley.Object;
 
 namespace StardewBotFramework.Source.Modules.Pathfinding.Algorithms;
 
@@ -12,9 +14,9 @@ public class AStar : AlgorithmBase
         #region Pathfinding
         
         async Task<Stack<PathNode>> IPathing.FindPath(PathNode startPoint, Goal goal, GameLocation location,
-            Character character, int limit)
+            int limit, bool canDestroy)
         {
-            Stack<PathNode> correctPath = await Task.Run(() => RunAStar(startPoint, goal, location, character, limit));
+            Stack<PathNode> correctPath = await Task.Run(() => RunAStar(startPoint, goal, location, limit,canDestroy)); // this is for it to run on a background thread
             
             if (correctPath.Count == 0)
             {
@@ -27,8 +29,7 @@ public class AStar : AlgorithmBase
             return correctPath;
         }
 
-        private Stack<PathNode> RunAStar(PathNode startPoint, Goal goal, GameLocation location,
-            Character character,int limit)
+        private Stack<PathNode> RunAStar(PathNode startPoint, Goal goal, GameLocation location,int limit, bool canDestroy)
         {
             ClearVariables();
             
@@ -39,7 +40,20 @@ public class AStar : AlgorithmBase
             IPathing.Base.ClosedList.Add(startNode);
             
             int increase = 0;
-
+            
+            OverlaidDictionary locationObjectsDict = location.objects;
+            SerializableDictionary<Vector2, Object> locationObjects = new();
+            if (canDestroy)
+            {
+                foreach (var locationObject in locationObjectsDict)
+                {
+                    foreach (var kvp in locationObject)
+                    {
+                        locationObjects.Add(kvp.Key,kvp.Value);
+                    }
+                }
+            }
+            
             // check if goal is blocked before pathfinding
             if (IPathing.collisionMap.IsBlocked(goal.X, goal.Y))
             {
@@ -70,11 +84,19 @@ public class AStar : AlgorithmBase
                 Logger.Info($"this is current: {current}");
                 // Neighbour search
                 Queue<PathNode> neighbours = IPathing.Graph.Neighbours(current);
-                foreach (var next in neighbours.Where(node => !IPathing.Base.ClosedList.Contains(node) && !IPathing.collisionMap.IsBlocked(node.X,node.Y)))
+                foreach (var next in neighbours.Where(node => !IPathing.Base.ClosedList.Contains(node) && !IPathing.collisionMap.IsBlocked(node.X, node.Y) 
+                    || canDestroy && locationObjects.ContainsKey(node.VectorLocation.ToVector2())))
                 {
                     int newCost = current.Cost + Graph.Cost(current, next);
                     if (!IPathing.PriorityFrontier.Contains(next) || newCost < next.Cost)
                     {
+                        if (canDestroy && IPathing.collisionMap.IsBlocked(next.X,next.Y))
+                        {
+                            Logger.Info($"location object at current node:  {locationObjects[next.VectorLocation.ToVector2()].Name}");
+                            if (IPathing.DestructibleObjects.Contains(locationObjects[next.VectorLocation.ToVector2()].Name)) next.Destroy = true;
+                            Logger.Info($"destructable: {next.Destroy}");
+                        }
+                        
                         next.Cost = newCost;
                         int priority = newCost + PathNode.ManhattanHeuristic(new Vector2(next.X, next.Y),goal.VectorLocation.ToVector2());
                         Logger.Info($"A Star estimated heuristic {priority}");
@@ -89,7 +111,7 @@ public class AStar : AlgorithmBase
             Logger.Info($"Uniform about to return");
             return IPathing.RebuildPath(startNode, goal, IPathing.Base.PathToEndPoint);
         }
-        
+
         #endregion
         private void ClearVariables()
         {

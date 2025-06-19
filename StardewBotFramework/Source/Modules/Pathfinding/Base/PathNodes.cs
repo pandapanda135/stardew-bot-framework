@@ -16,21 +16,25 @@ public class PathNode : IComparable<PathNode>
     public PathNode? Parent;
 
     public int Cost;
+
+    public bool Destroy;
     
-    public PathNode(int x,int y,PathNode? parent,int cost = -1)
+    public PathNode(int x,int y,PathNode? parent,bool destroy = false,int cost = -1)
     {
         X = x;
         Y = y;
         Parent = parent;
         Cost = 1; // cost == -1 ? Random.Shared.Next(0, 6) : cost
+        Destroy = destroy;
     }
 
-    public PathNode(Point vector, PathNode? parent, int cost = -1)
+    public PathNode(Point vector, PathNode? parent,bool destroy = false,int cost = -1)
     {
         X = vector.X;
         Y = vector.Y;
         Parent = parent;
         Cost = 1; // cost == -1 ? Random.Shared.Next(0, 6) : cost
+        Destroy = destroy;
     }
     
     [Obsolete("Use IPathing.collisionMap")]
