@@ -11,13 +11,24 @@ public class CharacterController
 	public static event OnPathfindingFinished OnGoalReached;
 	
 	private static bool _movingCharacter = false;
+	private static bool _isDestroying = false;
 
 	private static Stack<PathNode> _endPath = new();
 	private static Character _character = new();
 	private static GameLocation _currentLocation = new();
 	private static GameTime _time = new();
-	private static PathNode? _next;
+	private static int _nextIndex;
+	private static int _neighbourIndex;
 	private static PathNode _currentNode;
+	private static PathNode _nextNode;
+	
+	private static readonly sbyte[,] Directions = new sbyte[4,2]
+	{
+		{ -1, 0 }, // west
+		{ 1, 0 }, // east
+		{ 0, 1 }, // south
+		{ 0, -1 }, // north
+	};
 	
 	public static void Update(object? sender, UpdateTickingEventArgs e)
 	{
@@ -30,26 +41,6 @@ public class CharacterController
 		if (_endPath.Count < 1) _movingCharacter = false;
 		
 		if (!_movingCharacter) return;
-
-		// foreach (var node in _endPath)
-		// {
-		// 	if (Game1.player.TilePoint == node.VectorLocation)
-		// 	{
-		// 		Logger.Info($"player position and node are same");
-		// 		if (node.Destroy)
-		// 		{
-		// 			Logger.Info($"trying to use tool");
-		// 			Game1.player.BeginUsingTool();
-		// 		}		
-		// 	}
-		// }
-		
-		// if (_endPath.Count > 2)
-		// {
-		// 	_next = _endPath.ToArray()[_endPath.ToArray().Length - 1];
-		// 	Logger.Info($"setting _next   pos: {_next.VectorLocation.ToString()}   destroy: {_next.Destroy}");
-		// }
-					
 		
 		MoveCharacter(_time);
 	}
@@ -64,19 +55,23 @@ public class CharacterController
 		_time = time;
 		
 		if (IsMoving()) return;
-
+		
 		MoveCharacter(time);
 	}
 	
 	private static void MoveCharacter(GameTime time)
 	{
-		PathNode node = _endPath.Peek();
-		PathNode? next = null;
-		if (_endPath.Count > 2)
+		if (Game1.player.UsingTool) return; // check if animation running
+		
+		if (_isDestroying) // check if destroy
 		{
-			next = _endPath.ToArray()[_endPath.ToArray().Length - 1];
+			_isDestroying = false;
+			_endPath.ToArray()[_nextIndex].Destroy = false;
+			_endPath.ToArray()[_neighbourIndex].Destroy = false;
 		}
-
+		
+		Logger.Info($"running MoveCharacter");
+		PathNode node = _endPath.Peek();
 		Rectangle targetTile = new Rectangle(node.X * 64, node.Y * 64, 64, 64);
 		Rectangle bbox = _character.GetBoundingBox();
 
@@ -85,11 +80,6 @@ public class CharacterController
 		{
 			_endPath.Pop();
 			_character.stopWithoutChangingFrame();
-			
-			if (next is not null && next.Destroy)
-			{
-				Game1.player.BeginUsingTool();
-			}
 			
 			if (_endPath.Count == 0)
 			{
@@ -127,39 +117,53 @@ public class CharacterController
 			_character.FacingDirection = 0;
 		}
 		
-		foreach (var nextNode in _endPath)
+		foreach (var pathNode in _endPath)
 		{
-			int index = _endPath.ToList().IndexOf(nextNode);
-			PathNode nextPathNode;
-			try
+			_nextIndex = _endPath.ToList().IndexOf(pathNode);
+			if (_nextIndex < 0)
 			{
-				nextPathNode = _endPath.ToArray()[index - 1];
+				_nextNode = _endPath.ToList()[_nextIndex - 1];
+				_neighbourIndex = _endPath.ToList().IndexOf(_nextNode); // need this to set next PathNode.Destroy to false
 			}
-			catch (Exception e)
+
+			Logger.Info($"running foreach: {pathNode.VectorLocation}  destroy: {pathNode.Destroy}");
+			if (pathNode.Destroy && !_isDestroying)
 			{
-				break;
+				for (int i = 0; i <= 3; i++)
+				{
+					// get cardinal directions
+					int neighborX = pathNode.X + Directions[i, 0];
+					int neighborY = pathNode.Y + Directions[i, 1];
+
+					Logger.Info($"getting cardinal directions: {neighborX}, {neighborY}   player pos: {Game1.player.TilePoint.X}, {Game1.player.TilePoint.Y}");		
+					if (neighborX == Game1.player.TilePoint.X && neighborY == Game1.player.TilePoint.Y) // need to get neighbour 
+					{
+						// this is to fix issues with sudden direction changes in path (should maybe try to make it so the bot goes in the middle of a tile as this is kind of a patch fix)
+						switch (i)
+						{
+							case 0:
+								_character.FacingDirection = 1; // west
+								break;
+							case 1:
+								_character.FacingDirection = 3; // east
+								break;
+							case 2:
+								_character.FacingDirection = 0; // south
+								break;
+							case 3:
+								_character.FacingDirection = 2; // north
+								break;
+						}
+						
+						Logger.Info($"trying to use tool");
+						_isDestroying = true;
+						Game1.player.BeginUsingTool();
+						_character.MovePosition(time, Game1.viewport, _currentLocation);
+						return;
+					}
+				}
 			}
-			// if (_endPath.ToArray()[index - 1]) break;
-			
-			if (nextPathNode.VectorLocation == _currentNode.VectorLocation) break;
-			
-			_currentNode = nextNode;
-			Logger.Info($"player position and node are same");
-			if (nextPathNode.Destroy)
-			{
-				Logger.Info($"trying to use tool");
-				Game1.player.BeginUsingTool();
-			}		
 		}
-		// if (next is not null && Game1.player.TilePoint == next.VectorLocation)
-		// {
-		// 	Logger.Info($"player position and node are same");
-		// 	if (next.Destroy)
-		// 	{
-		// 		Logger.Info($"trying to use tool");
-		// 		Game1.player.BeginUsingTool();
-		// 	}		
-		// }
 		
 		_character.MovePosition(time, Game1.viewport, _currentLocation);
 	}

@@ -33,7 +33,7 @@ internal sealed class ModEntry : Mod
         helper.ConsoleCommands.Add("building", $"", BuildingCommand);
     }
 
-    private readonly List<string> _desObjects = new List<string>() { "rock","twig","Rock","Twig","Weeds","weeds" };
+    private readonly List<string> _desObjects = new List<string>() { "rock","twig","Rock","Twig","Weeds","weeds","Stone" };
     
     private async void ButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
@@ -97,6 +97,10 @@ internal sealed class ModEntry : Mod
                     }
                 }
                 
+        }
+        else if (e.Button == SButton.P)
+        {
+            Logger.Info($"current cursor tile:  {Game1.currentCursorTile}");
         }
     }
 
