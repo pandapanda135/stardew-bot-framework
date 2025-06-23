@@ -10,4 +10,12 @@
       <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.4.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\StardewBotFramework\StardewBotFramework.csproj" />
+    </ItemGroup>
+
+<!--    <ItemGroup>-->
+<!--      <ProjectReference Include="..\StardewBotFramework\StardewBotFramework.csproj" />-->
+<!--    </ItemGroup>-->
+
 </Project>

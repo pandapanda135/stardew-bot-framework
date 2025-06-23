@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StardewBotFramework", "Star
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StardewPathfinding", "StardewPathfinding\StardewPathfinding.csproj", "{65AFA5F1-3689-4AC2-B5B6-39A70A0F3F88}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotTesting", "BotTesting\BotTesting.csproj", "{E3AD3889-EBFA-4DE3-A19F-73B273893255}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -22,5 +24,9 @@ Global
 		{65AFA5F1-3689-4AC2-B5B6-39A70A0F3F88}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{65AFA5F1-3689-4AC2-B5B6-39A70A0F3F88}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{65AFA5F1-3689-4AC2-B5B6-39A70A0F3F88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3AD3889-EBFA-4DE3-A19F-73B273893255}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3AD3889-EBFA-4DE3-A19F-73B273893255}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3AD3889-EBFA-4DE3-A19F-73B273893255}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3AD3889-EBFA-4DE3-A19F-73B273893255}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

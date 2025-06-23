@@ -90,11 +90,10 @@ public class AStar : AlgorithmBase
                     int newCost = current.Cost + Graph.Cost(current, next);
                     if (!IPathing.PriorityFrontier.Contains(next) || newCost < next.Cost)
                     {
+                        // ugly but it works
                         if (canDestroy && IPathing.collisionMap.IsBlocked(next.X,next.Y))
                         {
-                            Logger.Info($"location object at current node:  {locationObjects[next.VectorLocation.ToVector2()].Name}");
                             if (IPathing.DestructibleObjects.Contains(locationObjects[next.VectorLocation.ToVector2()].Name)) next.Destroy = true;
-                            Logger.Info($"destructable: {next.Destroy}");
                         }
                         
                         next.Cost = newCost;
