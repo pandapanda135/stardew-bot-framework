@@ -102,6 +102,32 @@ internal sealed class ModEntry : Mod
         {
             Logger.Info($"current cursor tile:  {Game1.currentCursorTile}");
         }
+        else if (e.Button == SButton.N)
+        {
+            // bool value = _bot.Dialogue.CheckForCharacterAtTile(Game1.currentCursorTile.ToPoint());
+            // Logger.Info($"value: {value}");
+            Dictionary<string,List<string>>? dialogue = _bot.Dialogue.GetAllPossibleDialogue(Game1.currentCursorTile.ToPoint());
+            if (dialogue is null) return;
+            foreach (var kvp in dialogue)
+            {
+                foreach (var listString in kvp.Value)
+                {
+                    Logger.Info($"character name: {kvp.Key} dialogue: {listString}");    
+                }
+            }
+            
+            Dictionary<string,Point>? characters = _bot.Characters.GetCharactersInCurrentLocation(Game1.currentLocation);
+            foreach (var kvp in characters)
+            {
+                Logger.Info($"character name: {kvp.Key} Point: {kvp.Value}");
+            }
+
+            _bot.Dialogue.InteractWithCharacter(Game1.currentCursorTile.ToPoint());
+        }
+        else if (e.Button == SButton.G)
+        {
+            Game1.player.Position = Game1.currentCursorTile * Game1.tileSize;
+        }
     }
 
     private void ChatCommand(string arg, string[] args)
