@@ -23,6 +23,8 @@ public class Characters
                 if (Utility.checkForCharacterInteractionAtTile(new Vector2(x, y), Game1.player))
                 {
                     NPC? character = Game1.GetCharacterWhere<NPC>(npc => npc.TilePoint == new Point(x,y), includeEventActors: false);
+
+                    if (character is null) continue;
                     
                     if (characters.ContainsKey(character.Name))
                     {

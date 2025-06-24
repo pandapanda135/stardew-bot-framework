@@ -16,6 +16,8 @@ internal sealed class ModEntry : Mod
     private StardewClient _bot = null!;
 
     private NPC? Npc;
+
+    private Dialogue _dialogue;
     
     public override void Entry(IModHelper helper)
     {
@@ -35,6 +37,7 @@ internal sealed class ModEntry : Mod
         helper.ConsoleCommands.Add("emote", $"", EmoteCommand);
         helper.ConsoleCommands.Add("craft", $"", CraftCommand);
         helper.ConsoleCommands.Add("building", $"", BuildingCommand);
+        helper.ConsoleCommands.Add("Response", "", ResponseCommand);
     }
 
     private readonly List<string> _desObjects = new List<string>() { "rock","twig","Rock","Twig","Weeds","weeds","Stone" };
@@ -108,7 +111,7 @@ internal sealed class ModEntry : Mod
         {
             Logger.Info($"current cursor tile:  {Game1.currentCursorTile}");
         }
-        else if (e.Button == SButton.N)
+        else if (e.Button == SButton.V)
         {
             // bool value = _bot.Dialogue.CheckForCharacterAtTile(Game1.currentCursorTile.ToPoint());
             // Logger.Info($"value: {value}");
@@ -128,65 +131,53 @@ internal sealed class ModEntry : Mod
                 Logger.Info($"character name: {kvp.Key} Point: {kvp.Value}");
             }
 
-            _bot.Dialogue.InteractWithCharacter(Game1.currentCursorTile.ToPoint());
+            _bot.Dialogue.InteractWithCharacter(Game1.currentCursorTile.ToPoint(),out Stack<Dialogue>? dialogues);
+            // Stack<Dialogue>? dialogues = _bot.Dialogue.GetCharacterDialogue(Game1.currentCursorTile.ToPoint());
+            if (dialogues is null || dialogues.Count == 0)
+            {
+                Logger.Warning($"dialogues is null or empty");
+                return;
+            }
+            foreach (var dia in dialogues)
+            {
+                _bot.Dialogue.CurrentDialogue = dia;
+                List<NPCDialogueResponse>? responses = _bot.Dialogue.PossibleNpcDialogueResponses(dia);
+                Response[]? dialogueResponses = _bot.Dialogue.PossibleResponses(dia);
+                if (responses is null || dialogueResponses is null) return;
+                if (responses.Count != 0)
+                {
+                    NPCDialogueResponse dialogueResponse = new NPCDialogueResponse("asd",123,"asd","ad");
+                    foreach (var response in responses)
+                    {
+                        Logger.Info($"Response Text: {response.responseText}");
+                        dialogueResponse = response;
+                    }
+                    _bot.Dialogue.ChooseResponse(dia,dialogueResponse);
+                }
+            }
         }
         else if (e.Button == SButton.G)
         {
             Game1.player.Position = Game1.currentCursorTile * Game1.tileSize;
         }
-        else if (e.Button == SButton.V)
+        else if (e.Button == SButton.Add)
         {
-            IInventory? inventory = new Inventory();
-            foreach (var locationObjectDict in Game1.currentLocation.objects)
-            {
-                foreach (var kvp in locationObjectDict)
-                {
-                    if (kvp.Value.name == "Chest" && kvp.Key == Game1.currentCursorTile)
-                    {
-                        _currentchest = (Chest)kvp.Value;
-                        
-                        inventory = _bot.Chest.OpenChest((Chest)kvp.Value);
-
-                        if (inventory is null) return;
-                        foreach (var item in inventory)
-                        {
-                            Logger.Info($"Name: {item.Name}  Amount: {item.Stack}");
-                        }
-                        
-                        foreach (var item in inventory)
-                        {
-                            Logger.Info($"item: {item.Name}, Amount: {item.Stack}");
-                            if (item.Name == "Wood")
-                            {
-                                if (!Game1.player.Items.Contains(item))
-                                {
-                                    Logger.Warning($"found item in inventory");
-                                    _bot.Chest.TakeItemFromChest((Chest)kvp.Value,item,Game1.player);    
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
+            _bot.Dialogue.AdvanceDialogBox();
         }
-        else if (e.Button == SButton.F)
+        else if (e.Button == SButton.Subtract)
         {
-            if (_currentchest is null) return;
             
-            foreach (var item in Game1.player.Items)
-            {
-                if (!Game1.player.Items.Contains(item)) continue;
-                Logger.Info($"foreach iteration");
-                Logger.Info($"Item to add: {item.Name}");
-                if (item.Name != "Wood") continue;
-                
-                Logger.Warning($"adding item to chest");
-                _bot.Chest.PutItemInChest(_currentchest,item,Game1.player);
-            }
-            
-            _bot.Chest.CloseChest();
+            // _bot.Dialogue.ChooseResponse(); // get this working
         }
+    }
+    
+    private void ResponseCommand(string arg, string[] args)
+    {
+        List<NPCDialogueResponse>? responses = _bot.Dialogue.PossibleNpcDialogueResponses(_dialogue);
+
+        int intargs = Convert.ToInt32(args[0]);
+            
+        _bot.Dialogue.ChooseResponse(_dialogue,responses[intargs]);
     }
 
     private void ChatCommand(string arg, string[] args)
