@@ -7,6 +7,8 @@ namespace StardewBotFramework.Source.Modules;
 
 public class DialogueManager
 {
+    public Dialogue? CurrentDialogue;
+    
     /// <summary>
     /// Get if there is a <see cref="NPC"/> at a tile
     /// </summary>
@@ -92,13 +94,19 @@ public class DialogueManager
     /// <summary>
     /// Advance current dialog
     /// </summary>
-    /// <param name="dialogueBox">the Dialogue box you want to advance </param>
     /// <param name="x"/>
     /// <param name="y"/>
     /// <param name="playSound"/>
-    public void AdvanceDialogBox(DialogueBox dialogueBox, int x = 0, int y = 0, bool playSound = true)
+    /// <returns>Will return true if Game1.activeClickableMenu if is <see cref="DialogueBox"/> else false</returns>
+    public bool AdvanceDialogBox(int x = 0, int y = 0, bool playSound = true)
     {
-        dialogueBox.receiveLeftClick(x, y, playSound);
+        if (Game1.activeClickableMenu is DialogueBox)
+        {
+            Game1.activeClickableMenu.receiveLeftClick(x, y, playSound);
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>

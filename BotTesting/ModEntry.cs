@@ -6,12 +6,16 @@ using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
 using StardewValley;
 using StardewValley.Buildings;
+using StardewValley.Inventories;
+using StardewValley.Objects;
 
 namespace BotTesting;
 
 internal sealed class ModEntry : Mod
 {
     private StardewClient _bot = null!;
+
+    private NPC? Npc;
     
     public override void Entry(IModHelper helper)
     {
@@ -35,6 +39,8 @@ internal sealed class ModEntry : Mod
 
     private readonly List<string> _desObjects = new List<string>() { "rock","twig","Rock","Twig","Weeds","weeds","Stone" };
     
+    private Chest? _currentchest = null;
+
     private async void ButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (!Context.IsWorldReady)
@@ -127,6 +133,59 @@ internal sealed class ModEntry : Mod
         else if (e.Button == SButton.G)
         {
             Game1.player.Position = Game1.currentCursorTile * Game1.tileSize;
+        }
+        else if (e.Button == SButton.V)
+        {
+            IInventory? inventory = new Inventory();
+            foreach (var locationObjectDict in Game1.currentLocation.objects)
+            {
+                foreach (var kvp in locationObjectDict)
+                {
+                    if (kvp.Value.name == "Chest" && kvp.Key == Game1.currentCursorTile)
+                    {
+                        _currentchest = (Chest)kvp.Value;
+                        
+                        inventory = _bot.Chest.OpenChest((Chest)kvp.Value);
+
+                        if (inventory is null) return;
+                        foreach (var item in inventory)
+                        {
+                            Logger.Info($"Name: {item.Name}  Amount: {item.Stack}");
+                        }
+                        
+                        foreach (var item in inventory)
+                        {
+                            Logger.Info($"item: {item.Name}, Amount: {item.Stack}");
+                            if (item.Name == "Wood")
+                            {
+                                if (!Game1.player.Items.Contains(item))
+                                {
+                                    Logger.Warning($"found item in inventory");
+                                    _bot.Chest.TakeItemFromChest((Chest)kvp.Value,item,Game1.player);    
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+        else if (e.Button == SButton.F)
+        {
+            if (_currentchest is null) return;
+            
+            foreach (var item in Game1.player.Items)
+            {
+                if (!Game1.player.Items.Contains(item)) continue;
+                Logger.Info($"foreach iteration");
+                Logger.Info($"Item to add: {item.Name}");
+                if (item.Name != "Wood") continue;
+                
+                Logger.Warning($"adding item to chest");
+                _bot.Chest.PutItemInChest(_currentchest,item,Game1.player);
+            }
+            
+            _bot.Chest.CloseChest();
         }
     }
 

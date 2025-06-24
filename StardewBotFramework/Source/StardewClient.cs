@@ -25,7 +25,7 @@ public class StardewClient
     public Buildings Building { get; }
     public DialogueManager Dialogue { get; }
     public Characters Characters { get; }
-
+    public ChestModule Chest { get; }
 
     #endregion
 
@@ -45,6 +45,7 @@ public class StardewClient
         Building = new Buildings();
         Dialogue = new DialogueManager();
         Characters = new Characters();
+        Chest = new ChestModule();
         
         _helper.Events.GameLoop.GameLaunched += OnGameLaunch;
         _helper.Events.GameLoop.UpdateTicking += CharacterController.Update;
