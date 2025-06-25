@@ -141,12 +141,12 @@ internal sealed class ModEntry : Mod
             foreach (var dia in dialogues)
             {
                 _bot.Dialogue.CurrentDialogue = dia;
-                List<NPCDialogueResponse>? responses = _bot.Dialogue.PossibleNpcDialogueResponses(dia);
+                Response[]? responses = _bot.Dialogue.PossibleResponses(dia);
                 Response[]? dialogueResponses = _bot.Dialogue.PossibleResponses(dia);
                 if (responses is null || dialogueResponses is null) return;
-                if (responses.Count != 0)
+                if (responses.Length != 0)
                 {
-                    NPCDialogueResponse dialogueResponse = new NPCDialogueResponse("asd",123,"asd","ad");
+                    Response dialogueResponse = new NPCDialogueResponse("asd",123,"asd","ad");
                     foreach (var response in responses)
                     {
                         Logger.Info($"Response Text: {response.responseText}");

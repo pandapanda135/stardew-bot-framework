@@ -14,8 +14,6 @@ public class Characters
         int maxX = location.Map.DisplayWidth / Game1.tileSize;
         int maxY = location.Map.DisplayHeight / Game1.tileSize; 
 
-        Logger.Error($"size of map {maxX},{maxY}");
-
         for (int x = 0; x <= maxX; x++)
         {
             for (int y = 0; y <= maxY; y++)

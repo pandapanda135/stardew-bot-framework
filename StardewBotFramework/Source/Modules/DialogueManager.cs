@@ -41,6 +41,7 @@ public class DialogueManager
 
             foreach (var dialogue in character.CurrentDialogue)
             {
+                Logger.Warning($"Start new list of dialogue from character:");
                 foreach (var dialogueLine in dialogue.dialogues)
                 {
                     Logger.Info($"speaker: {dialogue.speaker.Name}  string: {dialogueLine.Text}"); // prints all the text possible by the speaker at that moment
@@ -150,22 +151,19 @@ public class DialogueManager
     {
         if (Game1.activeClickableMenu is not DialogueBox) return;
 
-        // Keys hotkey = Keys.None;
-        //
-        // foreach (var responses in PossibleResponses(dialogue)!)
-        // {
-        //     Logger.Info($"response keys: {responses.hotkey}");
-        //     if (responses == response)
-        //     {
-        //         Logger.Info($"setting {hotkey} as the hotkey");
-        //         hotkey = responses.hotkey;
-        //     }
-        // }
+        Response[] responses = PossibleResponses(dialogue)!;
+        for (int i = 0; i < responses.Length; i++)
+        {
+            if (responses[i] == response)
+            {
+                Logger.Info($"setting response to: {i}");
+                StardewClient.ChangeSelectedResponse(i);
+                break;
+            }
+        }
         
-        // if (hotkey is Keys.None) return;
-        // Game1.activeClickableMenu.receiveKeyPress(hotkey);
-        Game1.activeClickableMenu.receiveLeftClick(0, 0 , true); //TODO: Find way to change selectedResponse in DialogueBox
-        dialogue.chooseResponse(response); // This will load it however it won't be displayed
+        Game1.activeClickableMenu.receiveLeftClick(0, 0 , true);
+        dialogue.chooseResponse(response);
     }
     
     /// <summary>

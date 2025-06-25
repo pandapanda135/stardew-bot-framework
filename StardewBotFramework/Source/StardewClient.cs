@@ -5,11 +5,14 @@ using StardewBotFramework.Source.Modules.Pathfinding.Base;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
+using StardewValley.Menus;
 
 namespace StardewBotFramework.Source;
 
 public class StardewClient
 {
+    private static StardewClient? Instance { get; set; }
+
     private readonly IModHelper _helper;
     private readonly IMonitor _monitor;
     private readonly IMultiplayerHelper _multiplayer;
@@ -28,9 +31,11 @@ public class StardewClient
     public ChestModule Chest { get; }
 
     #endregion
-
+    
     public StardewClient(IModHelper helper, IMonitor monitor, IMultiplayerHelper multiplayer)
     {
+        Instance = this;
+        
         _helper = helper;
         _monitor = monitor;
         _multiplayer = multiplayer;
@@ -65,4 +70,17 @@ public class StardewClient
     public static Farmer Farmer => Game1.player;
     public static GameLocation CurrentLocation => Game1.currentLocation;
 
+    private static IReflectedField<int>? _selectedResponse;
+    
+    /// <summary>
+    /// Change the selectedResponse value in <see cref="DialogueBox"/>, this will change the "Response" to a question dialogue.
+    /// Must use Game1.ReceiveLeftClick after calling this for it to register.
+    /// </summary>
+    /// <param name="value">This should range from 0-3 as there is a max of four responses. Not 100% sure on that though so there is no check. If this is -1 no option will be picked</param>
+    internal static void ChangeSelectedResponse(int value)
+    {
+        _selectedResponse = Instance!.Helper.Reflection.GetField<int>(Game1.activeClickableMenu, "selectedResponse", true);
+        
+        _selectedResponse.SetValue(value);   
+    }
 }
