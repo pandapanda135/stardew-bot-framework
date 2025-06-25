@@ -38,6 +38,7 @@ internal sealed class ModEntry : Mod
         helper.ConsoleCommands.Add("craft", $"", CraftCommand);
         helper.ConsoleCommands.Add("building", $"", BuildingCommand);
         helper.ConsoleCommands.Add("Response", "", ResponseCommand);
+        helper.ConsoleCommands.Add("buy", "", BuyCommand);
     }
 
     private readonly List<string> _desObjects = new List<string>() { "rock","twig","Rock","Twig","Weeds","weeds","Stone" };
@@ -164,11 +165,23 @@ internal sealed class ModEntry : Mod
         {
             _bot.Dialogue.AdvanceDialogBox();
         }
-        else if (e.Button == SButton.Subtract)
+        else if (e.Button == SButton.C)
         {
-            
-            // _bot.Dialogue.ChooseResponse(); // get this working
+            _bot.Shop.BuyItem(3,1);
         }
+        else if (e.Button == SButton.T)
+        {
+            Utility.TryOpenShopMenu("SeedShop", null, true);
+            _bot.Shop.SellBackItem(11);
+        }
+    }
+    
+    private void BuyCommand(string arg, string[] args)
+    {
+        int intargs = Convert.ToInt32(args[0]);
+        int quantity = Convert.ToInt32(args[1]);
+        
+        _bot.Shop.BuyItem(intargs,quantity);
     }
     
     private void ResponseCommand(string arg, string[] args)

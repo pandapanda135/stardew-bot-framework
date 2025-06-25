@@ -29,6 +29,8 @@ public class StardewClient
     public DialogueManager Dialogue { get; }
     public Characters Characters { get; }
     public ChestModule Chest { get; }
+    public Shop Shop { get; }
+
 
     #endregion
     
@@ -51,6 +53,7 @@ public class StardewClient
         Dialogue = new DialogueManager();
         Characters = new Characters();
         Chest = new ChestModule();
+        Shop = new Shop();
         
         _helper.Events.GameLoop.GameLaunched += OnGameLaunch;
         _helper.Events.GameLoop.UpdateTicking += CharacterController.Update;
@@ -79,7 +82,13 @@ public class StardewClient
     /// <param name="value">This should range from 0-3 as there is a max of four responses. Not 100% sure on that though so there is no check. If this is -1 no option will be picked</param>
     internal static void ChangeSelectedResponse(int value)
     {
-        _selectedResponse = Instance!.Helper.Reflection.GetField<int>(Game1.activeClickableMenu, "selectedResponse", true);
+        if (Instance is null)
+        {
+            Logger.Error($"Instance is not set");
+            return;
+        }
+        
+        _selectedResponse = Instance.Helper.Reflection.GetField<int>(Game1.activeClickableMenu, "selectedResponse", true);
         
         _selectedResponse.SetValue(value);   
     }
