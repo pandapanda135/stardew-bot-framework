@@ -23,11 +23,16 @@ public class ChestModule
         ChestOpen = true;
 
         CurrentChestInventory = chest.GetItemsForPlayer();
+
+        chest.ShowMenu();
+
+        Game1.playSound(chest.fridge.Value ? "doorCreak" : "openChest");    
+
+        // gift boxes cause crashes if performOpenChest runs
+        if (chest.giftbox.Value || chest.giftboxIsStarterGift.Value) return CurrentChestInventory;
         
         chest.performOpenChest();
-        chest.ShowMenu();
-        Game1.playSound(chest.fridge.Value ? "doorCreak" : "openChest");
-
+        
         return CurrentChestInventory;
     }
     

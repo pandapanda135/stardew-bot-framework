@@ -37,20 +37,30 @@ public class Shop
         }
     }
 
+    /// <summary>
+    /// Open selected shop menu, this will need to be called before anything else
+    /// </summary>
+    /// <param name="shopMenu">Shop to open</param>
     public void OpenShop(ShopMenu shopMenu)
     {
         _currentShop = shopMenu;
     }
 
+    /// <summary>
+    /// Close selected shop menu.
+    /// </summary>
     public void CloseShop()
     {
         _currentShop = null;
     }
 
+    /// <summary>
+    /// Buy an item from the shop based on it's corresponding index in the shop's UI.
+    /// </summary>
+    /// <param name="index">The index of item to buy.</param>
+    /// <param name="quantity">Amount of item to buy.</param>
     public void BuyItem(int index, int quantity)
     {
-        _currentShop = (ShopMenu?)Game1.activeClickableMenu;
-        
         if (_currentShop is null || _currentShop is not ShopMenu) return;
         
         if (index < 4)
@@ -82,8 +92,15 @@ public class Shop
         }
     }
 
+    /// <summary>
+    /// Buy an <see cref="Item"/> from the shop.
+    /// </summary>
+    /// <param name="item">Item to buy.</param>
+    /// <param name="quantity">Amount of item to buy.</param>
     public void BuyItem(Item item, int quantity)
     {
+        if (_currentShop is null || _currentShop is not ShopMenu) return;
+        
         for (int i = 0; i < _currentShop.forSale.Count; i++)
         {
             if (_currentShop.forSale[i].Name == item.Name)
@@ -94,57 +111,89 @@ public class Shop
         }
     }
 
-    public void ListAllItems()
+    /// <summary>
+    /// Returns all items as their <see cref="ISalable"/> class 
+    /// </summary>
+    /// <returns>A list of all items for sale however is a shop has not been opened yet, it will return null</returns>
+    public List<ISalable>? ListAllItems()
     {
-        _currentShop = (ShopMenu?)Game1.activeClickableMenu;
+        if (_currentShop is null || _currentShop is not ShopMenu) return null;
         
-        if (_currentShop is null || _currentShop is not ShopMenu) return;
-        
-        foreach (var button in _currentShop.forSaleButtons)
-        {
-            if (button.item != null)
-            {
-                Logger.Info($"for sale button:  {button.item.Name}");
-            }
-            Logger.Info(button.label);
-            Logger.Info(button.ScreenReaderText);
-            Logger.Info(button.ScreenReaderDescription);
-            Logger.Info($"Bounds X: {button.bounds.X}  bounds Y: {button.bounds.Y}");
-        }
+        return _currentShop.forSale;
     }
 
-    public Dictionary<ISalable,ItemStockInformation> ForSaleStats(ShopMenu shopMenu,out List<ISalable> items, out int currency)
+    /// <summary>
+    /// The stats of the items on sale, this also includes the currency this shop accepts and the available items
+    /// </summary>
+    /// <param name="items">The available items at this shop.</param>
+    /// <param name="currency">the currency this shop accepts.</param>
+    /// <returns>The stock info for each item in the shop as a dictionary. If a shop is not open everything will return the lowest possible value</returns>
+    public Dictionary<ISalable,ItemStockInformation> ForSaleStats(out List<ISalable> items, out int currency)
     {
-        currency = shopMenu.currency;
-        items = shopMenu.forSale;
-        return shopMenu.itemPriceAndStock;
+        if (_currentShop is null || _currentShop is not ShopMenu)
+        {
+            currency = -1;
+            items = new List<ISalable>();
+            return new Dictionary<ISalable, ItemStockInformation>();
+        }
+        
+        currency = _currentShop.currency;
+        items = _currentShop.forSale;
+        return _currentShop.itemPriceAndStock;
     }
     
+    /// <summary>
+    /// Change tab of shop.
+    /// </summary>
+    /// <param name="newTab">index of new tab.</param>
     public void ChangeTab(int newTab)
     {
+        if (_currentShop is null || _currentShop is not ShopMenu) return;
+        
         if (_currentShop.tabButtons.Count == 0) return;
         
         _currentShop.switchTab(newTab);
     }
     
-    // click on item slot that has item in it, I think it sells the full stack everytime 
-    
+    /// <summary>
+    /// Will try to see back item in the provided index of the bot's inventory
+    /// </summary>
+    /// <param name="index">this is a value of 0 to max provided by the inventory level these can only be 11-23-35 (assuming the game is not modded)</param>
+    /// <returns>The amount the item has sold for. However, if this returns -1 it means there has been an issue with selling item</returns>
     public int SellBackItem(int index) // Item item
     {
-        _currentShop = (ShopMenu?)Game1.activeClickableMenu;
+        if (_currentShop is null || _currentShop is not ShopMenu) return -1;
         
-        if (!_currentShop.CanBuyback()) return 0;
+        if (_currentShop is null) return -1;
+
+        if (!_currentShop.CanBuyback())
+        {
+            Logger.Error($"shop cannot buy back");
+            return -1;
+        }
 
         List<ClickableComponent> inventory = _currentShop.inventory.inventory;
+
+        int itemSalePrice = _currentShop.inventory.actualInventory[index].GetSalableInstance().sellToStorePrice();
+        int itemStackSize = _currentShop.inventory.actualInventory[index].Stack;
         
         _currentShop.receiveLeftClick(inventory[index].bounds.X + 3,inventory[index].bounds.Y + 3); //TODO: make work
         
-        foreach (var button in _currentShop.inventory.inventory)
+        return itemSalePrice * itemStackSize;
+    }
+
+    
+    /// <summary>
+    /// Will try to see back item in the provided index of the bot's inventory
+    /// </summary>
+    /// <param name="item">This is the item you want to sell must be in the bot's inventory</param>
+    /// <returns>The amount the item has sold for. However, if this returns -1 it means there has been an issue with selling item</returns>
+    public int SellBackItem(Item item)
+    {
+        if (Game1.player.Items.IndexOf(item) == -1)
         {
-            Logger.Info($"button name: {button.name} bounds x: {button.bounds.X} bounds Y: {button.bounds.Y}");
-            if (button.item != null) Logger.Info($"{button.item}");
+            return -1;
         }
-        
-        return 0;
+        return SellBackItem(Game1.player.Items.IndexOf(item));
     }
 }

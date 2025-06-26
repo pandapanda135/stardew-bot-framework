@@ -114,54 +114,34 @@ internal sealed class ModEntry : Mod
         }
         else if (e.Button == SButton.V)
         {
-            // bool value = _bot.Dialogue.CheckForCharacterAtTile(Game1.currentCursorTile.ToPoint());
-            // Logger.Info($"value: {value}");
-            Dictionary<string,List<string>>? dialogue = _bot.Dialogue.GetAllPossibleDialogue(Game1.currentCursorTile.ToPoint());
-            if (dialogue is null) return;
-            foreach (var kvp in dialogue)
-            {
-                foreach (var listString in kvp.Value)
-                {
-                    Logger.Info($"character name: {kvp.Key} dialogue: {listString}");    
-                }
-            }
             
-            Dictionary<string,Point>? characters = _bot.Characters.GetCharactersInCurrentLocation(Game1.currentLocation);
-            foreach (var kvp in characters)
+            foreach (var locationObjectDict in Game1.currentLocation.objects)
             {
-                Logger.Info($"character name: {kvp.Key} Point: {kvp.Value}");
-            }
-
-            _bot.Dialogue.InteractWithCharacter(Game1.currentCursorTile.ToPoint(),out Stack<Dialogue>? dialogues);
-            // Stack<Dialogue>? dialogues = _bot.Dialogue.GetCharacterDialogue(Game1.currentCursorTile.ToPoint());
-            if (dialogues is null || dialogues.Count == 0)
-            {
-                Logger.Warning($"dialogues is null or empty");
-                return;
-            }
-            foreach (var dia in dialogues)
-            {
-                _bot.Dialogue.CurrentDialogue = dia;
-                Response[]? responses = _bot.Dialogue.PossibleResponses(dia);
-                Response[]? dialogueResponses = _bot.Dialogue.PossibleResponses(dia);
-                if (responses is null || dialogueResponses is null) return;
-                if (responses.Length != 0)
+                foreach (var kvp in locationObjectDict)
                 {
-                    Response dialogueResponse = new NPCDialogueResponse("asd",123,"asd","ad");
-                    foreach (var response in responses)
+                    if (kvp.Value is Chest chest)
                     {
-                        Logger.Info($"Response Text: {response.responseText}");
-                        dialogueResponse = response;
+                        Logger.Info(chest.name);
+                        IInventory inventory = _bot.Chest.OpenChest(chest)!;
+                        foreach (var item in inventory)
+                        {
+                            Logger.Info($"inventory item: {item.Name}");
+                        }
+
+                        return;
                     }
-                    _bot.Dialogue.ChooseResponse(dia,dialogueResponse);
                 }
             }
+        }
+        else if (e.Button == SButton.X)
+        {
+            _bot.Chest.CloseChest();
         }
         else if (e.Button == SButton.G)
         {
             Game1.player.Position = Game1.currentCursorTile * Game1.tileSize;
         }
-        else if (e.Button == SButton.Add)
+        else if (e.Button == SButton.R)
         {
             _bot.Dialogue.AdvanceDialogBox();
         }
@@ -172,7 +152,23 @@ internal sealed class ModEntry : Mod
         else if (e.Button == SButton.T)
         {
             Utility.TryOpenShopMenu("SeedShop", null, true);
+        }
+        else if (e.Button == SButton.Z)
+        {
             _bot.Shop.SellBackItem(11);
+        }
+        else if (e.Button == SButton.Q)
+        {
+            Inventory inventory = _bot.Inventory.GetInventory();
+            foreach (var item in inventory)
+            {
+                if (item is null) continue;
+                Logger.Info($"item name: {item.Name}  item stack: {item.Stack}  item index: {inventory.IndexOf(item)}");
+                if (item.Name == "Blueberry Seeds")
+                {
+                    Logger.Info(_bot.Shop.SellBackItem(item).ToString());
+                }
+            }
         }
     }
     
