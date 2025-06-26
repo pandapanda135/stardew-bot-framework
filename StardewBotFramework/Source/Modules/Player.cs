@@ -1,5 +1,9 @@
 using Microsoft.Xna.Framework;
+using Netcode;
 using StardewValley;
+using StardewValley.GameData.Characters;
+using StardewValley.Inventories;
+using StardewValley.Objects.Trinkets;
 using Object = StardewValley.Object;
 
 namespace StardewBotFramework.Source.Modules;
@@ -9,6 +13,12 @@ namespace StardewBotFramework.Source.Modules;
 /// </summary>
 public class Player
 {
+    public int Health => StardewClient.Farmer.health;
+    public float Stamina => StardewClient.Farmer.Stamina;
+    public Inventory Inventory => StardewClient.Farmer.Items;
+    public NetList<Trinket, NetRef<Trinket>> Trinkets => StardewClient.Farmer.trinketItems;
+    public IDictionary<string, CharacterData> NpcData => Game1.characterData;// this can be used for relationship and stuff this information is cached by the game
+
     /// <summary>
     /// Changes direction the player sprite is facing
     /// </summary>

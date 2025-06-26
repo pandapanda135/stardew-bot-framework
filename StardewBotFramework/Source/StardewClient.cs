@@ -74,6 +74,8 @@ public class StardewClient
     public static GameLocation CurrentLocation => Game1.currentLocation;
 
     private static IReflectedField<int>? _selectedResponse;
+
+    private static IReflectedProperty<TextBox>? _reflectedTextBox;
     
     /// <summary>
     /// Change the selectedResponse value in <see cref="DialogueBox"/>, this will change the "Response" to a question dialogue.
@@ -91,5 +93,20 @@ public class StardewClient
         _selectedResponse = Instance.Helper.Reflection.GetField<int>(Game1.activeClickableMenu, "selectedResponse", true);
         
         _selectedResponse.SetValue(value);   
+    }
+
+    internal static void CharacterCreatorTextBox(string name, List<string> properties)
+    {
+        if (Instance is null)
+        {
+            Logger.Error($"Instance is not set");
+            return;
+        }
+        
+        _reflectedTextBox = Instance.Helper.Reflection.GetProperty<TextBox>(Game1.activeClickableMenu, properties[0], true);
+
+        IReflectedProperty<string> reflectedText = Instance.Helper.Reflection.GetProperty<string>(_reflectedTextBox, properties[1], true);
+        
+        reflectedText.SetValue(name);   
     }
 }
