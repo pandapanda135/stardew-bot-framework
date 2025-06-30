@@ -210,14 +210,23 @@ public class DialogueManager
             if (dialogueBox.responses[i] == response)
             {
                 StardewClient.ChangeSelectedResponse(option);
+
+                dialogueBox = (Game1.activeClickableMenu as DialogueBox);
+                // if (dialogueBox.allClickableComponents == null)
+                // {
+                //     Logger.Warning($"allclickablecomponents is null");
+                //     return;
+                // }
+                //
+                // if (dialogueBox.responseCC == null)
+                // {
+                //     Logger.Warning($"responseCC is null");
+                //     return;
+                // }
+
+                // dialogue.chooseResponse(response);
                 
-                if (dialogueBox.responseCC == null)
-                {
-                    Logger.Warning($"responseCC is null");
-                    return;
-                }
-                
-                dialogueBox.receiveLeftClick(dialogueBox.responseCC[i].bounds.X,dialogueBox.responseCC[i].bounds.Y);
+                dialogueBox.receiveLeftClick(460,860); // wont work as is not done transitioning to button's appearing
             }
         }
         
