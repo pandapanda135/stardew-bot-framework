@@ -9,7 +9,7 @@ public class LoadGame
 
     public int SaveSlotAmount => _loadGameMenu.MenuSlots.Count;
     
-    private LoadGameMenu _loadGameMenu;
+    private LoadGameMenu _loadGameMenu = null!;
 
     public void SetLoadMenu(LoadGameMenu loadGameMenu)
     {
