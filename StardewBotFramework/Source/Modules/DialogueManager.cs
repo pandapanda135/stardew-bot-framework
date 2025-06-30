@@ -200,4 +200,48 @@ public class DialogueManager
         
         return dialogue.getResponseOptions();
     }
+
+    internal static void ChooseResponse(int option,DialogueBox dialogueBox,Dialogue dialogue,Response response)
+    {
+        if (Game1.activeClickableMenu is not DialogueBox) return;
+
+        for (int i = 0; i < dialogueBox.responses.Length; i++)
+        {
+            if (dialogueBox.responses[i] == response)
+            {
+                StardewClient.ChangeSelectedResponse(option);
+                
+                if (dialogueBox.responseCC == null)
+                {
+                    Logger.Warning($"responseCC is null");
+                    return;
+                }
+                
+                dialogueBox.receiveLeftClick(dialogueBox.responseCC[i].bounds.X,dialogueBox.responseCC[i].bounds.Y);
+            }
+        }
+        
+        // Logger.Info($"setting response to: {option}");
+        //
+        // Game1.activeClickableMenu.receiveLeftClick(0, 0 , true);
+        //
+        // if (dialogueBox?.responses == null || dialogue == null || response == null)
+        // {
+        //     Logger.Warning($"dialogueBox.responses or responseCC is null.  {response}");
+        //     return;
+        // }
+        //
+        // dialogue.chooseResponse(response); // dialogue is null
+    }
+
+    internal static bool AdvanceDialogue(int x,int y)
+    {
+        if (Game1.activeClickableMenu is DialogueBox)
+        {
+            Game1.activeClickableMenu.receiveLeftClick(x, y);
+            return true;
+        }
+
+        return false;
+    }
 }

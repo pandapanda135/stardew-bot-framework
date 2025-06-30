@@ -1,12 +1,15 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Collections;
+using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewBotFramework.Source;
 using StardewBotFramework.Debug;
+using StardewBotFramework.Source.Modules;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
 using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Inventories;
+using StardewValley.Menus;
 using StardewValley.Objects;
 
 namespace BotTesting;
@@ -23,6 +26,7 @@ internal sealed class ModEntry : Mod
     {
         try
         {
+            Logger.Info($"Setting up bot");
             _bot = new StardewClient(helper, Monitor, helper.Multiplayer);
         }
         catch (Exception e)
@@ -39,6 +43,11 @@ internal sealed class ModEntry : Mod
         helper.ConsoleCommands.Add("building", $"", BuildingCommand);
         helper.ConsoleCommands.Add("Response", "", ResponseCommand);
         helper.ConsoleCommands.Add("buy", "", BuyCommand);
+        helper.ConsoleCommands.Add("shirt", "", CharacterCreatorCommand);
+        helper.ConsoleCommands.Add("main", "", MainMenuCommand);
+        helper.ConsoleCommands.Add("load", "", LoadGameCommand);
+        helper.ConsoleCommands.Add("shop", "", SetShopCommand);
+        helper.ConsoleCommands.Add("geode", "", UseGeodeCommand);
     }
 
     private readonly List<string> _desObjects = new List<string>() { "rock","twig","Rock","Twig","Weeds","weeds","Stone" };
@@ -52,12 +61,7 @@ internal sealed class ModEntry : Mod
             return;
         }
 
-        if (e.Button == SButton.H)
-        {
-            Monitor.Log($"Test",LogLevel.Debug);
-            Logger.Log($"{_bot.Time.GetTimeString()}");
-        }
-        else if (e.Button == SButton.J)
+        if (e.Button == SButton.J)
         {
             _bot.Chat.SendPublicMessage("happy");
             _bot.Chat.UseEmote("heart");
@@ -66,7 +70,7 @@ internal sealed class ModEntry : Mod
         {
             Goal end = new Goal.GoalPosition((int)Game1.currentCursorTile.X, (int)Game1.currentCursorTile.Y);
             _bot.Pathfinding.DestructibleObjects = _desObjects;
-            await _bot.Pathfinding.Goto(end,false, true);
+            await _bot.Pathfinding.Goto(end, false, true);
             _bot.Chat.SendPublicMessage("This should send after the bot has path-found :)");
         }
         else if (e.Button == SButton.U)
@@ -95,18 +99,18 @@ internal sealed class ModEntry : Mod
         }
         else if (e.Button == SButton.O)
         {
-                foreach (var locationObjectDict in Game1.currentLocation.objects)
+            foreach (var locationObjectDict in Game1.currentLocation.objects)
+            {
+                foreach (var kvp in locationObjectDict)
                 {
-                    foreach (var kvp in locationObjectDict)
+                    Logger.Info($"tile: {kvp.Key} object: {kvp.Value.name}");
+                    if (kvp.Key == Game1.currentCursorTile)
                     {
-                        Logger.Info($"tile: {kvp.Key} object: {kvp.Value.name}");
-                        if (kvp.Key == Game1.currentCursorTile)
-                        {
-                            _bot.Player.AddItemToObject(kvp.Value, Game1.player.CurrentItem);
-                        }
+                        _bot.Player.AddItemToObject(kvp.Value, Game1.player.CurrentItem);
                     }
                 }
-                
+            }
+
         }
         else if (e.Button == SButton.P)
         {
@@ -114,7 +118,7 @@ internal sealed class ModEntry : Mod
         }
         else if (e.Button == SButton.V)
         {
-            
+
             foreach (var locationObjectDict in Game1.currentLocation.objects)
             {
                 foreach (var kvp in locationObjectDict)
@@ -133,13 +137,20 @@ internal sealed class ModEntry : Mod
                 }
             }
         }
-        else if (e.Button == SButton.X)
-        {
-            _bot.Chest.CloseChest();
-        }
         else if (e.Button == SButton.G)
         {
             Game1.player.Position = Game1.currentCursorTile * Game1.tileSize;
+        }
+        else if (e.Button == SButton.F)
+        {
+            foreach (var character in Game1.currentLocation.characters)
+            {
+                if (character.Name == "Pierre")
+                {
+                    Stack<Dialogue> dialogues = new();
+                    _bot.Dialogue.InteractWithCharacter(character,out dialogues);
+                }
+            }
         }
         else if (e.Button == SButton.R)
         {
@@ -147,13 +158,13 @@ internal sealed class ModEntry : Mod
         }
         else if (e.Button == SButton.C)
         {
-            _bot.Shop.BuyItem(3,1);
+            _bot.Shop.BuyItem(3, 1);
         }
         else if (e.Button == SButton.T)
         {
             Utility.TryOpenShopMenu("SeedShop", null, true);
         }
-        else if (e.Button == SButton.Z)
+        else if (e.Button == SButton.X)
         {
             _bot.Shop.SellBackItem(11);
         }
@@ -170,6 +181,86 @@ internal sealed class ModEntry : Mod
                 }
             }
         }
+        else if (e.Button == SButton.Z)
+        {
+            Logger.Info($"running Z");
+
+            foreach (var furniture in Game1.currentLocation.furniture)
+            {
+                Logger.Info($"furniture name: {furniture.name}  furniture location: {furniture.TileLocation}");
+                Logger.Info(_bot.ObjectInteraction.InteractWithObject(furniture).ToString());
+            }
+            
+            foreach (var locationObjectDict in Game1.currentLocation.objects)
+            {
+                foreach (var kvp in locationObjectDict)
+                {
+                    Logger.Info($"Key: {kvp.Key}  cursor tile: {Game1.currentCursorTile}");
+                    if (kvp.Key == Game1.currentCursorTile)
+                    {
+                        Logger.Info($"tile: {kvp.Key}  object: {kvp.Value.name}");
+                        _bot.ObjectInteraction.InteractWithObject(kvp.Value);
+                        Logger.Info(_bot.ObjectInteraction.InteractWithObject(kvp.Value).ToString());
+                    }
+                }
+            }
+        }
+        else if (e.Button == SButton.H)
+        {
+            _bot.Blacksmith.OpenShopUi((int)Game1.currentCursorTile.X,(int)Game1.currentCursorTile.Y,2);
+        }
+    }
+
+    private void SetShopCommand(string arg, string[] args)
+    {
+        _bot.Blacksmith.OpenGeodeMenu(Game1.activeClickableMenu as GeodeMenu);
+    }
+
+    private void UseGeodeCommand(string arg, string[] args)
+    {
+        int index = int.Parse(args[0]);
+        
+        Item? item = _bot.Blacksmith.OpenGeode(index);
+        Logger.Info($"Item: {item}");
+    }
+    
+    private void LoadGameCommand(string arg, string[] args)
+    {
+        if (Game1.activeClickableMenu is not TitleMenu || TitleMenu.subMenu is not LoadGameMenu) return;
+        
+        LoadGameMenu? loadGameMenu = TitleMenu.subMenu as LoadGameMenu;
+        
+        _bot.LoadMenu.SetLoadMenu(loadGameMenu);
+        
+        int intargs = Convert.ToInt32(args[0]);
+
+        _bot.LoadMenu.LoadSlot(intargs);
+    }
+    
+    private void MainMenuCommand(string arg, string[] args)
+    {
+        if (Game1.activeClickableMenu is not TitleMenu) return;
+        
+        Logger.Info($"menu {Game1.activeClickableMenu}");
+        
+        IClickableMenu menu = Game1.activeClickableMenu;
+
+        _bot.MainMenuNavigation.SetTitleMenu((TitleMenu)menu);
+        
+        _bot.MainMenuNavigation.GotoLoad();
+    }
+
+    private void CharacterCreatorCommand(string arg, string[] args)
+    {
+        if (Game1.activeClickableMenu is not TitleMenu || TitleMenu.subMenu is not CharacterCustomization) return;
+        
+        CharacterCustomization? characterCustomization = TitleMenu.subMenu as CharacterCustomization;
+        
+        _bot.CharacterCreation.SetCreator(characterCustomization);
+        
+        int intargs = Convert.ToInt32(args[0]);
+
+        _bot.CharacterCreation.ChangeFarmTypes(intargs);
     }
     
     private void BuyCommand(string arg, string[] args)

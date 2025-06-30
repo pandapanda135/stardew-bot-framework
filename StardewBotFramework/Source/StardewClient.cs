@@ -1,5 +1,7 @@
+using System.Net.Mime;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Modules;
+using StardewBotFramework.Source.Modules.MainMenu;
 using StardewBotFramework.Source.Modules.Pathfinding;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
 using StardewModdingAPI;
@@ -30,7 +32,13 @@ public class StardewClient
     public Characters Characters { get; }
     public ChestModule Chest { get; }
     public Shop Shop { get; }
+    public ObjectInteraction ObjectInteraction { get; }
+    public CharacterCreation CharacterCreation { get; }
+    public MainMenuNavigation MainMenuNavigation { get; }
+    public LoadGame LoadMenu { get; }
+    public Blacksmith Blacksmith { get; }
 
+    
 
     #endregion
     
@@ -54,6 +62,12 @@ public class StardewClient
         Characters = new Characters();
         Chest = new ChestModule();
         Shop = new Shop();
+        CharacterCreation = new CharacterCreation();
+        MainMenuNavigation = new MainMenuNavigation();
+        LoadMenu = new LoadGame();
+        ObjectInteraction = new ObjectInteraction();
+        Blacksmith = new Blacksmith();
+
         
         _helper.Events.GameLoop.GameLaunched += OnGameLaunch;
         _helper.Events.GameLoop.UpdateTicking += CharacterController.Update;
@@ -75,7 +89,7 @@ public class StardewClient
 
     private static IReflectedField<int>? _selectedResponse;
 
-    private static IReflectedProperty<TextBox>? _reflectedTextBox;
+    private static IReflectedField<TextBox>? _reflectedTextBox;
     
     /// <summary>
     /// Change the selectedResponse value in <see cref="DialogueBox"/>, this will change the "Response" to a question dialogue.
@@ -95,7 +109,7 @@ public class StardewClient
         _selectedResponse.SetValue(value);   
     }
 
-    internal static void CharacterCreatorTextBox(string name, List<string> properties)
+    internal static void CharacterCreatorTextBox(CharacterCustomization menu,string name, List<string> properties)
     {
         if (Instance is null)
         {
@@ -103,10 +117,16 @@ public class StardewClient
             return;
         }
         
-        _reflectedTextBox = Instance.Helper.Reflection.GetProperty<TextBox>(Game1.activeClickableMenu, properties[0], true);
-
-        IReflectedProperty<string> reflectedText = Instance.Helper.Reflection.GetProperty<string>(_reflectedTextBox, properties[1], true);
+        _reflectedTextBox = Instance.Helper.Reflection.GetField<TextBox>(menu, properties[0], true);
         
-        reflectedText.SetValue(name);   
+        // IReflectedField<string> reflectedText = Instance.Helper.Reflection.GetField<string>(_reflectedTextBox, properties[1], true);
+
+        TextBox textBox = _reflectedTextBox.GetValue();
+
+        textBox.Text = name;
+        
+        _reflectedTextBox.SetValue(textBox);
+        
+        // reflectedText.SetValue(name);   
     }
 }
