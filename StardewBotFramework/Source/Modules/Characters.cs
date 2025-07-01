@@ -36,4 +36,15 @@ public class Characters
 
         return characters;
     }
+
+    /// <summary>
+    /// Get the number of characters in the radius of a position
+    /// </summary>
+    /// <param name="position"><see cref="Point"/> of position you want to query</param>
+    /// <param name="radius">Tile radius of where you want query</param>
+    /// <returns>Will return amount of characters nearby</returns>
+    public int GetNumberOfCharacterNearby(Point position, int radius)
+    {
+        return Utility.getNumberOfCharactersInRadius(StardewClient.CurrentLocation, position, radius);
+    }
 }

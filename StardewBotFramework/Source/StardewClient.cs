@@ -1,4 +1,3 @@
-using System.Net.Mime;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Modules;
 using StardewBotFramework.Source.Modules.MainMenu;
@@ -8,6 +7,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Menus;
+using StardewValley.Network;
 
 namespace StardewBotFramework.Source;
 
@@ -90,6 +90,8 @@ public class StardewClient
     private static IReflectedField<int>? _selectedResponse;
 
     private static IReflectedField<TextBox>? _reflectedTextBox;
+
+    private static IReflectedField<NetMutexQueue<Guid>> _reflectedObjectDestroy;
     
     /// <summary>
     /// Change the selectedResponse value in <see cref="DialogueBox"/>, this will change the "Response" to a question dialogue.
@@ -128,5 +130,25 @@ public class StardewClient
         _reflectedTextBox.SetValue(textBox);
         
         // reflectedText.SetValue(name);   
+    }
+    
+    internal static void AddRemoveFurniture(GameLocation location,Guid f)
+    {
+        if (Instance is null)
+        {
+            Logger.Error($"Instance is not set");
+            return;
+        }
+        
+        _reflectedObjectDestroy = Instance.Helper.Reflection.GetField<NetMutexQueue<Guid>>(location,"furnitureToRemove",true);
+
+        NetMutexQueue<Guid> value = _reflectedObjectDestroy.GetValue();
+        
+        if (!value.Contains(f))
+        {
+            value.Add(f);
+        }
+        
+        _reflectedObjectDestroy.SetValue(value);
     }
 }

@@ -11,6 +11,7 @@ using StardewValley.Buildings;
 using StardewValley.Inventories;
 using StardewValley.Menus;
 using StardewValley.Objects;
+using Object = StardewValley.Object;
 
 namespace BotTesting;
 
@@ -48,6 +49,7 @@ internal sealed class ModEntry : Mod
         helper.ConsoleCommands.Add("load", "", LoadGameCommand);
         helper.ConsoleCommands.Add("shop", "", SetShopCommand);
         helper.ConsoleCommands.Add("geode", "", UseGeodeCommand);
+        helper.ConsoleCommands.Add("place", "", PlaceObjectCommand);
     }
 
     private readonly List<string> _desObjects = new List<string>() { "rock","twig","Rock","Twig","Weeds","weeds","Stone" };
@@ -188,7 +190,12 @@ internal sealed class ModEntry : Mod
             foreach (var furniture in Game1.currentLocation.furniture)
             {
                 Logger.Info($"furniture name: {furniture.name}  furniture location: {furniture.TileLocation}");
-                Logger.Info(_bot.ObjectInteraction.InteractWithObject(furniture).ToString());
+                if (furniture.heldObject != null) // held item is when an item is placed on furniture e.g. the mug in the farm house
+                {
+                    Logger.Info($"furnitre held item: {furniture.heldObject.Name}  held item value: {furniture.heldObject.Value}");
+                }
+                Logger.Info(_bot.ObjectInteraction.PickUpFurniture(furniture).ToString());
+                _bot.ObjectInteraction.PickUpItemOnFurniture(furniture);
             }
             
             foreach (var locationObjectDict in Game1.currentLocation.objects)
@@ -200,7 +207,7 @@ internal sealed class ModEntry : Mod
                     {
                         Logger.Info($"tile: {kvp.Key}  object: {kvp.Value.name}");
                         _bot.ObjectInteraction.InteractWithObject(kvp.Value);
-                        Logger.Info(_bot.ObjectInteraction.InteractWithObject(kvp.Value).ToString());
+                        Logger.Info($"object name: {kvp.Value.name} object: {_bot.ObjectInteraction.InteractWithObject(kvp.Value)}");
                     }
                 }
             }
@@ -209,8 +216,26 @@ internal sealed class ModEntry : Mod
         {
             _bot.Blacksmith.OpenShopUi((int)Game1.currentCursorTile.X,(int)Game1.currentCursorTile.Y,2);
         }
+        else if (e.Button == SButton.N)
+        {
+            Logger.Info(_bot.ObjectInteraction.TryToPlaceObject(Game1.player.CurrentItem as Object, (int)Game1.player.position.X + 64,
+                (int)Game1.player.Position.Y + 64).ToString());
+        }
     }
 
+    private void PlaceObjectCommand(string arg, string[] args)
+    {
+        Object currentItem = Game1.player.CurrentItem as Object;
+        if (!currentItem.isPlaceable())
+        {
+            Logger.Warning($"{currentItem.name} is not placeable");
+            return;
+        }
+        
+        Logger.Info(_bot.ObjectInteraction.TryToPlaceObject(Game1.player.CurrentItem as Object, (int)Game1.player.position.X + 64,
+            (int)Game1.player.Position.Y + 64).ToString());
+    }
+    
     private void SetShopCommand(string arg, string[] args)
     {
         _bot.Blacksmith.OpenGeodeMenu(Game1.activeClickableMenu as GeodeMenu);
