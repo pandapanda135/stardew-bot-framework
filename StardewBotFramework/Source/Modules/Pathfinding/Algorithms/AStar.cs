@@ -37,7 +37,7 @@ public class AStar : AlgorithmBase
             
             IPathing.PriorityFrontier = new();
             IPathing.PriorityFrontier.Enqueue(startNode, 0);
-            IPathing.Base.ClosedList.Add(startNode);
+            IPathing.ClosedList.Add(startNode);
             
             int increase = 0;
             
@@ -53,7 +53,7 @@ public class AStar : AlgorithmBase
                     }
                 }
             }
-            
+
             // check if goal is blocked before pathfinding
             if (IPathing.collisionMap.IsBlocked(goal.X, goal.Y))
             {
@@ -73,19 +73,20 @@ public class AStar : AlgorithmBase
 
                 if (!IPathing.NodeChecks(current,startNode,goal, location)) continue;
                 
-                IPathing.Base.ClosedList.Add(current);
+                IPathing.ClosedList.Add(current);
                 
-                if (goal.IsEnd(current))
+                if (IPathing.CanEnd(current,goal))
                 {
                     Logger.Info($"breaking as current is equal to goal");
+                    IPathing.PathToEndPoint.Push(current);
                     break; // this is here as cant return in NodeChecks. This checks if this is goal
                 }
                 
                 Logger.Info($"this is current: {current}");
                 // Neighbour search
                 Queue<PathNode> neighbours = IPathing.Graph.Neighbours(current);
-                foreach (var next in neighbours.Where(node => !IPathing.Base.ClosedList.Contains(node) && !IPathing.collisionMap.IsBlocked(node.X, node.Y) 
-                    || canDestroy && locationObjects.ContainsKey(node.VectorLocation.ToVector2())))
+                foreach (var next in neighbours.Where(node => !IPathing.ClosedList.Contains(node) && !IPathing.collisionMap.IsBlocked(node.X, node.Y) 
+                                                              || canDestroy && locationObjects.ContainsKey(node.VectorLocation.ToVector2())))
                 {
                     int newCost = current.Cost + Graph.Cost(current, next);
                     if (!IPathing.PriorityFrontier.Contains(next) || newCost < next.Cost)
@@ -100,7 +101,7 @@ public class AStar : AlgorithmBase
                         int priority = newCost + PathNode.ManhattanHeuristic(new Vector2(next.X, next.Y),goal.VectorLocation.ToVector2());
                         Logger.Info($"A Star estimated heuristic {priority}");
                         IPathing.PriorityFrontier.Enqueue(next, priority);
-                        IPathing.Base.PathToEndPoint.Push(next);
+                        IPathing.PathToEndPoint.Push(next);
                     }
                 }
 
@@ -108,15 +109,15 @@ public class AStar : AlgorithmBase
             }
             
             Logger.Info($"Uniform about to return");
-            return IPathing.RebuildPath(startNode, goal, IPathing.Base.PathToEndPoint);
+            return IPathing.RebuildPath(startNode, goal, IPathing.PathToEndPoint);
         }
 
         #endregion
         private void ClearVariables()
         {
             IPathing.Frontier = new();
-            IPathing.Base.ClosedList.Clear();
-            IPathing.Base.PathToEndPoint.Clear();
+            IPathing.ClosedList.Clear();
+            IPathing.PathToEndPoint.Clear();
         }
     }
 }

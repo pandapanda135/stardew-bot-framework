@@ -14,20 +14,13 @@ namespace StardewBotFramework.Source.Modules.Pathfinding.Base;
 public class AlgorithmBase
 {
     public Character? Character;
-
-    public Stack<PathNode> PathToEndPoint = new();
-
+    
     private List<PathNode> _goals;
     
     public GameLocation? CurrentLocation;
     
     // will be used to see if destroying stuff like trees is allowed in pathfinding
     public bool AllowDestruction;
-    
-    /// <summary>
-    /// this contains Nodes the pathfinding has already reached
-    /// </summary>
-    public HashSet<PathNode> ClosedList = new();
 
     public AlgorithmBase(Character character,GameLocation currentLocation,List<PathNode> goals)
     {
@@ -52,6 +45,13 @@ public class AlgorithmBase
         
         protected static readonly AlgorithmBase Base = new();
 
+        public static Stack<PathNode> PathToEndPoint = new();
+        
+        /// <summary>
+        /// this contains Nodes the pathfinding has already reached
+        /// </summary>
+        public static HashSet<PathNode> ClosedList = new();
+
         protected static readonly Graph Graph = new();
 
         protected static CollisionMap collisionMap = new();
@@ -61,7 +61,7 @@ public class AlgorithmBase
 
         public static Stack<PathNode> RebuildPath(PathNode startPoint, Goal goal, Stack<PathNode> path)
         {
-            if (!path.TryPeek(out var pathEndPoint) || pathEndPoint.VectorLocation != goal.VectorLocation)
+            if (!path.TryPeek(out var pathEndPoint) || pathEndPoint.VectorLocation != goal.VectorLocation && goal is Goal.GoalPosition)
             {
                 if (pathEndPoint is null)
                 {
@@ -108,7 +108,7 @@ public class AlgorithmBase
                 Logger.Info($"Ending using CheckIfEnd function");
                 // _pathfinding.PathToEndPoint.Reverse(); // this is done as otherwise get ugly paths
 
-                Base.PathToEndPoint.Push(currentNode);
+                PathToEndPoint.Push(currentNode);
                 return true;
             }
 
@@ -124,8 +124,51 @@ public class AlgorithmBase
 
             // check if node == current and node is not start if none return true else false
             return !Equals(
-                Base.ClosedList.Where(node => node.X == currentNode.X && node.Y == currentNode.Y && !node.Equals(startNode)),
+                ClosedList.Where(node => node.X == currentNode.X && node.Y == currentNode.Y && !node.Equals(startNode)),
                 ImmutableList<PathNode>.Empty);
+        }
+
+        /// <summary>
+        /// Check if is at end, shortcut for all goal type's is end function
+        /// </summary>
+        /// <returns>Will return true if at end or in radius else false</returns>
+        public static bool CanEnd(PathNode currentNode,Goal goal)
+        {
+            switch (goal)
+            {
+                case Goal.GoalPosition:
+                    if (goal.IsEnd(currentNode))
+                    {
+                        return true;
+                    }
+                    break;
+                case Goal.GoalNearby goalNearby:
+                    if (goalNearby.IsInEndRadius(currentNode, goalNearby.Radius))
+                    {
+                        return true;
+                    }
+                    break;
+                case Goal.GoalDynamic goalDynamic:
+                    if (goalDynamic.IsInEndRadius(currentNode, goalDynamic.Radius))
+                    {
+                        return true;
+                    }
+                    break;
+                case Goal.GetToTile getToTile:
+                    if (getToTile.IsInEndRadius(currentNode, getToTile.Radius))
+                    {
+                        return true;
+                    }
+                    break;
+                default:
+                    if (goal.IsEnd(currentNode))
+                    {
+                        return true;
+                    }
+                    break;
+            }
+
+            return false;
         }
 
         /// <summary>

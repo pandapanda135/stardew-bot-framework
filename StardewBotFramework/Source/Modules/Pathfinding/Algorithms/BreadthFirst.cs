@@ -37,7 +37,7 @@ public class BreadthFirstSearch : AlgorithmBase
             
             IPathing.Frontier = new();
             IPathing.Frontier.Enqueue(startNode);
-            IPathing.Base.ClosedList.Add(startNode);
+            IPathing.ClosedList.Add(startNode);
             
             int increase = 0;
             
@@ -60,7 +60,7 @@ public class BreadthFirstSearch : AlgorithmBase
 
                 if (!IPathing.NodeChecks(current, startNode, goal, location)) continue;
 
-                IPathing.Base.ClosedList.Add(current);
+                IPathing.ClosedList.Add(current);
 
                 if (goal.IsEnd(current))
                 {
@@ -69,11 +69,11 @@ public class BreadthFirstSearch : AlgorithmBase
                 }
 
                 Queue<PathNode> neighbours = IPathing.Graph.Neighbours(current);
-                foreach (var node in neighbours.Where(node => !IPathing.Base.ClosedList.Contains(node) && !IPathing.collisionMap.IsBlocked(node.X,node.Y)))
+                foreach (var node in neighbours.Where(node => !IPathing.ClosedList.Contains(node) && !IPathing.collisionMap.IsBlocked(node.X,node.Y)))
                 {
                     Logger.Info($"in foreach this is node: {node.X},{node.Y}");
                     IPathing.Frontier.Enqueue(node);
-                    IPathing.Base.PathToEndPoint.Push(current);
+                    IPathing.PathToEndPoint.Push(current);
                 }
 
                 increase++;
@@ -81,7 +81,7 @@ public class BreadthFirstSearch : AlgorithmBase
             
             Logger.Info($"breadth first about to return");
 
-            return IPathing.RebuildPath(startNode, goal, IPathing.Base.PathToEndPoint);
+            return IPathing.RebuildPath(startNode, goal, IPathing.PathToEndPoint);
         }
         
     #endregion
@@ -89,8 +89,8 @@ public class BreadthFirstSearch : AlgorithmBase
          private void ClearVariables()
          {
              IPathing.Frontier = new();
-             IPathing.Base.ClosedList.Clear();
-             IPathing.Base.PathToEndPoint.Clear();
+             IPathing.ClosedList.Clear();
+             IPathing.PathToEndPoint.Clear();
          }
      }
 }

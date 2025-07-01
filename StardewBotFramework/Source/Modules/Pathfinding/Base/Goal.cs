@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using StardewBotFramework.Debug;
 using StardewValley;
 
 namespace StardewBotFramework.Source.Modules.Pathfinding.Base;
@@ -33,6 +34,23 @@ public class Goal
         return false;
     }
 
+    public bool IsInEndRadius(PathNode node,int radius)
+    {
+        for (int x = VectorLocation.X + radius; x > VectorLocation.X - radius; x--)
+        {
+            for (int y = VectorLocation.Y + radius; y > VectorLocation.Y - radius; y--)
+            {
+                if (node.X == x && node.Y == y) // check if node is in radius
+                {
+                    Logger.Warning($"IsInEndRadius is returning true");
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+    
     /// <summary>
     /// A specific position the bot should stand on.
     /// </summary>
@@ -65,6 +83,8 @@ public class Goal
     /// </summary>
     public class GetToTile : Goal
     {
+        public int Radius;
+        
         public GetToTile(int x,int y)
         {
             X = x;
@@ -78,12 +98,12 @@ public class Goal
     public class GoalDynamic : Goal
     {
         public Character character;
-        public int Range;
+        public int Radius;
 
         public GoalDynamic(Character _character, int range)
         {
             character = _character;
-            Range = range;
+            Radius = range;
         }
     }
 }
