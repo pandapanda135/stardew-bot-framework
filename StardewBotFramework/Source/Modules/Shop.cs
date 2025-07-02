@@ -207,7 +207,7 @@ public class Shop
     /// </summary>
     /// <param name="item">This is the item you want to sell must be in the bot's inventory</param>
     /// <returns>The amount the item has sold for. However, if this returns -1 it means there has been an issue with selling item</returns>
-    public int SellBackItem(Item item) //TODO: add sell back check using https://stardewvalleywiki.com/Modding:Items#Categories
+    public int SellBackItem(Item item)
     {
         if (Game1.player.Items.IndexOf(item) == -1)
         {

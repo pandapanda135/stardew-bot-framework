@@ -3,6 +3,7 @@ using Netcode;
 using StardewValley;
 using StardewValley.GameData.Characters;
 using StardewValley.Inventories;
+using StardewValley.Menus;
 using StardewValley.Objects.Trinkets;
 using Object = StardewValley.Object;
 
@@ -79,5 +80,69 @@ public class Player
     public Point BotTilePosition()
     {
         return Game1.player.TilePoint;
+    }
+}
+
+/// <summary>
+/// Get information about bot's character, this includes information like skills and relationship status
+/// </summary>
+public class PlayerInformation
+{
+    /// <summary>
+    /// Get the level of all skills.
+    /// </summary>
+    /// <param name="showUI">Will show the skill UI when this is called, ExitMenu will need to be called after to exit. Defaults to false</param>
+    /// <returns>The index's of the skills are as follows: farming, fishing, foraging, mining, combat and luck</returns>
+    public List<int> SkillLevel(bool showUI = false)
+    {
+        if (showUI)
+        {
+            Game1.activeClickableMenu = new GameMenu();
+            if (Game1.activeClickableMenu is GameMenu gameMenu)
+                Game1.activeClickableMenu.receiveLeftClick(gameMenu.tabs[1].bounds.X + 5, gameMenu.tabs[1].bounds.Y + 5);
+        }
+        
+        List<int> skills = new();
+        for (int i = 0; i < 5; i++)
+        {
+            skills.Add(StardewClient.Farmer.GetSkillLevel(i));
+        }
+
+        return skills;
+    }
+
+    /// <summary>
+    /// Get the relationship level of all available characters, will play sound of going to menu even when instantExit is true
+    /// </summary>
+    /// <param name="instantExit">Will not show the game UI when getting values (will still play the sound though)</param>
+    /// <returns>Will return the character's name and the heart level that would typically be displayed as a dictionary</returns>
+    public Dictionary<string, int> RelationshipLevel(bool instantExit)
+    {
+        Dictionary<string, int> relationships = new();
+        
+        Game1.activeClickableMenu = new GameMenu();
+        GameMenu gameMenu = Game1.activeClickableMenu as GameMenu;
+        if (instantExit) 
+            Game1.activeClickableMenu.receiveLeftClick(gameMenu!.tabs[2].bounds.X + 5,gameMenu.tabs[2].bounds.Y + 5,false);
+        else            
+            Game1.activeClickableMenu.receiveLeftClick(gameMenu!.tabs[2].bounds.X + 5,gameMenu.tabs[2].bounds.Y + 5);
+
+        SocialPage socialTabPage = gameMenu.pages[2] as SocialPage;
+        
+        List<SocialPage.SocialEntry> levels = socialTabPage.FindSocialCharacters();
+        
+        if (instantExit) ExitMenu();
+        
+        foreach (var socialEntry in levels)
+        {
+            relationships.Add(socialEntry.Character.Name,socialEntry.HeartLevel);
+        }
+
+        return relationships;
+    }
+
+    public void ExitMenu()
+    {
+        Game1.activeClickableMenu = null;
     }
 }

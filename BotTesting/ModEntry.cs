@@ -42,7 +42,7 @@ internal sealed class ModEntry : Mod
         helper.ConsoleCommands.Add("emote", $"", EmoteCommand);
         helper.ConsoleCommands.Add("craft", $"", CraftCommand);
         helper.ConsoleCommands.Add("building", $"", BuildingCommand);
-        helper.ConsoleCommands.Add("Response", "", ResponseCommand);
+        helper.ConsoleCommands.Add("response", "", ResponseCommand);
         helper.ConsoleCommands.Add("buy", "", BuyCommand);
         helper.ConsoleCommands.Add("shirt", "", CharacterCreatorCommand);
         helper.ConsoleCommands.Add("main", "", MainMenuCommand);
@@ -50,6 +50,8 @@ internal sealed class ModEntry : Mod
         helper.ConsoleCommands.Add("shop", "", SetShopCommand);
         helper.ConsoleCommands.Add("geode", "", UseGeodeCommand);
         helper.ConsoleCommands.Add("place", "", PlaceObjectCommand);
+        helper.ConsoleCommands.Add($"StartDialogue", "", DialogueInteractCommand);
+        helper.ConsoleCommands.Add("advance", "", AdvanceDialogueCommand);
     }
 
     private readonly List<string> _desObjects = new List<string>() { "rock","twig","Rock","Twig","Weeds","weeds","Stone" };
@@ -150,13 +152,14 @@ internal sealed class ModEntry : Mod
                 if (character.Name == "Pierre")
                 {
                     Stack<Dialogue> dialogues = new();
-                    _bot.Dialogue.InteractWithCharacter(character,out dialogues);
+                    _bot.Dialogue.InteractWithCharacter(character,out dialogues,out var loadedDialogue);
                 }
             }
         }
         else if (e.Button == SButton.R)
         {
-            _bot.Dialogue.AdvanceDialogBox();
+            _bot.Dialogue.AdvanceDialogBox(out var line);
+            Logger.Info($"Dialogue Line from advance: {line}");
         }
         else if (e.Button == SButton.C)
         {
@@ -214,15 +217,62 @@ internal sealed class ModEntry : Mod
         }
         else if (e.Button == SButton.H)
         {
-            _bot.Blacksmith.OpenShopUi((int)Game1.currentCursorTile.X,(int)Game1.currentCursorTile.Y,2);
+            foreach (var skill in _bot.PlayerInformation.SkillLevel())
+            {
+                Logger.Info($"skill: {skill}");
+            }
         }
-        else if (e.Button == SButton.N)
+        else if (e.Button == SButton.B)
         {
-            Logger.Info(_bot.ObjectInteraction.TryToPlaceObject(Game1.player.CurrentItem as Object, (int)Game1.player.position.X + 64,
-                (int)Game1.player.Position.Y + 64).ToString());
+            foreach (var kvp in _bot.PlayerInformation.RelationshipLevel(true))
+            {
+                Logger.Info($"Character: {kvp.Key}  level: {kvp.Value}");
+            }
         }
     }
 
+    private void DialogueInteractCommand(string arg, string[] args)
+    {
+        Point point = new Point(int.Parse(args[0]), int.Parse(args[1]));
+        NPC? npc = _bot.Dialogue.GetCharacterAtTile(point);
+
+        if (npc is null)
+        {
+            Logger.Warning($"There is no npc at {point}");
+        }
+        _bot.Dialogue.InteractWithCharacter(npc,out var dialogues,out var loadedDialogue);
+        Logger.Info($"Loaded dialogue is {loadedDialogue}");
+
+        _dialogue = loadedDialogue;
+        
+        foreach (var dialogue in dialogues)
+        {
+            Logger.Info($"Dialogue: {dialogue.isOnFinalDialogue()}");
+            foreach (var dialogueLine in dialogue.dialogues)
+            {
+                Logger.Info($"Dialogue line: {dialogueLine.Text}");
+            }
+        }
+    }
+    
+    private void AdvanceDialogueCommand(string arg, string[] args)
+    {
+        _bot.Dialogue.AdvanceDialogBox(out var line);
+        Logger.Info($"Line: {line}");
+    }
+
+    private void ResponseCommand(string arg, string[] args)
+    {
+        List<NPCDialogueResponse>? responses = _bot.Dialogue.PossibleNpcDialogueResponses();
+
+        // Response[] responsesArray = _bot.Dialogue.PossibleResponses(_dialogue);
+        
+        int intargs = Convert.ToInt32(args[0]);
+            
+        // _bot.Dialogue.ChooseResponse(_dialogue,responsesArray[intargs]);
+        _bot.Dialogue.ChooseResponse(responses[intargs]);
+    }
+    
     private void PlaceObjectCommand(string arg, string[] args)
     {
         Object currentItem = Game1.player.CurrentItem as Object;
@@ -296,15 +346,6 @@ internal sealed class ModEntry : Mod
         _bot.Shop.BuyItem(intargs,quantity);
     }
     
-    private void ResponseCommand(string arg, string[] args)
-    {
-        List<NPCDialogueResponse>? responses = _bot.Dialogue.PossibleNpcDialogueResponses(_dialogue);
-
-        int intargs = Convert.ToInt32(args[0]);
-            
-        _bot.Dialogue.ChooseResponse(_dialogue,responses[intargs]);
-    }
-
     private void ChatCommand(string arg, string[] args)
     {
         string message = "";

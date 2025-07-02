@@ -1,3 +1,4 @@
+using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Modules;
 using StardewBotFramework.Source.Modules.MainMenu;
@@ -24,9 +25,9 @@ public class StardewClient
     public InventoryManagement Inventory { get; }
     public Time Time { get; }
     public Player Player { get; }
+    public PlayerInformation PlayerInformation { get; }
     public Chat Chat { get; }
     public Pathfinder Pathfinding { get; }
-
     public Buildings Building { get; }
     public DialogueManager Dialogue { get; }
     public Characters Characters { get; }
@@ -55,6 +56,7 @@ public class StardewClient
         Inventory = new InventoryManagement();
         Time = new Time();
         Player = new Player();
+        PlayerInformation = new PlayerInformation();
         Chat = new Chat();
         Pathfinding = new Pathfinder();
         Building = new Buildings();
