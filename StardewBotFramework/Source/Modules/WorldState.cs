@@ -1,4 +1,5 @@
 using StardewBotFramework.Debug;
+using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Network;
 
@@ -53,6 +54,14 @@ public class Time
     public string GetTimeString()
     {
         return Game1.getTimeOfDayString(Game1.timeOfDay);
+    }
+
+    /// <summary>
+    /// Get the current date as an <see cref="SDate"/> from SMAPI
+    /// </summary>
+    public SDate GetSDate()
+    {
+        return SDate.Now();
     }
 
     /// <summary>
