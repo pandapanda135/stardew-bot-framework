@@ -70,7 +70,6 @@ public class CharacterController
 			_endPath.ToArray()[_neighbourIndex].Destroy = false;
 		}
 		
-		Logger.Info($"running MoveCharacter");
 		PathNode node = _endPath.Peek();
 		Rectangle targetTile = new Rectangle(node.X * 64, node.Y * 64, 64, 64);
 		Rectangle bbox = _character.GetBoundingBox();
@@ -126,7 +125,6 @@ public class CharacterController
 				_neighbourIndex = _endPath.ToList().IndexOf(_nextNode); // need this to set next PathNode.Destroy to false
 			}
 
-			Logger.Info($"running foreach: {pathNode.VectorLocation}  destroy: {pathNode.Destroy}");
 			if (pathNode.Destroy && !_isDestroying)
 			{
 				for (int i = 0; i <= 3; i++)
@@ -135,7 +133,6 @@ public class CharacterController
 					int neighborX = pathNode.X + Directions[i, 0];
 					int neighborY = pathNode.Y + Directions[i, 1];
 
-					Logger.Info($"getting cardinal directions: {neighborX}, {neighborY}   player pos: {Game1.player.TilePoint.X}, {Game1.player.TilePoint.Y}");		
 					if (neighborX == Game1.player.TilePoint.X && neighborY == Game1.player.TilePoint.Y) // need to get neighbour 
 					{
 						// this is to fix issues with sudden direction changes in path (should maybe try to make it so the bot goes in the middle of a tile as this is kind of a patch fix)

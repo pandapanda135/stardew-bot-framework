@@ -83,7 +83,7 @@ public class Goal
     /// </summary>
     public class GetToTile : Goal
     {
-        public int Radius;
+        public int Radius = 1;
         
         public GetToTile(int x,int y)
         {

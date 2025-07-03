@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Netcode;
+using StardewBotFramework.Debug;
 using StardewValley;
 using StardewValley.GameData.Characters;
 using StardewValley.Inventories;
@@ -51,11 +52,40 @@ public class Player
     /// <param name="direction">This acts as a shortcut to <see cref="ChangeFacingDirection"/>. If this is not set or not a valid value the tool will be used in the currently facing direction</param>
     public void UseTool(int direction = -1)
     {
-        if (direction > 0 && direction < 4) // should account for if user uses a none valid value
+        Logger.Info($"direction: {direction}");
+        if (direction < 0 || direction > 4) // should account for if user uses a none valid value
         {
-            ChangeFacingDirection(direction);
+            Logger.Info($"Not using direction at tool");
+            Game1.player.BeginUsingTool(); // Object.performToolAction
+            return;
+        
         }
-        Game1.player.BeginUsingTool(); // Object.performToolAction
+        
+        Logger.Info($"using tool at direction: {direction}");
+        ChangeFacingDirection(direction);
+        switch (direction) // N,E,S,W
+        {
+            case 0:
+                StardewClient.Farmer.lastClick = new Vector2(StardewClient.Farmer.lastClick.X,
+                    StardewClient.Farmer.lastClick.Y - 1 * 64);
+                StardewClient.Farmer.BeginUsingTool();
+                break;
+            case 1:
+                StardewClient.Farmer.lastClick = new Vector2(StardewClient.Farmer.lastClick.X - 1 * 64,
+                    StardewClient.Farmer.lastClick.Y);
+                StardewClient.Farmer.BeginUsingTool();
+                break;
+            case 2:
+                StardewClient.Farmer.lastClick = new Vector2(StardewClient.Farmer.lastClick.X,
+                    StardewClient.Farmer.lastClick.Y + 1 * 64);
+                StardewClient.Farmer.BeginUsingTool();
+                break;
+            case 3:
+                StardewClient.Farmer.lastClick = new Vector2(StardewClient.Farmer.lastClick.X + 1 * 64,
+                    StardewClient.Farmer.lastClick.Y);
+                StardewClient.Farmer.BeginUsingTool();
+                break;
+        }
     }
 
     /// <summary>

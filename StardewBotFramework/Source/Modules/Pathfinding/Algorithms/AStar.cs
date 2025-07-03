@@ -78,7 +78,7 @@ public class AStar : AlgorithmBase
                 if (IPathing.CanEnd(current,goal))
                 {
                     Logger.Info($"breaking as current is equal to goal");
-                    IPathing.PathToEndPoint.Push(current);
+                    // IPathing.PathToEndPoint.Push(current);
                     break; // this is here as cant return in NodeChecks. This checks if this is goal
                 }
                 
@@ -98,7 +98,7 @@ public class AStar : AlgorithmBase
                         }
                         
                         next.Cost = newCost;
-                        int priority = newCost + PathNode.ManhattanHeuristic(new Vector2(next.X, next.Y),goal.VectorLocation.ToVector2());
+                        int priority = newCost + PathNode.ManhattanHeuristic(next.VectorLocation.ToVector2(),goal.VectorLocation.ToVector2());
                         Logger.Info($"A Star estimated heuristic {priority}");
                         IPathing.PriorityFrontier.Enqueue(next, priority);
                         IPathing.PathToEndPoint.Push(next);
@@ -108,7 +108,7 @@ public class AStar : AlgorithmBase
                 increase++;
             }
             
-            Logger.Info($"Uniform about to return");
+            Logger.Info($"AStar about to return");
             return IPathing.RebuildPath(startNode, goal, IPathing.PathToEndPoint);
         }
 
@@ -116,6 +116,7 @@ public class AStar : AlgorithmBase
         private void ClearVariables()
         {
             IPathing.Frontier = new();
+            IPathing.PriorityFrontier.Clear();
             IPathing.ClosedList.Clear();
             IPathing.PathToEndPoint.Clear();
         }

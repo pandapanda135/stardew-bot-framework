@@ -1,15 +1,12 @@
 ﻿using System.Collections;
 using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
+using StardewBotFramework.Source.Modules.Pathfinding.Base;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewPathfinding.Pathfinding;
-using StardewPathfinding.Pathfinding.AStar;
-using StardewPathfinding.Pathfinding.BreadthFirst;
-using StardewPathfinding.Pathfinding.GreedyBest;
 using StardewValley;
 using StardewValley.Pathfinding;
-using PathNode = StardewPathfinding.Pathfinding.PathNode;
+using PathNode = StardewBotFramework.Source.Modules.Pathfinding.Base.PathNode;
 
 namespace StardewBotFramework.Source;
 

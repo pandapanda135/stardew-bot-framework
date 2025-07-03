@@ -54,7 +54,7 @@ public class AlgorithmBase
 
         protected static readonly Graph Graph = new();
 
-        protected static CollisionMap collisionMap = new();
+        public static CollisionMap collisionMap = new();
 
         public Task<Stack<PathNode>> FindPath(PathNode startPoint, Goal goal, GameLocation location,
             int limit,bool canDestroy = false);
@@ -103,7 +103,7 @@ public class AlgorithmBase
         {
             Logger.Info($"Current tile {currentNode.X},{currentNode.Y}");
 
-            if (goal.IsEnd(currentNode)) // put GoalReached here (I think)
+            if (goal.IsEnd(currentNode) || IPathing.CanEnd(currentNode,goal)) // put GoalReached here (I think)
             {
                 Logger.Info($"Ending using CheckIfEnd function");
                 // _pathfinding.PathToEndPoint.Reverse(); // this is done as otherwise get ugly paths
@@ -197,7 +197,6 @@ public class AlgorithmBase
                     Rectangle rect = new Rectangle(x * Game1.tileSize + 1, y * Game1.tileSize + 1, 62, 62);
                     if (!Game1.currentLocation.isCollidingPosition(rect, Game1.viewport, true, 0, false, Game1.player))
                         continue;
-                    Logger.Error($"adding {x},{y} to blockedTiles");
                     map.BlockedTiles.Add((x,y));
                 }
             }

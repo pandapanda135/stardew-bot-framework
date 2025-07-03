@@ -9,12 +9,7 @@ namespace StardewBotFramework.Source.Modules;
 
 public class InventoryManagement
 {
-    const int HotBarCount = 12;
-    const int MaxInventorySpace = Farmer.maxInventorySpace;
     // public int CurrentItemSlotCount = Game1.player.MaxItems;
-
-    private static readonly int[] EquippableSlots = new int[]{37,38,39,40,41,42}; // temporary so I don't forget need to do more digging in how the game handles it though
-
     // Items in Inventory should IList<Item> (presumably 0-35)
     
     #region GeneralMethods
@@ -82,9 +77,13 @@ public class InventoryManagement
     /// Shift toolbar one step
     /// </summary>
     /// <param name="right">if true will shift to the right else left</param>
-    public void SelectInventoryRowForToolbar(bool right) // row of items should probably be from 0-2 or 1-3 
+    /// <param name="amount">How many times you want to shift toolbar</param>
+    public void SelectInventoryRowForToolbar(bool right,int amount = 1) // row of items should probably be from 0-2 or 1-3 
     {
-        Game1.player.shiftToolbar(right);
+        for (int i = 0; i < amount; i++)
+        {
+            Game1.player.shiftToolbar(right);
+        }
     }
 
     /// <summary>

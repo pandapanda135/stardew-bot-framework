@@ -1,6 +1,6 @@
 using StardewBotFramework.Source.Modules.Pathfinding.Algorithms;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
-using StardewPathfinding.Debug;
+using StardewBotFramework.Debug;
 using StardewValley;
 
 namespace StardewBotFramework.Source.Modules.Pathfinding;
@@ -10,6 +10,7 @@ namespace StardewBotFramework.Source.Modules.Pathfinding;
 /// </summary>
 public class Pathfinder
 {
+    private static AlgorithmBase.IPathing _pathfinder = new AStar.Pathing();
     /// <summary>
     /// These are the objects the pathfinding can destroy.
     /// </summary>
@@ -28,16 +29,16 @@ public class Pathfinder
             Logger.Warning("No set destructible objects");
             return;
         }
-        
-        AlgorithmBase.IPathing pathfinder = new AStar.Pathing();
 
-        pathfinder.BuildCollisionMap(Game1.currentLocation);
+        AlgorithmBase.IPathing pathing = new AStar.Pathing();
+        
+        pathing.BuildCollisionMap(Game1.currentLocation);
         
         PathNode start = new PathNode(Game1.player.TilePoint.X, Game1.player.TilePoint.Y, null);
 
         AlgorithmBase.IPathing.DestructibleObjects = DestructibleObjects;
         
-        Stack<PathNode> path = await pathfinder.FindPath(start,goal,Game1.currentLocation,10000,canDestroy);
+        Stack<PathNode> path = await pathing.FindPath(start,goal,Game1.currentLocation,10000,canDestroy);
         
         CharacterController.StartMoveCharacter(path, Game1.player, Game1.currentLocation,
             Game1.currentGameTime);
@@ -54,15 +55,23 @@ public class Pathfinder
     /// <returns>A <see cref="Stack{T}"/> of <see cref="PathNode"/>, the end point will be first in dequeue and the start will be last</returns>
     public async Task<Stack<PathNode>> GetPathTo(Goal goal, int distance,bool canDestroy = false)
     {
-        AlgorithmBase.IPathing pathfinder = new AStar.Pathing();
-
-        pathfinder.BuildCollisionMap(Game1.currentLocation);
+        _pathfinder.BuildCollisionMap(Game1.currentLocation);
 
         PathNode start = new PathNode(Game1.player.TilePoint.X, Game1.player.TilePoint.Y, null);
 
-        return await pathfinder.FindPath(start, goal, Game1.currentLocation, distance,canDestroy);
+        return await _pathfinder.FindPath(start, goal, Game1.currentLocation, distance,canDestroy);
     }
 
+    public bool IsBlocked(int x, int y)
+    {
+        return AlgorithmBase.IPathing.collisionMap.IsBlocked(x,y);
+    }
+
+    public void BuildCollisionMap()
+    {
+        _pathfinder.BuildCollisionMap(StardewClient.CurrentLocation);
+    }
+    
     private bool IsMoving()
     {
         return CharacterController.IsMoving();
