@@ -36,4 +36,9 @@ public class MainMenuNavigation
         Rectangle buttonBounds = _titleMenu.buttons[3].bounds; 
         _titleMenu.receiveLeftClick(buttonBounds.X,buttonBounds.Y);
     }
+
+    public void ExitSubMenu()
+    {
+        TitleMenu.ReturnToMainTitleScreen();
+    }
 }

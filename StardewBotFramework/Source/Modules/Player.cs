@@ -119,6 +119,22 @@ public class Player
 public class PlayerInformation
 {
     /// <summary>
+    /// The pages that the active clickable menu can be if you are using the methods provided by the framework this is changed for you.
+    /// </summary>
+    public enum MenuStates
+    {
+        Inventory,
+        Relationship,
+        Skill,
+        None,
+    }
+
+    /// <summary>
+    /// Get which inventory page they are in
+    /// </summary>
+    public static MenuStates MenuState = MenuStates.None;
+
+    /// <summary>
     /// Get the level of all skills.
     /// </summary>
     /// <param name="showUI">Will show the skill UI when this is called, ExitMenu will need to be called after to exit. Defaults to false</param>
@@ -127,6 +143,7 @@ public class PlayerInformation
     {
         if (showUI)
         {
+            MenuState = PlayerInformation.MenuStates.Skill;
             Game1.activeClickableMenu = new GameMenu();
             if (Game1.activeClickableMenu is GameMenu gameMenu)
                 Game1.activeClickableMenu.receiveLeftClick(gameMenu.tabs[1].bounds.X + 5, gameMenu.tabs[1].bounds.Y + 5);
@@ -148,6 +165,7 @@ public class PlayerInformation
     /// <returns>Will return the character's name and the heart level that would typically be displayed as a dictionary</returns>
     public Dictionary<string, int> RelationshipLevel(bool instantExit)
     {
+        MenuState = MenuStates.Relationship;
         Dictionary<string, int> relationships = new();
         
         Game1.activeClickableMenu = new GameMenu();
@@ -171,8 +189,25 @@ public class PlayerInformation
         return relationships;
     }
 
+    /// <summary>
+    /// Will open the inventory menu
+    /// </summary>
+    /// <returns></returns>
+    public Inventory OpenInventory()
+    {
+        MenuState = MenuStates.Inventory;
+        Game1.activeClickableMenu = new GameMenu();
+        GameMenu? gameMenu = Game1.activeClickableMenu as GameMenu;
+        Game1.activeClickableMenu.receiveLeftClick(gameMenu!.tabs[0].bounds.X + 5,gameMenu.tabs[0].bounds.Y + 5);
+
+        InventoryPage? tabPage = gameMenu.pages[0] as InventoryPage;
+
+        return StardewClient.Farmer.Items;
+    }
+    
     public void ExitMenu()
     {
+        MenuState = MenuStates.None;
         Game1.activeClickableMenu = null;
     }
 }

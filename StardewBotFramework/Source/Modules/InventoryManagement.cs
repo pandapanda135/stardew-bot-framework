@@ -9,6 +9,10 @@ namespace StardewBotFramework.Source.Modules;
 
 public class InventoryManagement
 {
+    /// <summary>
+    /// The max amount of items in the bots inventory
+    /// </summary>
+    public int MaxInventory => StardewClient.Farmer.MaxItems;
     // public int CurrentItemSlotCount = Game1.player.MaxItems;
     // Items in Inventory should IList<Item> (presumably 0-35)
     
@@ -53,6 +57,7 @@ public class InventoryManagement
     {
         if (!Game1.player.Items.Contains(item)) return item;
 
+        Utility.removeItemFromInventory(GetItemIndex(GetInventory(), item),GetInventory());
         return Utility.addItemToInventory(item, position, Game1.player.Items, callbackMethod);
     }
 
@@ -98,6 +103,25 @@ public class InventoryManagement
         }
 
         Game1.player.CurrentToolIndex = slot;
+    }
+    
+    
+    private int GetItemIndex(Inventory inventory,Item item)
+    {
+        int index = new();
+        for (int i = 0; i < inventory.Count; i++)
+        {
+            if (!inventory.Contains(item))
+            {
+                return -1;
+            }
+
+            if (inventory[i] != item) continue;
+
+            index = i;
+        }
+
+        return index;
     }
     #endregion
 
