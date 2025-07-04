@@ -223,9 +223,13 @@ public class CharacterCreation
     public Dictionary<int, string> GetPossibleShirts()
     {
         Dictionary<int, string> shirts = new();
+        if (_characterCustomization is null)
+        {
+            Logger.Error($"you have not set character creation yet");
+            return new();
+        }
         foreach (var shirtId in _characterCustomization.GetValidShirtIds())
         {
-            Logger.Info($"shirtID: {shirtId}");
             Item shirt = ItemRegistry.Create($"(S){shirtId}");
             shirts.Add(Int32.Parse(shirtId),shirt.Name);
         }
