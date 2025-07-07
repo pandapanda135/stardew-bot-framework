@@ -18,8 +18,14 @@ public class Player
     public int Health => StardewClient.Farmer.health;
     public float Stamina => StardewClient.Farmer.Stamina;
     public Inventory Inventory => StardewClient.Farmer.Items;
+    public Item? HeldItem => StardewClient.Farmer.CurrentItem;
     public NetList<Trinket, NetRef<Trinket>> Trinkets => StardewClient.Farmer.trinketItems;
     public IDictionary<string, CharacterData> NpcData => Game1.characterData;// this can be used for relationship and stuff this information is cached by the game
+
+    /// <summary>
+    /// Goes 0-3 from North,East,South,West
+    /// </summary>
+    public int FacingDirection => StardewClient.Farmer.FacingDirection;
 
     /// <summary>
     /// Changes direction the player sprite is facing
@@ -118,6 +124,11 @@ public class Player
 /// </summary>
 public class PlayerInformation
 {
+    /// <summary>
+    /// Use this to get the character's name.
+    /// </summary>
+    public string Name = StardewClient.Farmer.Name;
+    
     /// <summary>
     /// The pages that the active clickable menu can be if you are using the methods provided by the framework this is changed for you.
     /// </summary>

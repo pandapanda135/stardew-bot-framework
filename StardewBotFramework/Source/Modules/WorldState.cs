@@ -1,7 +1,9 @@
+using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
 using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Network;
+using Object = StardewValley.Object;
 
 namespace StardewBotFramework.Source.Modules;
 
@@ -10,6 +12,16 @@ namespace StardewBotFramework.Source.Modules;
 /// </summary>
 public class WorldState
 {
+    /// <summary>
+    /// Get all characters in the current <see cref="GameLocation"/>.
+    /// </summary>
+    public Dictionary<Point,NPC> CharactersInLocation => _characters.GetCharactersInCurrentLocation(StardewClient.CurrentLocation);
+
+    /// <summary>
+    /// Get all <see cref="Object"/> in location as a <see cref="OverlaidDictionary"/>
+    /// </summary>
+    public OverlaidDictionary ObjectsInLocation => Game1.currentLocation.Objects;
+    private readonly Characters _characters = new Characters();
     /// <summary>Get the current weather in this location's context (regardless of whether the player is currently indoors or outdoors).</summary>
     /// <returns><see cref="LocationWeather"/> of current location</returns>
     public LocationWeather GetCurrentLocationWeather()
@@ -57,7 +69,7 @@ public class Time
     }
 
     /// <summary>
-    /// Get the current date as an <see cref="SDate"/> from SMAPI
+    /// Get the current date as an <see cref="SDate"/> from SMAPI. This is the recommended way of getting the state of the year 
     /// </summary>
     public SDate GetSDate()
     {

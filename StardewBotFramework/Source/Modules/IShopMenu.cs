@@ -1,5 +1,6 @@
 using StardewBotFramework.Debug;
 using StardewValley;
+using StardewValley.Inventories;
 using StardewValley.Menus;
 using xTile.Dimensions;
 

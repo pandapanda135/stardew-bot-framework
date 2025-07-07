@@ -6,9 +6,9 @@ namespace StardewBotFramework.Source.Modules;
 
 public class Characters
 {
-    public Dictionary<string, Point> GetCharactersInCurrentLocation(GameLocation location)
+    public Dictionary<Point, NPC> GetCharactersInCurrentLocation(GameLocation location)
     {
-        Dictionary<string, Point> characters = new();
+        Dictionary<Point, NPC> characters = new();
         
         // remove one as to not go around map
         int maxX = location.Map.DisplayWidth / Game1.tileSize;
@@ -24,11 +24,11 @@ public class Characters
 
                     if (character is null) continue;
                     
-                    if (characters.ContainsKey(character.Name))
+                    if (characters.ContainsValue(character))
                     {
                         continue;
                     }
-                    characters.Add(character.Name, new Point(x, y));
+                    characters.Add(new Point(x, y),character);
                 }
                     
             }
