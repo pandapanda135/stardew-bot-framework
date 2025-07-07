@@ -28,7 +28,7 @@ internal sealed class ModEntry : Mod
         try
         {
             Logger.Info($"Setting up bot");
-            _bot = new StardewClient(helper, Monitor, helper.Multiplayer);
+            _bot = new StardewClient(helper, ModManifest,Monitor, helper.Multiplayer);
         }
         catch (Exception e)
         {
