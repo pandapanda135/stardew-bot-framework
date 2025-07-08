@@ -67,4 +67,20 @@ public class ObjectInteraction
     {
         return Utility.tryToPlaceItem(StardewClient.CurrentLocation, item, x, y);
     }
+
+    public Object? GetObjectAtTile(int x, int y)
+    {
+        foreach (var dictionary in StardewClient.CurrentLocation.Objects)
+        {
+            foreach (var tileVector in dictionary.Keys)
+            {
+                if ((int)tileVector.X == x && (int)tileVector.Y == y)
+                {
+                    return dictionary[tileVector];
+                }
+            }
+        }
+
+        return null;
+    }
 }
