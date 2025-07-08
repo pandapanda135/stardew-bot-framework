@@ -1,9 +1,8 @@
-using System.Net.Sockets;
 using StardewValley;
 
-namespace StardewBotFramework.Source.Events;
+namespace StardewBotFramework.Source.Events.EventArgs;
 
-public class BotWarpedEventArgs : EventArgs
+public class BotWarpedEventArgs : System.EventArgs
 {
     internal BotWarpedEventArgs(Farmer player,GameLocation oldLocation, GameLocation newLocation, bool isBot)
     {

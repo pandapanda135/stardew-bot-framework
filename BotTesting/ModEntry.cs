@@ -4,6 +4,8 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewBotFramework.Source;
 using StardewBotFramework.Debug;
+using StardewBotFramework.Source.Events;
+using StardewBotFramework.Source.Events.EventArgs;
 using StardewBotFramework.Source.Modules;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
 using StardewValley;
@@ -54,6 +56,11 @@ internal sealed class ModEntry : Mod
         helper.ConsoleCommands.Add("advance", "", AdvanceDialogueCommand);
     }
 
+    private void BotOnBotWarped(object? sender, BotWarpedEventArgs e)
+    {
+        Logger.Info($"bot warped to: {e.NewLocation.Name}");
+    }
+
     private readonly List<string> _desObjects = new List<string>() { "rock","twig","Rock","Twig","Weeds","weeds","Stone" };
     
     private Chest? _currentchest = null;
@@ -67,8 +74,11 @@ internal sealed class ModEntry : Mod
 
         if (e.Button == SButton.J)
         {
-            _bot.Chat.SendPublicMessage("happy");
-            _bot.Chat.UseEmote("heart");
+            Logger.Info($"current menu: {Game1.activeClickableMenu}");
+            Logger.Info($"bot: {_bot}");
+            Logger.Info($"shipping menu: {_bot.EndDayShippingMenu}");
+            _bot.EndDayShippingMenu.SetMenu(Game1.activeClickableMenu as ShippingMenu);
+            _bot.EndDayShippingMenu.OpenItemTypeMenu(3);
         }
         else if (e.Button == SButton.K)
         {

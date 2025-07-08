@@ -2,9 +2,9 @@ using Microsoft.Xna.Framework;
 using StardewValley;
 using StardewValley.TerrainFeatures;
 
-namespace StardewBotFramework.Source.Events;
+namespace StardewBotFramework.Source.Events.World_Events;
 
-public class BotTerrainFeatureChangedEventArgs : EventArgs
+public class BotTerrainFeatureChangedEventArgs : System.EventArgs
 {
     internal BotTerrainFeatureChangedEventArgs(IEnumerable<KeyValuePair<Vector2, TerrainFeature>> added,IEnumerable<KeyValuePair<Vector2, TerrainFeature>> removed,GameLocation location)
     {

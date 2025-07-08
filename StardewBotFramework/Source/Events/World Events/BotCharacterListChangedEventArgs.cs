@@ -1,8 +1,8 @@
 using StardewValley;
 
-namespace StardewBotFramework.Source.Events;
+namespace StardewBotFramework.Source.Events.World_Events;
 
-public class BotCharacterListChangedEventArgs : EventArgs
+public class BotCharacterListChangedEventArgs : System.EventArgs
 {
     internal BotCharacterListChangedEventArgs(IEnumerable<NPC> added, IEnumerable<NPC> removed, GameLocation location)
     {

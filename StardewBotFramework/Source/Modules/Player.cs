@@ -124,10 +124,6 @@ public class Player
 /// </summary>
 public class PlayerInformation
 {
-    /// <summary>
-    /// Use this to get the character's name.
-    /// </summary>
-    public string Name = StardewClient.Farmer.Name;
     
     /// <summary>
     /// The pages that the active clickable menu can be if you are using the methods provided by the framework this is changed for you.
@@ -139,12 +135,20 @@ public class PlayerInformation
         Skill,
         None,
     }
-
+    
+    /// <summary>
+    /// Use this to get the character's name.
+    /// </summary>
+    public string GetFarmerName()
+    {
+        return StardewClient.Farmer.Name;
+    }
+    
     /// <summary>
     /// Get which inventory page they are in
     /// </summary>
     public static MenuStates MenuState = MenuStates.None;
-
+    
     /// <summary>
     /// Get the level of all skills.
     /// </summary>

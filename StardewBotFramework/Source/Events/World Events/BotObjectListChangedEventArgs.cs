@@ -2,9 +2,9 @@ using Microsoft.Xna.Framework;
 using StardewValley;
 using Object = StardewValley.Object;
 
-namespace StardewBotFramework.Source.Events;
+namespace StardewBotFramework.Source.Events.World_Events;
 
-public class BotObjectListChangedEventArgs : EventArgs
+public class BotObjectListChangedEventArgs : System.EventArgs
 {
     internal BotObjectListChangedEventArgs(IEnumerable<KeyValuePair<Vector2, Object>> added,
         IEnumerable<KeyValuePair<Vector2, Object>> removed, GameLocation currentLocation)

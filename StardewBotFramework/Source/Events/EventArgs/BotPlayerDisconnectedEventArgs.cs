@@ -1,8 +1,8 @@
 using StardewModdingAPI;
 
-namespace StardewBotFramework.Source.Events;
+namespace StardewBotFramework.Source.Events.EventArgs;
 
-public class BotPlayerDisconnectedEventArgs : EventArgs
+public class BotPlayerDisconnectedEventArgs : System.EventArgs
 {
     internal BotPlayerDisconnectedEventArgs(IMultiplayerPeer peer)
     {

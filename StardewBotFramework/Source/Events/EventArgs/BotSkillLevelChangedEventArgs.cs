@@ -1,8 +1,8 @@
 using StardewModdingAPI.Enums;
 
-namespace StardewBotFramework.Source.Events;
+namespace StardewBotFramework.Source.Events.EventArgs;
 
-public class BotSkillLevelChangedEventArgs : EventArgs
+public class BotSkillLevelChangedEventArgs : System.EventArgs
 {
     internal BotSkillLevelChangedEventArgs(SkillType changedSkill,int oldLevel,int newLevel)
     {

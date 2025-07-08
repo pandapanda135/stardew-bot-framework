@@ -3,6 +3,8 @@ using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Events;
+using StardewBotFramework.Source.Events.EventArgs;
+using StardewBotFramework.Source.Events.World_Events;
 using StardewBotFramework.Source.Modules;
 using StardewBotFramework.Source.Modules.MainMenu;
 using StardewBotFramework.Source.Modules.Pathfinding;
@@ -26,6 +28,9 @@ public class StardewClient
     private readonly IMonitor _monitor;
     private readonly IMultiplayerHelper _multiplayer;
     
+    internal static Farmer Farmer => Game1.player;
+    internal static GameLocation CurrentLocation => Game1.currentLocation;
+
     #region Events
 
     /// <summary>
@@ -52,14 +57,37 @@ public class StardewClient
     /// When the bot's inventory changes 
     /// </summary>
     public event EventHandler<BotInventoryChangedEventArgs> BotInventoryChanged;
-
+    /// <summary>
+    /// When a skill the bot has changes, this will be called when it happens in the game and not be queued for when the day ends
+    /// </summary>
     public event EventHandler<BotSkillLevelChangedEventArgs> BotSkillChanged;
+    /// <summary>
+    /// When an object in the bot's current location changes.
+    /// </summary>
     public event EventHandler<BotObjectListChangedEventArgs> BotObjectChanged;
+    /// <summary>
+    /// When a NPC leaves or enters the bot's current locaiton.
+    /// </summary>
     public event EventHandler<BotCharacterListChangedEventArgs> BotLocationNpcChanged;
+    /// <summary>
+    /// When debris in the bot's current location changes.
+    /// </summary>
     public event EventHandler<BotDebrisChangedEventArgs> BotLocationDebrisChanged;
-    public event EventHandler<BotBuildingChangedEventArgs> BotLocationBuildingsChanged; 
+    /// <summary>
+    /// When a building in the bot's current location changes.
+    /// </summary>
+    public event EventHandler<BotBuildingChangedEventArgs> BotLocationBuildingsChanged;
+    /// <summary>
+    /// When furniture in the bot's current location changes.
+    /// </summary>
     public event EventHandler<BotFurnitureChangedEventArgs> BotLocationFurnitureChanged;
+    /// <summary>
+    /// When a Terrain feature (e.g. a tree or floor) in the bot's current location changes.
+    /// </summary>
     public event EventHandler<BotTerrainFeatureChangedEventArgs> BotTerrainFeatureChanged;
+    /// <summary>
+    /// When a Large terrain feature (e.g. bushes) in the bot's current location changes.
+    /// </summary>
     public event EventHandler<BotLargeTerrainFeatureChangedEventArgs> BotLargeTerrainFeatureChanged;
     /// <summary>
     /// When the time on the clock shown in-game changes, this is sent in the notation of.
@@ -90,7 +118,8 @@ public class StardewClient
     public LoadGame LoadMenu { get; }
     public Blacksmith Blacksmith { get; }
     public GameInformation GameInformation { get; }
-
+    public EndDaySkillMenu EndDaySkillMenu { get; }
+    public EndDayShippingMenu EndDayShippingMenu { get; }
     
 
     #endregion
@@ -127,6 +156,8 @@ public class StardewClient
         ObjectInteraction = new ObjectInteraction();
         Blacksmith = new Blacksmith();
         GameInformation = new GameInformation();
+        EndDaySkillMenu = new EndDaySkillMenu();
+        EndDayShippingMenu = new EndDayShippingMenu();
 
         
         _helper.Events.GameLoop.GameLaunched += OnGameLaunch;
@@ -160,69 +191,68 @@ public class StardewClient
     
     #region EventMethods
     
-    private void OnDayStarted(object? sender, DayStartedEventArgs e) => DayStarted.Invoke(this,new BotDayStartedEventArgs());
+    private void OnDayStarted(object? sender, DayStartedEventArgs e) => DayStarted.Invoke(sender,new BotDayStartedEventArgs());
     
-    private void OnDayEnding(object? sender, DayEndingEventArgs e) => DayEnded.Invoke(this, new BotDayEndedEventArgs());
+    private void OnDayEnding(object? sender, DayEndingEventArgs e) => DayEnded.Invoke(sender, new BotDayEndedEventArgs());
     
-    private void OnTimeChanged(object? sender, TimeChangedEventArgs e) => UiTimeChanged.Invoke(this,new TimeEventArgs(e.OldTime,e.NewTime));
+    private void OnTimeChanged(object? sender, TimeChangedEventArgs e) => UiTimeChanged.Invoke(sender,new TimeEventArgs(e.OldTime,e.NewTime));
 
-    private void OnWarped(object? sender, WarpedEventArgs e) => BotWarped.Invoke(this,new BotWarpedEventArgs(e.Player,e.OldLocation,e.NewLocation,e.IsLocalPlayer));
+    private void OnWarped(object? sender, WarpedEventArgs e) => BotWarped.Invoke(sender, new BotWarpedEventArgs(e.Player, e.OldLocation, e.NewLocation, e.IsLocalPlayer));
+    private void OnPeerConnected(object? sender, PeerConnectedEventArgs e) => PlayerConnected.Invoke(sender,new BotPlayerConnectedEventArgs(e.Peer)); 
     
-    private void OnPeerConnected(object? sender, PeerConnectedEventArgs e) => PlayerConnected.Invoke(this,new BotPlayerConnectedEventArgs(e.Peer)); 
-    
-    private void OnPeerDisconnected(object? sender, PeerDisconnectedEventArgs e) => PlayerDisconnected.Invoke(this,new BotPlayerDisconnectedEventArgs(e.Peer));
+    private void OnPeerDisconnected(object? sender, PeerDisconnectedEventArgs e) => PlayerDisconnected.Invoke(sender,new BotPlayerDisconnectedEventArgs(e.Peer));
     
     private void OnLargeTerrainFeatureListChanged(object? sender, LargeTerrainFeatureListChangedEventArgs e)
     {
         if (!e.IsCurrentLocation) return;
-        BotLargeTerrainFeatureChanged.Invoke(this,new BotLargeTerrainFeatureChangedEventArgs(e.Added,e.Removed,e.Location));
+        BotLargeTerrainFeatureChanged.Invoke(sender,new BotLargeTerrainFeatureChangedEventArgs(e.Added,e.Removed,e.Location));
     }
 
     private void OnTerrainFeatureListChanged(object? sender, TerrainFeatureListChangedEventArgs e)
     {
         if (!e.IsCurrentLocation) return;
-        BotTerrainFeatureChanged.Invoke(this,new BotTerrainFeatureChangedEventArgs(e.Added,e.Removed,e.Location));
+        BotTerrainFeatureChanged.Invoke(sender,new BotTerrainFeatureChangedEventArgs(e.Added,e.Removed,e.Location));
     }
 
     private void OnBuildingListChanged(object? sender, BuildingListChangedEventArgs e)
     {
         if (!e.IsCurrentLocation) return;
-        BotLocationBuildingsChanged.Invoke(this,new BotBuildingChangedEventArgs(e.Added,e.Removed,e.Location));
+        BotLocationBuildingsChanged.Invoke(sender,new BotBuildingChangedEventArgs(e.Added,e.Removed,e.Location));
     }
 
     private void OnFurnitureListChanged(object? sender, FurnitureListChangedEventArgs e)
     {
         if (!e.IsCurrentLocation) return;
-        BotLocationFurnitureChanged.Invoke(this,new BotFurnitureChangedEventArgs(e.Added,e.Removed,e.Location));
+        BotLocationFurnitureChanged.Invoke(sender,new BotFurnitureChangedEventArgs(e.Added,e.Removed,e.Location));
     }
 
     private void OnDebrisListChanged(object? sender, DebrisListChangedEventArgs e)
     {
         if (!e.IsCurrentLocation) return;
-        BotLocationDebrisChanged.Invoke(this,new BotDebrisChangedEventArgs(e.Added,e.Removed,e.Location));
+        BotLocationDebrisChanged.Invoke(sender,new BotDebrisChangedEventArgs(e.Added,e.Removed,e.Location));
     }
 
     private void OnNpcListChanged(object? sender, NpcListChangedEventArgs e)
     {
         if (!e.IsCurrentLocation) return;
-        BotLocationNpcChanged.Invoke(this,new BotCharacterListChangedEventArgs(e.Added,e.Removed,e.Location));
+        BotLocationNpcChanged.Invoke(sender,new BotCharacterListChangedEventArgs(e.Added,e.Removed,e.Location));
     }
     private void OnObjectListChanged(object? sender, ObjectListChangedEventArgs e)
     {
         if (!e.IsCurrentLocation) return;
-        BotObjectChanged.Invoke(this,new BotObjectListChangedEventArgs(e.Added,e.Removed,e.Location));
+        BotObjectChanged.Invoke(sender,new BotObjectListChangedEventArgs(e.Added,e.Removed,e.Location));
     }
 
     private void OnInventoryChanged(object? sender, InventoryChangedEventArgs e)
     {
         if (!e.IsLocalPlayer) return;
-        BotInventoryChanged.Invoke(this,new BotInventoryChangedEventArgs(e.Added.ToArray(),e.Removed.ToArray(),e.QuantityChanged.ToArray()));
+        BotInventoryChanged.Invoke(sender,new BotInventoryChangedEventArgs(e.Added.ToArray(),e.Removed.ToArray(),e.QuantityChanged.ToArray()));
     }
     
     private void OnLevelChanged(object? sender, LevelChangedEventArgs e)
     {
         if (!e.IsLocalPlayer) return;
-        BotSkillChanged.Invoke(this,new BotSkillLevelChangedEventArgs(e.Skill,e.OldLevel,e.NewLevel));
+        BotSkillChanged.Invoke(sender,new BotSkillLevelChangedEventArgs(e.Skill,e.OldLevel,e.NewLevel));
     }
     
     private void OnGameLaunch(object? sender, GameLaunchedEventArgs e) => Logger.Log($"Game launched setting up bot");
@@ -258,9 +288,6 @@ public class StardewClient
     internal IModHelper Helper => _helper;
     internal IMonitor Monitor => _monitor;
     internal IMultiplayerHelper Multiplayer => _multiplayer;
-
-    public static Farmer Farmer => Game1.player;
-    public static GameLocation CurrentLocation => Game1.currentLocation;
 
     private static IReflectedField<int>? _selectedResponse;
 

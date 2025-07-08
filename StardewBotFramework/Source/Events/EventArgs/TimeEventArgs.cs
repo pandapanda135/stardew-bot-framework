@@ -1,6 +1,6 @@
-namespace StardewBotFramework.Source.Events;
+namespace StardewBotFramework.Source.Events.EventArgs;
 
-public class TimeEventArgs : EventArgs
+public class TimeEventArgs : System.EventArgs
 {
     internal TimeEventArgs(int oldTime, int newTime)
     {

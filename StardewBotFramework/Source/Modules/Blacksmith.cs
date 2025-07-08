@@ -1,8 +1,6 @@
 using StardewBotFramework.Debug;
 using StardewValley;
-using StardewValley.Locations;
 using StardewValley.Menus;
-using xTile.Dimensions;
 
 namespace StardewBotFramework.Source.Modules;
 

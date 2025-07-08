@@ -1,9 +1,9 @@
 using StardewModdingAPI.Events;
 using StardewValley;
 
-namespace StardewBotFramework.Source.Events;
+namespace StardewBotFramework.Source.Events.EventArgs;
 
-public class BotInventoryChangedEventArgs : EventArgs
+public class BotInventoryChangedEventArgs : System.EventArgs
 {
     /// <summary>The added item stacks.</summary>
     public IEnumerable<Item> Added { get; }

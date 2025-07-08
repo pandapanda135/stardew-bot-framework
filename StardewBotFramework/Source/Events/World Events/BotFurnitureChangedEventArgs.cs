@@ -1,10 +1,9 @@
-using System.Diagnostics.Tracing;
 using StardewValley;
 using StardewValley.Objects;
 
-namespace StardewBotFramework.Source.Events;
+namespace StardewBotFramework.Source.Events.World_Events;
 
-public class BotFurnitureChangedEventArgs : EventArgs
+public class BotFurnitureChangedEventArgs : System.EventArgs
 {
     internal BotFurnitureChangedEventArgs(IEnumerable<Furniture> added,IEnumerable<Furniture> removed,GameLocation location)
     {

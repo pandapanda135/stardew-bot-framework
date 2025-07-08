@@ -1,8 +1,8 @@
 using StardewValley;
 
-namespace StardewBotFramework.Source.Events;
+namespace StardewBotFramework.Source.Events.World_Events;
 
-public class BotDebrisChangedEventArgs : EventArgs
+public class BotDebrisChangedEventArgs : System.EventArgs
 {
     internal BotDebrisChangedEventArgs(IEnumerable<Debris> added,IEnumerable<Debris> removed,GameLocation location)
     {

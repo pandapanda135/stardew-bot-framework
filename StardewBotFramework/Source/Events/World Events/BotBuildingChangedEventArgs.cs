@@ -1,9 +1,9 @@
 using StardewValley;
 using StardewValley.Buildings;
 
-namespace StardewBotFramework.Source.Events;
+namespace StardewBotFramework.Source.Events.World_Events;
 
-public class BotBuildingChangedEventArgs : EventArgs
+public class BotBuildingChangedEventArgs : System.EventArgs
 {
     internal BotBuildingChangedEventArgs(IEnumerable<Building> added,IEnumerable<Building> removed,GameLocation location)
     {
