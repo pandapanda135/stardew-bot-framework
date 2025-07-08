@@ -42,73 +42,78 @@ public class GameEvents
     {
         _helper = helper;
     }
+
+    #region Events
     
     /// <summary>
     /// On new Day Started.
     /// </summary>
-    public static event EventHandler<BotDayStartedEventArgs> DayStarted;
+    public event EventHandler<BotDayStartedEventArgs> DayStarted;
     /// <summary>
     /// On day ended
     /// </summary>
-    public static event EventHandler<BotDayEndedEventArgs> DayEnded; 
+    public event EventHandler<BotDayEndedEventArgs> DayEnded; 
     /// <summary>
     /// When a player connects to multiplayer world.
     /// </summary>
-    public static event EventHandler<BotPlayerConnectedEventArgs> PlayerConnected;
+    public event EventHandler<BotPlayerConnectedEventArgs> PlayerConnected;
     /// <summary>
     /// When a player disconnects to multiplayer world.
     /// </summary>
-    public static event EventHandler<BotPlayerDisconnectedEventArgs> PlayerDisconnected;
+    public event EventHandler<BotPlayerDisconnectedEventArgs> PlayerDisconnected;
     /// <summary>
     /// When the bot moves location.
     /// </summary>
-    public static event EventHandler<BotWarpedEventArgs> BotWarped;
+    public event EventHandler<BotWarpedEventArgs> BotWarped;
     /// <summary>
     /// When the bot's inventory changes 
     /// </summary>
-    public static event EventHandler<BotInventoryChangedEventArgs> BotInventoryChanged;
+    public event EventHandler<BotInventoryChangedEventArgs> BotInventoryChanged;
     /// <summary>
     /// When a skill the bot has changes, this will be called when it happens in the game and not be queued for when the day ends
     /// </summary>
-    public static event EventHandler<BotSkillLevelChangedEventArgs> BotSkillChanged;
+    public event EventHandler<BotSkillLevelChangedEventArgs> BotSkillChanged;
     /// <summary>
     /// When an object in the bot's current location changes.
     /// </summary>
-    public static event EventHandler<BotObjectListChangedEventArgs> BotObjectChanged;
+    public event EventHandler<BotObjectListChangedEventArgs> BotObjectChanged;
     /// <summary>
     /// When a NPC leaves or enters the bot's current locaiton.
     /// </summary>
-    public static event EventHandler<BotCharacterListChangedEventArgs> BotLocationNpcChanged;
+    public event EventHandler<BotCharacterListChangedEventArgs> BotLocationNpcChanged;
     /// <summary>
     /// When debris in the bot's current location changes.
     /// </summary>
-    public static event EventHandler<BotDebrisChangedEventArgs> BotLocationDebrisChanged;
+    public event EventHandler<BotDebrisChangedEventArgs> BotLocationDebrisChanged;
     /// <summary>
     /// When a building in the bot's current location changes.
     /// </summary>
-    public static event EventHandler<BotBuildingChangedEventArgs> BotLocationBuildingsChanged;
+    public event EventHandler<BotBuildingChangedEventArgs> BotLocationBuildingsChanged;
     /// <summary>
     /// When furniture in the bot's current location changes.
     /// </summary>
-    public static event EventHandler<BotFurnitureChangedEventArgs> BotLocationFurnitureChanged;
+    public event EventHandler<BotFurnitureChangedEventArgs> BotLocationFurnitureChanged;
     /// <summary>
     /// When a Terrain feature (e.g. a tree or floor) in the bot's current location changes.
     /// </summary>
-    public static event EventHandler<BotTerrainFeatureChangedEventArgs> BotTerrainFeatureChanged;
+    public event EventHandler<BotTerrainFeatureChangedEventArgs> BotTerrainFeatureChanged;
     /// <summary>
     /// When a Large terrain feature (e.g. bushes) in the bot's current location changes.
     /// </summary>
-    public static event EventHandler<BotLargeTerrainFeatureChangedEventArgs> BotLargeTerrainFeatureChanged;
+    public event EventHandler<BotLargeTerrainFeatureChangedEventArgs> BotLargeTerrainFeatureChanged;
     /// <summary>
     /// When the time on the clock shown in-game changes, this is sent in the notation of.
     /// 24-hour notation (like 1600 for 4pm). The clock time resets when the player sleeps, so 2am (before sleeping) is 2600.
     /// </summary>
-    public static event EventHandler<TimeEventArgs> UiTimeChanged;
+    public event EventHandler<TimeEventArgs> UiTimeChanged;
     
     public static event EventHandler<BotOnDeathEventArgs> OnBotDeath;
     public static event EventHandler<OnOtherPlayerDeathEventArgs> OnOtherPlayerDeath;
+    #endregion
 
-    private void OnDayStarted(object? sender, DayStartedEventArgs e) => GameEvents.DayStarted.Invoke(sender,new BotDayStartedEventArgs());
+    #region Methods
+    
+    private void OnDayStarted(object? sender, DayStartedEventArgs e) => DayStarted.Invoke(sender,new BotDayStartedEventArgs());
     
     private void OnDayEnding(object? sender, DayEndingEventArgs e) => DayEnded.Invoke(sender, new BotDayEndedEventArgs());
     
@@ -174,7 +179,8 @@ public class GameEvents
     
     private void OnGameLaunch(object? sender, GameLaunchedEventArgs e) => Logger.Log($"Game launched setting up bot");
         
-    
+    #endregion
+
     public class DeathPatch
     {
         public static void LoseItemsOnDeath_Postfix(Farmer __instance,ref int __result)

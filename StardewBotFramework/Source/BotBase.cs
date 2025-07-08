@@ -1,4 +1,5 @@
 using StardewBotFramework.Debug;
+using StardewBotFramework.Source.Events.GamePlayEvents;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Menus;
@@ -22,7 +23,8 @@ public abstract class BotBase
     private static IReflectedField<int>? _selectedResponse;
     private static IReflectedField<TextBox>? _reflectedTextBox;
     private static IReflectedField<NetMutexQueue<Guid>> _reflectedObjectDestroy;
-
+    public GameEvents GameEvents;
+    
     /// <summary>
     /// Change the selectedResponse value in <see cref="DialogueBox"/>, this will change the "Response" to a question dialogue.
     /// Must use Game1.ReceiveLeftClick after calling this for it to register.

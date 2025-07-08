@@ -82,9 +82,9 @@ internal sealed class ModEntry : Mod
         }
         else if (e.Button == SButton.K)
         {
-            Goal end = new Goal.GoalNearby((int)Game1.currentCursorTile.X, (int)Game1.currentCursorTile.Y,2);
+            Goal end = new Goal.GoalPosition((int)Game1.currentCursorTile.X, (int)Game1.currentCursorTile.Y);
             _bot.Pathfinding.DestructibleObjects = _desObjects;
-            await _bot.Pathfinding.Goto(end, false, true);
+            await _bot.Pathfinding.Goto(end, false, false);
             _bot.Chat.SendPublicMessage("This should send after the bot has path-found :)");
         }
         else if (e.Button == SButton.U)

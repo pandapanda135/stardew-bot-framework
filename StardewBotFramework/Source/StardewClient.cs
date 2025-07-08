@@ -51,6 +51,8 @@ public class StardewClient : BotBase
         _manifest = manifest;
         _monitor = monitor;
         _multiplayer = multiplayer;
+
+        GameEvents = new GameEvents(helper);
         
         Logger.SetMonitor(_monitor); // this is here because I prefer it :)
 
