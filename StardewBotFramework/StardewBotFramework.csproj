@@ -4,15 +4,14 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <EnableHarmony>true</EnableHarmony>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\StardewPathfinding\StardewPathfinding.csproj" />
         <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.4.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Source\Events\" />
       <Folder Include="Source\Utils\" />
     </ItemGroup>
     

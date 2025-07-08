@@ -1,0 +1,202 @@
+using StardewBotFramework.Debug;
+using StardewBotFramework.Source.Events.EventArgs;
+using StardewBotFramework.Source.Events.World_Events;
+using StardewBotFramework.Source.Modules.Pathfinding.Base;
+using StardewModdingAPI;
+using StardewModdingAPI.Events;
+using StardewValley;
+
+namespace StardewBotFramework.Source.Events.GamePlayEvents;
+
+public class GameEvents
+{
+    
+    public GameEvents(IModHelper _helper)
+    {
+        _helper.Events.GameLoop.GameLaunched += OnGameLaunch;
+        _helper.Events.GameLoop.DayEnding += OnDayEnding;
+        _helper.Events.GameLoop.TimeChanged += OnTimeChanged;
+        _helper.Events.GameLoop.DayStarted += OnDayStarted;
+        
+        _helper.Events.Multiplayer.PeerConnected += OnPeerConnected;
+        _helper.Events.Multiplayer.PeerDisconnected += OnPeerDisconnected;
+        
+        _helper.Events.Player.Warped += OnWarped;
+        _helper.Events.Player.InventoryChanged += OnInventoryChanged;
+        _helper.Events.Player.LevelChanged += OnLevelChanged;
+        
+        _helper.Events.World.ObjectListChanged += OnObjectListChanged;
+        _helper.Events.World.NpcListChanged += OnNpcListChanged;
+        _helper.Events.World.DebrisListChanged += OnDebrisListChanged;
+        _helper.Events.World.FurnitureListChanged += OnFurnitureListChanged;
+        _helper.Events.World.BuildingListChanged += OnBuildingListChanged;
+        _helper.Events.World.TerrainFeatureListChanged += OnTerrainFeatureListChanged;
+        _helper.Events.World.LargeTerrainFeatureListChanged += OnLargeTerrainFeatureListChanged;
+        
+        _helper.Events.GameLoop.UpdateTicking += CharacterController.Update;    
+    }
+
+    private static IModHelper _helper;
+
+    public static void SetHelper(IModHelper helper)
+    {
+        _helper = helper;
+    }
+    
+    /// <summary>
+    /// On new Day Started.
+    /// </summary>
+    public static event EventHandler<BotDayStartedEventArgs> DayStarted;
+    /// <summary>
+    /// On day ended
+    /// </summary>
+    public static event EventHandler<BotDayEndedEventArgs> DayEnded; 
+    /// <summary>
+    /// When a player connects to multiplayer world.
+    /// </summary>
+    public static event EventHandler<BotPlayerConnectedEventArgs> PlayerConnected;
+    /// <summary>
+    /// When a player disconnects to multiplayer world.
+    /// </summary>
+    public static event EventHandler<BotPlayerDisconnectedEventArgs> PlayerDisconnected;
+    /// <summary>
+    /// When the bot moves location.
+    /// </summary>
+    public static event EventHandler<BotWarpedEventArgs> BotWarped;
+    /// <summary>
+    /// When the bot's inventory changes 
+    /// </summary>
+    public static event EventHandler<BotInventoryChangedEventArgs> BotInventoryChanged;
+    /// <summary>
+    /// When a skill the bot has changes, this will be called when it happens in the game and not be queued for when the day ends
+    /// </summary>
+    public static event EventHandler<BotSkillLevelChangedEventArgs> BotSkillChanged;
+    /// <summary>
+    /// When an object in the bot's current location changes.
+    /// </summary>
+    public static event EventHandler<BotObjectListChangedEventArgs> BotObjectChanged;
+    /// <summary>
+    /// When a NPC leaves or enters the bot's current locaiton.
+    /// </summary>
+    public static event EventHandler<BotCharacterListChangedEventArgs> BotLocationNpcChanged;
+    /// <summary>
+    /// When debris in the bot's current location changes.
+    /// </summary>
+    public static event EventHandler<BotDebrisChangedEventArgs> BotLocationDebrisChanged;
+    /// <summary>
+    /// When a building in the bot's current location changes.
+    /// </summary>
+    public static event EventHandler<BotBuildingChangedEventArgs> BotLocationBuildingsChanged;
+    /// <summary>
+    /// When furniture in the bot's current location changes.
+    /// </summary>
+    public static event EventHandler<BotFurnitureChangedEventArgs> BotLocationFurnitureChanged;
+    /// <summary>
+    /// When a Terrain feature (e.g. a tree or floor) in the bot's current location changes.
+    /// </summary>
+    public static event EventHandler<BotTerrainFeatureChangedEventArgs> BotTerrainFeatureChanged;
+    /// <summary>
+    /// When a Large terrain feature (e.g. bushes) in the bot's current location changes.
+    /// </summary>
+    public static event EventHandler<BotLargeTerrainFeatureChangedEventArgs> BotLargeTerrainFeatureChanged;
+    /// <summary>
+    /// When the time on the clock shown in-game changes, this is sent in the notation of.
+    /// 24-hour notation (like 1600 for 4pm). The clock time resets when the player sleeps, so 2am (before sleeping) is 2600.
+    /// </summary>
+    public static event EventHandler<TimeEventArgs> UiTimeChanged;
+    
+    public static event EventHandler<BotOnDeathEventArgs> OnBotDeath;
+    public static event EventHandler<OnOtherPlayerDeathEventArgs> OnOtherPlayerDeath;
+
+    private void OnDayStarted(object? sender, DayStartedEventArgs e) => GameEvents.DayStarted.Invoke(sender,new BotDayStartedEventArgs());
+    
+    private void OnDayEnding(object? sender, DayEndingEventArgs e) => DayEnded.Invoke(sender, new BotDayEndedEventArgs());
+    
+    private void OnTimeChanged(object? sender, TimeChangedEventArgs e) => UiTimeChanged.Invoke(sender,new TimeEventArgs(e.OldTime,e.NewTime));
+
+    private void OnWarped(object? sender, WarpedEventArgs e) => BotWarped.Invoke(sender, new BotWarpedEventArgs(e.Player, e.OldLocation, e.NewLocation, e.IsLocalPlayer));
+    private void OnPeerConnected(object? sender, PeerConnectedEventArgs e) => PlayerConnected.Invoke(sender,new BotPlayerConnectedEventArgs(e.Peer)); 
+    
+    private void OnPeerDisconnected(object? sender, PeerDisconnectedEventArgs e) => PlayerDisconnected.Invoke(sender,new BotPlayerDisconnectedEventArgs(e.Peer));
+    
+    private void OnLargeTerrainFeatureListChanged(object? sender, LargeTerrainFeatureListChangedEventArgs e)
+    {
+        if (!e.IsCurrentLocation) return;
+        BotLargeTerrainFeatureChanged.Invoke(sender,new BotLargeTerrainFeatureChangedEventArgs(e.Added,e.Removed,e.Location));
+    }
+
+    private void OnTerrainFeatureListChanged(object? sender, TerrainFeatureListChangedEventArgs e)
+    {
+        if (!e.IsCurrentLocation) return;
+        BotTerrainFeatureChanged.Invoke(sender,new BotTerrainFeatureChangedEventArgs(e.Added,e.Removed,e.Location));
+    }
+
+    private void OnBuildingListChanged(object? sender, BuildingListChangedEventArgs e)
+    {
+        if (!e.IsCurrentLocation) return;
+        BotLocationBuildingsChanged.Invoke(sender,new BotBuildingChangedEventArgs(e.Added,e.Removed,e.Location));
+    }
+
+    private void OnFurnitureListChanged(object? sender, FurnitureListChangedEventArgs e)
+    {
+        if (!e.IsCurrentLocation) return;
+        BotLocationFurnitureChanged.Invoke(sender,new BotFurnitureChangedEventArgs(e.Added,e.Removed,e.Location));
+    }
+
+    private void OnDebrisListChanged(object? sender, DebrisListChangedEventArgs e)
+    {
+        if (!e.IsCurrentLocation) return;
+        BotLocationDebrisChanged.Invoke(sender,new BotDebrisChangedEventArgs(e.Added,e.Removed,e.Location));
+    }
+
+    private void OnNpcListChanged(object? sender, NpcListChangedEventArgs e)
+    {
+        if (!e.IsCurrentLocation) return;
+        BotLocationNpcChanged.Invoke(sender,new BotCharacterListChangedEventArgs(e.Added,e.Removed,e.Location));
+    }
+    private void OnObjectListChanged(object? sender, ObjectListChangedEventArgs e)
+    {
+        if (!e.IsCurrentLocation) return;
+        BotObjectChanged.Invoke(sender,new BotObjectListChangedEventArgs(e.Added,e.Removed,e.Location));
+    }
+
+    private void OnInventoryChanged(object? sender, InventoryChangedEventArgs e)
+    {
+        if (!e.IsLocalPlayer) return;
+        BotInventoryChanged.Invoke(sender,new BotInventoryChangedEventArgs(e.Added.ToArray(),e.Removed.ToArray(),e.QuantityChanged.ToArray()));
+    }
+    
+    private void OnLevelChanged(object? sender, LevelChangedEventArgs e)
+    {
+        if (!e.IsLocalPlayer) return;
+        BotSkillChanged.Invoke(sender,new BotSkillLevelChangedEventArgs(e.Skill,e.OldLevel,e.NewLevel));
+    }
+    
+    private void OnGameLaunch(object? sender, GameLaunchedEventArgs e) => Logger.Log($"Game launched setting up bot");
+        
+    
+    public class DeathPatch
+    {
+        public static void LoseItemsOnDeath_Postfix(Farmer __instance,ref int __result)
+        {
+            try
+            {
+                if (__instance == BotBase.Farmer)
+                {
+                    OnBotDeath.Invoke(new DeathPatch(), new BotOnDeathEventArgs(BotBase.CurrentLocation,BotBase.Farmer.TilePoint,__result));  
+                }
+                else
+                {
+                    OnOtherPlayerDeath.Invoke(new DeathPatch(), new OnOtherPlayerDeathEventArgs()); 
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Log($"Failed in DeathPatch \n {e}", LogLevel.Error);
+                throw;
+            }
+        } 
+    }
+
+
+}
