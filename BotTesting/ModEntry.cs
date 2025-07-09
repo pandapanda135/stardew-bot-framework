@@ -54,6 +54,7 @@ internal sealed class ModEntry : Mod
         helper.ConsoleCommands.Add("place", "", PlaceObjectCommand);
         helper.ConsoleCommands.Add($"StartDialogue", "", DialogueInteractCommand);
         helper.ConsoleCommands.Add("advance", "", AdvanceDialogueCommand);
+        helper.ConsoleCommands.Add("placeBuilding", "", PlaceBuildingCommand);
     }
 
     private void BotOnBotWarped(object? sender, BotWarpedEventArgs e)
@@ -239,8 +240,20 @@ internal sealed class ModEntry : Mod
                 Logger.Info($"Character: {kvp.Key}  level: {kvp.Value}");
             }
         }
+        else if (e.Button == SButton.E)
+        {
+            _bot.FarmBuilding.CreateBuilding(Game1.currentCursorTile.ToPoint());
+        }
     }
 
+    private void PlaceBuildingCommand(string arg,string[] args)
+    {
+        CarpenterMenu carpenterMenu = Game1.activeClickableMenu as CarpenterMenu;
+        _bot.FarmBuilding.SetCarpenterUI(carpenterMenu);
+        _bot.FarmBuilding.InteractWithButton(carpenterMenu.okButton);
+        _bot.FarmBuilding.CreateBuilding(new Point(int.Parse(args[0]), int.Parse(args[1])));
+    }
+    
     private void DialogueInteractCommand(string arg, string[] args)
     {
         Point point = new Point(int.Parse(args[0]), int.Parse(args[1]));
@@ -264,7 +277,7 @@ internal sealed class ModEntry : Mod
             }
         }
     }
-    
+
     private void AdvanceDialogueCommand(string arg, string[] args)
     {
         _bot.Dialogue.AdvanceDialogBox(out var line);

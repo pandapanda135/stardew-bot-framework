@@ -1,6 +1,10 @@
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewValley;
+using StardewValley.Audio;
+using StardewValley.GameData;
+using StardewValley.Locations;
+using StardewValley.Pathfinding;
 using Logger = StardewBotFramework.Debug.Logger;
 
 namespace StardewBotFramework.Source.Modules.Pathfinding.Base;
@@ -41,6 +45,8 @@ public class CharacterController
 		if (_endPath.Count < 1) _movingCharacter = false;
 		
 		if (!_movingCharacter) return;
+
+		if (!StardewClient.CurrentLocation.Equals(_currentLocation)) return; // stop issue with moving to the left when go through warp
 		
 		MoveCharacter(_time);
 	}
@@ -88,13 +94,13 @@ public class CharacterController
 
 			return;
 		}
-
+		
 		Farmer farmer = _character as Farmer;
 		if (farmer != null)
 		{
 			farmer.movementDirections.Clear();
 		}
-
+		
 		if (bbox.Left < targetTile.Left && bbox.Right < targetTile.Right)
 		{
 			_character.SetMovingRight(true);
@@ -164,6 +170,10 @@ public class CharacterController
 		
 		_character.MovePosition(time, Game1.viewport, _currentLocation);
 	}
-
+	
+	public static bool isPlayerPresent()
+	{
+		return _currentLocation.farmers.Any();
+	}
 	public static bool IsMoving() => _movingCharacter;
 }

@@ -39,6 +39,7 @@ public class StardewClient : BotBase
     public GameInformation GameInformation { get; }
     public EndDaySkillMenu EndDaySkillMenu { get; }
     public EndDayShippingMenu EndDayShippingMenu { get; }
+    public CreateFarmBuilding FarmBuilding { get; }
     
 
     #endregion
@@ -79,6 +80,7 @@ public class StardewClient : BotBase
         GameInformation = new GameInformation();
         EndDaySkillMenu = new EndDaySkillMenu();
         EndDayShippingMenu = new EndDayShippingMenu();
+        FarmBuilding = new CreateFarmBuilding();
 
         #endregion
         
