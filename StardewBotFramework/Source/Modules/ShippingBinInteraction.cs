@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using StardewBotFramework.Debug;
 using StardewValley;
 using StardewValley.Buildings;
 
@@ -10,34 +11,46 @@ namespace StardewBotFramework.Source.Modules;
 public class ShippingBinInteraction : GrabItemMenuInteraction
 {
     /// <summary>
-    /// Get the location of shipping bin.
+    /// Get the location of all shipping bins in the location.
     /// </summary>
     /// <param name="location"><see cref="GameLocation"/> of where you want to query</param>
-    /// <returns>Tile position of shipping bin</returns>
-    public List<Point> GetShippingBinLocation(GameLocation location)
+    /// <returns>Left most Tile position of shipping bin</returns>
+    public List<Point> GetShippingBinLocations(GameLocation location)
     {
-        if (location.Name != "Farm")
+        List<Point> tileLocations = new();
+        foreach (var building in location.buildings)
         {
-            return new();
+            if (building is ShippingBin){
+            {
+                Point tilePoint = new Point(building.tileX.Value, building.tileY.Value);
+                tileLocations.Add(tilePoint);
+            }}
         }
 
-        location.TryGetMapProperty("ShippingBinLocation", out var tile);
-        string[] tileExtract = tile.Split(' ');
-        List<Point> tileLocations = new();
-        int runs = 0;
-        for (int i = 0; i < tileExtract.Length / 2; i++)
-        {
-            Point shippingTile = new Point(int.Parse(tileExtract[runs]), int.Parse(tileExtract[runs + 1]));
-                
-            tileLocations.Add(shippingTile);
-            runs += 2;
-        }
-        
         return tileLocations;
     }
+    /// <summary>
+    /// Get the all of the shipping bins in the location.
+    /// </summary>
+    /// <param name="location"><see cref="GameLocation"/> of where you want to query</param>
+    /// <returns>A list of the shipping bins in the locations</returns>
+    public List<ShippingBin> GetShippingBinsInLocation(GameLocation location)
+    {
+        List<ShippingBin> buildings = new();
+        foreach (var building in location.buildings)
+        {
+            if (building is ShippingBin){
+            {
+                buildings.Add((ShippingBin)building);
+            }}
+        }
+
+        return buildings;
+    }
+
 
     /// <summary>
-    /// Interact with shipping bin <see cref="Building"/> cannot be in ui.
+    /// Interact with shipping bin <see cref="Building"/> should not be in UI. Must be in range.
     /// </summary>
     public void ShipHeldItem(ShippingBin shippingBin)
     {
@@ -49,6 +62,8 @@ public class ShippingBinInteraction : GrabItemMenuInteraction
     /// </summary>
     public void ShipMultipleItems(Item[] items)
     {
+        if (_menu is null) return;
+        
         foreach (var item in items)
         {
             AddItem(item);

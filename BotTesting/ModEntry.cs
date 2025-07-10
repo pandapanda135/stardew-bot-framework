@@ -13,6 +13,7 @@ using StardewValley.Buildings;
 using StardewValley.Inventories;
 using StardewValley.Menus;
 using StardewValley.Objects;
+using StardewValley.TerrainFeatures;
 using Object = StardewValley.Object;
 
 namespace BotTesting;
@@ -55,6 +56,7 @@ internal sealed class ModEntry : Mod
         helper.ConsoleCommands.Add($"StartDialogue", "", DialogueInteractCommand);
         helper.ConsoleCommands.Add("advance", "", AdvanceDialogueCommand);
         helper.ConsoleCommands.Add("placeBuilding", "", PlaceBuildingCommand);
+        helper.ConsoleCommands.Add("shippingBin", "", AddItemToBinCommand);
     }
 
     private void BotOnBotWarped(object? sender, BotWarpedEventArgs e)
@@ -235,17 +237,28 @@ internal sealed class ModEntry : Mod
         }
         else if (e.Button == SButton.B)
         {
-            foreach (var kvp in _bot.PlayerInformation.RelationshipLevel(true))
+            Task<List<List<HoeDirt>>> list = _bot.GroupedTiles.StartDirtCheck(Game1.currentLocation);
+            foreach (var kvp in list.Result)
             {
-                Logger.Info($"Character: {kvp.Key}  level: {kvp.Value}");
+                Logger.Info($"new group \n \n \n");
+                foreach (var dirt in kvp)
+                {
+                    Logger.Info($"final point: {dirt.Tile}   plant: {dirt.crop}");
+                }
+                Logger.Info($"ending group \n \n \n");
             }
-        }
-        else if (e.Button == SButton.E)
-        {
-            _bot.FarmBuilding.CreateBuilding(Game1.currentCursorTile.ToPoint());
         }
     }
 
+    private void AddItemToBinCommand(string arg, string[] args)
+    {
+        ItemGrabMenu binMenu = Game1.activeClickableMenu as ItemGrabMenu;
+        _bot.ShippingBinInteraction.SetUI(binMenu);
+        _bot.ShippingBinInteraction.ShipMultipleItems(Game1.player.Items.GetRange(8,11).ToArray());
+        // List<ShippingBin> shippingBins = _bot.ShippingBinInteraction.GetShippingBinsInLocation(Game1.currentLocation);
+        // _bot.ShippingBinInteraction.ShipHeldItem(shippingBins[0]);
+        
+    }
     private void PlaceBuildingCommand(string arg,string[] args)
     {
         CarpenterMenu carpenterMenu = Game1.activeClickableMenu as CarpenterMenu;

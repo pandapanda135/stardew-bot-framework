@@ -4,6 +4,7 @@ using StardewBotFramework.Source.Events.GamePlayEvents;
 using StardewBotFramework.Source.Modules;
 using StardewBotFramework.Source.Modules.MainMenu;
 using StardewBotFramework.Source.Modules.Pathfinding;
+using StardewBotFramework.Source.Modules.Pathfinding.GroupTiles;
 using StardewModdingAPI;
 using StardewValley;
 
@@ -40,7 +41,8 @@ public class StardewClient : BotBase
     public EndDaySkillMenu EndDaySkillMenu { get; }
     public EndDayShippingMenu EndDayShippingMenu { get; }
     public CreateFarmBuilding FarmBuilding { get; }
-    
+    public ShippingBinInteraction ShippingBinInteraction { get; }
+    public GroupedTiles GroupedTiles { get; }
 
     #endregion
     
@@ -81,6 +83,8 @@ public class StardewClient : BotBase
         EndDaySkillMenu = new EndDaySkillMenu();
         EndDayShippingMenu = new EndDayShippingMenu();
         FarmBuilding = new CreateFarmBuilding();
+        ShippingBinInteraction = new ShippingBinInteraction();
+        GroupedTiles = new GroupedTiles();
 
         #endregion
         
