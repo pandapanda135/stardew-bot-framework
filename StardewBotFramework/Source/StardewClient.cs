@@ -1,4 +1,5 @@
 using HarmonyLib;
+using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Events.GamePlayEvents;
 using StardewBotFramework.Source.Modules;
@@ -7,11 +8,13 @@ using StardewBotFramework.Source.Modules.Pathfinding;
 using StardewBotFramework.Source.Modules.Pathfinding.GroupTiles;
 using StardewModdingAPI;
 using StardewValley;
+using StardewValley.TerrainFeatures;
 
 namespace StardewBotFramework.Source;
 
 public class StardewClient : BotBase
 {
+    public static List<Point> debugTiles = new();
     private static StardewClient? Instance { get; set; }
 
     private readonly IModHelper _helper;

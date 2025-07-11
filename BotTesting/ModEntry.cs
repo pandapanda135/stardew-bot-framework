@@ -14,6 +14,7 @@ using StardewValley.Inventories;
 using StardewValley.Menus;
 using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
+using StardewValley.Tools;
 using Object = StardewValley.Object;
 
 namespace BotTesting;
@@ -57,6 +58,8 @@ internal sealed class ModEntry : Mod
         helper.ConsoleCommands.Add("advance", "", AdvanceDialogueCommand);
         helper.ConsoleCommands.Add("placeBuilding", "", PlaceBuildingCommand);
         helper.ConsoleCommands.Add("shippingBin", "", AddItemToBinCommand);
+
+        helper.Events.Display.Rendered += DrawFoundTiles.OnRenderTiles;
     }
 
     private void BotOnBotWarped(object? sender, BotWarpedEventArgs e)
@@ -240,11 +243,17 @@ internal sealed class ModEntry : Mod
             Task<List<List<HoeDirt>>> list = _bot.GroupedTiles.StartDirtCheck(Game1.currentLocation);
             foreach (var kvp in list.Result)
             {
-                Logger.Info($"new group \n \n \n");
+                List<Point> tiles = new();
                 foreach (var dirt in kvp)
                 {
+                    if (dirt.crop is null) continue;
+    
+                    tiles.Add(dirt.Tile.ToPoint());
                     Logger.Info($"final point: {dirt.Tile}   plant: {dirt.crop}");
                 }
+
+                StardewClient.debugTiles = tiles;
+                await _bot.Player.UseToolOnGroup(tiles,new WateringCan());
                 Logger.Info($"ending group \n \n \n");
             }
         }

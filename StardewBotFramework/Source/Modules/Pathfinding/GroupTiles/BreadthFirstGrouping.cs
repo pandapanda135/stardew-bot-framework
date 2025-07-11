@@ -36,8 +36,7 @@ public class BreadthFirstGrouping : AlgorithmBase
             return correctPath;
         }
 
-        public async Task<Stack<HoeDirt>> GetTerrainGroup(Point startPoint,
-            GameLocation location, int limit)
+        public async Task<Stack<HoeDirt>> GetTerrainGroup(Point startPoint,GameLocation location, int limit)
         {
             ClearVariables();
 
@@ -53,7 +52,7 @@ public class BreadthFirstGrouping : AlgorithmBase
 
         private static readonly Stack<HoeDirt> _terrainTileGroup = new();
         public static List<Point> _usedStartPoint = new();
-        private Stack<HoeDirt> RunBreadthFirstDirt(Point startTile, GameLocation location, int limit) //TODO: move checks to own function
+        private Stack<HoeDirt> RunBreadthFirstDirt(Point startTile, GameLocation location, TerrainFeature selectedType ,int limit) //TODO: move checks to own function
         {
             var locationTerrain = location.terrainFeatures;
             int runs = 0;
@@ -73,7 +72,7 @@ public class BreadthFirstGrouping : AlgorithmBase
                 
                 Point current = _frontier.Dequeue();
 
-                if (_usedStartPoint.Contains(current) && runs > 0) return new();
+                if (_usedStartPoint.Contains(current) && runs != 0) return new();
     
                 // We reduce by 1 to avoid pathfinding going along the side of the map
                 if (current.X > location.Map.DisplayWidth / Game1.tileSize - 1 ||
@@ -85,22 +84,20 @@ public class BreadthFirstGrouping : AlgorithmBase
                     continue;
                 }
     
-                if (_closedList.Contains(current) && current != startTile)
-                {
-                    continue;
-                }
+                // if (_closedList.Contains(current) && current != startTile) continue;
 
                 if (!locationTerrain.Keys.Contains(current.ToVector2())) continue;
-
                 
-                _closedList.Push(current);
-
-                Queue<PathNode> neighbours = IPathing.Graph.Neighbours(new PathNode(current.X,current.Y,null));
-                foreach (var node in neighbours.Where(node => !_closedList.Contains(new Point(node.X,node.Y)) && !IPathing.collisionMap.IsBlocked(node.X,node.Y)))
+                // _closedList.Push(current);
+                
+                Queue<Point> neighbours = IPathing.Graph.GroupNeighbours(current);
+                foreach (var node in neighbours.Where(node => !_closedList.Contains(node)))
                 {
                     Logger.Info($"in foreach this is node: {node.X},{node.Y}");
                     _frontier.Enqueue(new Point(node.X,node.Y));
-                    _terrainTileGroup.Push((HoeDirt)locationTerrain[current.ToVector2()]);
+                    _closedList.Push(node);
+                    TerrainFeature terrainFeature = locationTerrain[current.ToVector2()];
+                    _terrainTileGroup.Push(terrainFeature);
                 }
     
                 runs++;

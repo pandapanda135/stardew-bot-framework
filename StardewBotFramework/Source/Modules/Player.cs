@@ -1,6 +1,9 @@
 using Microsoft.Xna.Framework;
 using Netcode;
 using StardewBotFramework.Debug;
+using StardewBotFramework.Source.Modules.Pathfinding.Algorithms;
+using StardewBotFramework.Source.Modules.Pathfinding.Base;
+using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.GameData.Characters;
 using StardewValley.Inventories;
@@ -64,7 +67,6 @@ public class Player
             Logger.Info($"Not using direction at tool");
             Game1.player.BeginUsingTool(); // Object.performToolAction
             return;
-        
         }
         
         Logger.Info($"using tool at direction: {direction}");
@@ -94,6 +96,46 @@ public class Player
         }
     }
 
+    public async Task UseToolOnGroup(List<Point> group,Tool tool)
+    {
+        if (BotBase.Farmer.Items.Contains(tool))
+        {
+            int index = BotBase.Farmer.Items.IndexOf(tool);
+            for (int i = 0; i < (int)Math.Floor((double)index / 11); i++)
+            {
+                BotBase.Farmer.shiftToolbar(true);    
+            }
+
+            BotBase.Farmer.CurrentToolIndex = index;
+        }
+        
+        AlgorithmBase.IPathing pathing = new AStar.Pathing();
+        pathing.BuildCollisionMap(BotBase.CurrentLocation);
+        foreach (var point in group)
+        {
+            if (Graph.IsInNeighbours(BotBase.Farmer.TilePoint, point, out var direction, 3))
+            {
+                Logger.Info($"using neighbour if");
+                if (direction == -1) continue;
+                UseTool(direction);
+            }
+            else // pathfind to node
+            {
+                PathNode start = new PathNode(BotBase.Farmer.TilePoint.X, BotBase.Farmer.TilePoint.Y, null);
+                
+                Stack<PathNode> path = await pathing.FindPath(start,new Goal.GetToTile(point.X,point.Y),BotBase.CurrentLocation,10000);
+        
+                CharacterController.StartMoveCharacter(path, Game1.player, Game1.currentLocation,
+                    Game1.currentGameTime);
+
+                while (CharacterController.IsMoving()) continue; // this is not async
+
+                Graph.IsInNeighbours(BotBase.Farmer.TilePoint, point, out var pathDirection, 3);
+                if (direction == -1) continue;
+                UseTool(pathDirection);
+            }
+        }
+    }
     /// <summary>
     /// Try to add item to an object (e.g. input for machine, placed on a table)
     /// </summary>

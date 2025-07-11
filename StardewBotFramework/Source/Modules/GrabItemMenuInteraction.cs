@@ -10,7 +10,7 @@ namespace StardewBotFramework.Source.Modules;
 /// </summary>
 public class GrabItemMenuInteraction
 {
-    private ItemGrabMenu? _menu;
+    protected ItemGrabMenu? _menu;
     
     public void SetUI(ItemGrabMenu menu)
     {
@@ -32,7 +32,9 @@ public class GrabItemMenuInteraction
         {
             return;
         }
-        _menu.inventory.actualInventory.Remove(item);
+
+        StardewClient.Farmer.Items.Remove(item);
+        // _menu.inventory.actualInventory.Remove(item);
     }
 
     public void TakeItem(Item item)
