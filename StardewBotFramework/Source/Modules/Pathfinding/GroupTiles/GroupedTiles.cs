@@ -42,7 +42,7 @@ public class GroupedTiles
         return _validPoints;
    }
     
-    private List<List<HoeDirt>> _validFeatures = new();
+    private List<Group> _validFeatures = new();
     private List<Point> _usedFeatureTiles = new();
     private BreadthFirstGrouping.Pathing breadthFirstGrouping = new();
 
@@ -51,7 +51,7 @@ public class GroupedTiles
     /// </summary>
     /// <param name="location">location to query</param>
     /// <returns>A lists of lists that contains the patches of <see cref="HoeDirt"/></returns>
-    public async Task<List<List<HoeDirt>>> StartDirtCheck(GameLocation location)
+    public async Task<List<Group>> StartDirtCheck(GameLocation location)
     {
         _validFeatures = new();
         _usedFeatureTiles = new();
@@ -71,19 +71,24 @@ public class GroupedTiles
         }
         
         BreadthFirstGrouping.Pathing._usedStartPoint.Clear();
-        List<List<HoeDirt>> goneThroughDirts = new();
+        List<Group> groups = new();
         foreach (var kvp in _validFeatures)
         {
-            List<HoeDirt> dirtList = new();
-            foreach (var dirt in kvp)
+            Group group = new();
+            foreach (var tile in kvp.GetTiles())
             {
-                if (dirtList.Contains(dirt)) continue;
-                dirtList.Add(dirt);
+                Logger.Info($"Get tiles: {tile.Position}");
+                PlantTile? plantTile = tile as PlantTile;
+                if (plantTile is null) continue;
+                HoeDirt hoeDirt = plantTile.TerrainFeature as HoeDirt;
+                if (hoeDirt is null) continue;
+                if (group.Contains(plantTile)) continue;
+                group.Add(plantTile);
             }
-            goneThroughDirts.Add(dirtList);
+            groups.Add(group);
         }
 
-        return goneThroughDirts;
+        return groups;
     }
 
     public async Task UsePropertyFunc(Point tile,string property,GameLocation location)
@@ -101,7 +106,12 @@ public class GroupedTiles
     {
         Logger.Info($"running func");
         Stack<HoeDirt> points = await breadthFirstGrouping.GetTerrainGroup(tile, location, 100000);
-        _validFeatures.Add(points.ToList());
+        Group group = new();
+        foreach (var point in points)
+        {
+            group.Add(new PlantTile(point,point.needsWatering(),point.needsWatering(),point.paddyWaterCheck()));
+        }
+        _validFeatures.Add(group);
         foreach (var point in points)
         {
             Logger.Info($"adding point: {point.Tile.ToPoint()}");

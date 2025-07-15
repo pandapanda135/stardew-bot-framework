@@ -14,7 +14,7 @@ namespace StardewBotFramework.Source;
 
 public class StardewClient : BotBase
 {
-    public static List<Point> debugTiles = new();
+    public static List<TerrainFeature> debugTiles = new();
     private static StardewClient? Instance { get; set; }
 
     private readonly IModHelper _helper;

@@ -9,6 +9,7 @@ using StardewValley.GameData.Characters;
 using StardewValley.Inventories;
 using StardewValley.Menus;
 using StardewValley.Objects.Trinkets;
+using StardewValley.TerrainFeatures;
 using Object = StardewValley.Object;
 
 namespace StardewBotFramework.Source.Modules;
@@ -96,7 +97,7 @@ public class Player
         }
     }
 
-    public async Task UseToolOnGroup(List<Point> group,Tool tool)
+    public async Task UseToolOnGroup(List<TerrainFeature> group,Tool tool)
     {
         if (BotBase.Farmer.Items.Contains(tool))
         {
@@ -111,9 +112,10 @@ public class Player
         
         AlgorithmBase.IPathing pathing = new AStar.Pathing();
         pathing.BuildCollisionMap(BotBase.CurrentLocation);
-        foreach (var point in group)
+        foreach (var point in group) // TODO: the use tool at direction is very inaccurate I think this is partially related to the other todo
         {
-            if (Graph.IsInNeighbours(BotBase.Farmer.TilePoint, point, out var direction, 3))
+            StardewClient.debugTiles.Remove(point);
+            if (Graph.IsInNeighbours(BotBase.Farmer.TilePoint, point.Tile.ToPoint(), out var direction, 3))
             {
                 Logger.Info($"using neighbour if");
                 if (direction == -1) continue;
@@ -123,15 +125,16 @@ public class Player
             {
                 PathNode start = new PathNode(BotBase.Farmer.TilePoint.X, BotBase.Farmer.TilePoint.Y, null);
                 
-                Stack<PathNode> path = await pathing.FindPath(start,new Goal.GetToTile(point.X,point.Y),BotBase.CurrentLocation,10000);
+                // TODO: pathfinding lets going on top of the plant on not next to it this also happens with GoalNearby with a radius of 1
+                Stack<PathNode> path = await pathing.FindPath(start,new Goal.GetToTile((int)point.Tile.X,(int)point.Tile.Y),BotBase.CurrentLocation,10000);
         
                 CharacterController.StartMoveCharacter(path, Game1.player, Game1.currentLocation,
                     Game1.currentGameTime);
 
                 while (CharacterController.IsMoving()) continue; // this is not async
 
-                Graph.IsInNeighbours(BotBase.Farmer.TilePoint, point, out var pathDirection, 3);
-                if (direction == -1) continue;
+                Graph.IsInNeighbours(BotBase.Farmer.TilePoint, point.Tile.ToPoint(), out var pathDirection, 3);
+                if (pathDirection == -1) continue;
                 UseTool(pathDirection);
             }
         }

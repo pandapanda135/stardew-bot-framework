@@ -16,6 +16,20 @@ public interface IGraph
         {1,1}, // south-east
     };
     
+    protected static readonly sbyte[,] GroupDirections = new sbyte[8,2]
+    {
+        { 0, -1 }, // north
+        { 1, 0 }, // east
+        { 0, 1 }, // south
+        { -1, 0 }, // west
+        
+        // diagonal 
+        {-1,-1}, // north-west
+        {1,-1}, // north-east
+        {-1,1}, // south-west
+        {1,1}, // south-east
+    };
+    
     /// <summary>
     /// Get surrounding tiles of node given.
     /// </summary>

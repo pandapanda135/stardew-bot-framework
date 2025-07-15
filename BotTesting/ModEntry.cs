@@ -8,6 +8,7 @@ using StardewBotFramework.Source.Events;
 using StardewBotFramework.Source.Events.EventArgs;
 using StardewBotFramework.Source.Modules;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
+using StardewBotFramework.Source.Modules.Pathfinding.GroupTiles;
 using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Inventories;
@@ -240,22 +241,24 @@ internal sealed class ModEntry : Mod
         }
         else if (e.Button == SButton.B)
         {
-            Task<List<List<HoeDirt>>> list = _bot.GroupedTiles.StartDirtCheck(Game1.currentLocation);
-            foreach (var kvp in list.Result)
+            Task<List<Group>> list = _bot.GroupedTiles.StartDirtCheck(Game1.currentLocation);
+            List<TerrainFeature> tiles = new();
+            foreach (var kvp in list.Result) // go through groups of dirt
             {
-                List<Point> tiles = new();
-                foreach (var dirt in kvp)
+                foreach (var itile in kvp.GetTiles())
                 {
+                    PlantTile tile = (itile as PlantTile)!;
+                    HoeDirt dirt = (tile.TerrainFeature as HoeDirt)!;
                     if (dirt.crop is null) continue;
     
-                    tiles.Add(dirt.Tile.ToPoint());
+                    tiles.Add(dirt);
+                    StardewClient.debugTiles.Add(dirt);
                     Logger.Info($"final point: {dirt.Tile}   plant: {dirt.crop}");
                 }
-
-                StardewClient.debugTiles = tiles;
-                await _bot.Player.UseToolOnGroup(tiles,new WateringCan());
-                Logger.Info($"ending group \n \n \n");
             }
+            
+            await _bot.Player.UseToolOnGroup(tiles,new WateringCan());
+            Logger.Info($"ending group \n \n \n");
         }
     }
 

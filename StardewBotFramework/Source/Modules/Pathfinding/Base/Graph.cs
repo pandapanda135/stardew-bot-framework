@@ -24,14 +24,13 @@ public class Graph : IGraph
         return nextNodes;
     }
 
-    public Queue<Point> GroupNeighbours(Point currentTile)
+    public Queue<Point> GroupNeighbours(Point currentTile,int directions)
     {
         Queue<Point> nextTiles = new();
-        int directions = 7;
         for (int i = 0; i <= directions; i++)
         {
-            int neighborX = currentTile.X + IGraph.Directions[i, 0];
-            int neighborY = currentTile.Y + IGraph.Directions[i, 1];
+            int neighborX = currentTile.X + IGraph.GroupDirections[i, 0];
+            int neighborY = currentTile.Y + IGraph.GroupDirections[i, 1];
             
             nextTiles.Enqueue(new Point(neighborX, neighborY));
         }
@@ -40,7 +39,7 @@ public class Graph : IGraph
     }
 
     /// <summary>
-    /// get if target tile is a neighbour is the start tile
+    /// get if target tile is a neighbour is the start tile. This is from <see cref="GroupNeighbours"/>
     /// </summary>
     /// <param name="startTile"></param>
     /// <param name="targetTile"></param>
@@ -51,8 +50,8 @@ public class Graph : IGraph
     {
         for (int i = 0; i <= directions; i++)
         {
-            int neighborX = startTile.X + IGraph.Directions[i, 0];
-            int neighborY = startTile.Y + IGraph.Directions[i, 1];
+            int neighborX = startTile.X + IGraph.GroupDirections[i, 0];
+            int neighborY = startTile.Y + IGraph.GroupDirections[i, 1];
 
             if (neighborX == targetTile.X && neighborY == targetTile.Y)
             {
