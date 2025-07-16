@@ -52,7 +52,7 @@ public class BreadthFirstGrouping : AlgorithmBase
 
         private static readonly Stack<HoeDirt> _terrainTileGroup = new();
         public static List<Point> _usedStartPoint = new();
-        private Stack<HoeDirt> RunBreadthFirstDirt(Point startTile, GameLocation location, TerrainFeature selectedType ,int limit) //TODO: move checks to own function
+        private Stack<HoeDirt> RunBreadthFirstDirt(Point startTile, GameLocation location ,int limit) //TODO: move checks to own function
         {
             var locationTerrain = location.terrainFeatures;
             int runs = 0;
@@ -84,20 +84,19 @@ public class BreadthFirstGrouping : AlgorithmBase
                     continue;
                 }
     
-                // if (_closedList.Contains(current) && current != startTile) continue;
+                if (_closedList.Contains(current) && current != startTile) continue;
 
                 if (!locationTerrain.Keys.Contains(current.ToVector2())) continue;
                 
-                // _closedList.Push(current);
+                _closedList.Push(current);
                 
-                Queue<Point> neighbours = IPathing.Graph.GroupNeighbours(current);
+                Queue<Point> neighbours = IPathing.Graph.GroupNeighbours(current,7);
                 foreach (var node in neighbours.Where(node => !_closedList.Contains(node)))
                 {
                     Logger.Info($"in foreach this is node: {node.X},{node.Y}");
                     _frontier.Enqueue(new Point(node.X,node.Y));
-                    _closedList.Push(node);
                     TerrainFeature terrainFeature = locationTerrain[current.ToVector2()];
-                    _terrainTileGroup.Push(terrainFeature);
+                    _terrainTileGroup.Push((terrainFeature as HoeDirt)!);
                 }
     
                 runs++;
