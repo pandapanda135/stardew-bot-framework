@@ -40,7 +40,7 @@ internal sealed class ModEntry : Mod
             Monitor.Log($"Issue with setting up Bot \n {e}",LogLevel.Debug);
         }
         
-        // Monitor.Log($"Start setting events",LogLevel.Debug);
+        Monitor.Log($"Start setting events",LogLevel.Debug);
         helper.Events.Input.ButtonPressed += ButtonPressed;
         helper.ConsoleCommands.Add("chat", $"", ChatCommand);
         helper.ConsoleCommands.Add("colour", "White, red, blue, green, jade, yellowgreen, pink, purple, yellow, orange, brown, gray, cream, salmon, peach, aqua, jungle, plum", ColourCommand);
@@ -259,6 +259,9 @@ internal sealed class ModEntry : Mod
             
             await _bot.Player.UseToolOnGroup(tiles,new WateringCan());
             Logger.Info($"ending group \n \n \n");
+        }
+        else if (e.Button == SButton.E)
+        {
         }
     }
 

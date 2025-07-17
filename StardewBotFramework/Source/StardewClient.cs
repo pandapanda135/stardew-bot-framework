@@ -8,6 +8,7 @@ using StardewBotFramework.Source.Modules.Pathfinding;
 using StardewBotFramework.Source.Modules.Pathfinding.GroupTiles;
 using StardewModdingAPI;
 using StardewValley;
+using StardewValley.Menus;
 using StardewValley.TerrainFeatures;
 
 namespace StardewBotFramework.Source;
@@ -92,8 +93,10 @@ public class StardewClient : BotBase
         #endregion
         
         harmony.Patch(original: AccessTools.Method(typeof(Farmer), nameof(Farmer.LoseItemsOnDeath)),
-            postfix: new HarmonyMethod(typeof(GameEvents.DeathPatch), nameof(GameEvents.DeathPatch.LoseItemsOnDeath_Postfix))
-            );
+            postfix: new HarmonyMethod(typeof(GameEvents.DeathPatch), nameof(GameEvents.DeathPatch.LoseItemsOnDeath_Postfix)));
+
+        harmony.Patch(original: AccessTools.Method(typeof(ChatBox), nameof(ChatBox.receiveChatMessage)),
+            postfix: new HarmonyMethod(typeof(GameEvents.MessagePatch), nameof(GameEvents.MessagePatch.receiveChatMessage_Postfix)));
     }
     
 }

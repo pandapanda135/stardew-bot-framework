@@ -5,6 +5,7 @@ using StardewBotFramework.Source.Modules.Pathfinding.Base;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
+using StardewValley.Menus;
 
 namespace StardewBotFramework.Source.Events.GamePlayEvents;
 
@@ -33,7 +34,7 @@ public class GameEvents
         _helper.Events.World.TerrainFeatureListChanged += OnTerrainFeatureListChanged;
         _helper.Events.World.LargeTerrainFeatureListChanged += OnLargeTerrainFeatureListChanged;
         
-        _helper.Events.GameLoop.UpdateTicking += CharacterController.Update;    
+        _helper.Events.GameLoop.UpdateTicking += CharacterController.Update;
     }
 
     private static IModHelper _helper;
@@ -109,6 +110,7 @@ public class GameEvents
     
     public static event EventHandler<BotOnDeathEventArgs> OnBotDeath;
     public static event EventHandler<OnOtherPlayerDeathEventArgs> OnOtherPlayerDeath;
+    public static event EventHandler<ChatMessageReceivedEventArgs> ChatMessageReceived; 
     #endregion
 
     #region Methods
@@ -201,7 +203,33 @@ public class GameEvents
                 Logger.Log($"Failed in DeathPatch \n {e}", LogLevel.Error);
                 throw;
             }
-        } 
+        }
+    }
+
+    public class MessagePatch
+    {
+        public static void receiveChatMessage_Postfix()
+        {
+            try
+            {
+                ChatMessage message = Game1.chatBox.messages[^1];
+                foreach (var snippet in message.message)
+                {
+                    string[] chat = snippet.message.Split(":");
+                    int index = snippet.message.IndexOf(":", StringComparison.Ordinal);
+                    string removedMessage = snippet.message.Remove(0, index + 2); // we add 2 to remove padding after the colon
+                    if (chat[0] != BotBase.Farmer.Name)
+                    {
+                        Logger.Info($"chat: {chat[0]}  index: {index}  removedMessage: {removedMessage}");
+                        ChatMessageReceived.Invoke(new MessagePatch(), new ChatMessageReceivedEventArgs(chat[0],removedMessage,0,false));
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Log($"Failed in DeathPatch \n {e} \n This is mostly likely because it is not subscribed to anything", LogLevel.Error);
+            }
+        }
     }
 
 

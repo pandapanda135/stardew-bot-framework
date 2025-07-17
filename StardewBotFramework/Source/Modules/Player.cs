@@ -133,8 +133,7 @@ public class Player
 
                 while (CharacterController.IsMoving()) continue; // this is not async
 
-                Graph.IsInNeighbours(BotBase.Farmer.TilePoint, point.Tile.ToPoint(), out var pathDirection, 3);
-                if (pathDirection == -1) continue;
+                if (!Graph.IsInNeighbours(BotBase.Farmer.TilePoint, point.Tile.ToPoint(), out var pathDirection, 3)) continue;
                 UseTool(pathDirection);
             }
         }

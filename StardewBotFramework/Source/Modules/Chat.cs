@@ -14,9 +14,6 @@ public class Chat
     public List<ChatMessage> ChatMesssages => Game1.chatBox.messages;
     public Color BotChatColor => Game1.chatBox.messageColor(0);
 
-    //TODO: Find way to get player name from message
-    public delegate ChatMessage chatSent(string message);
-
     public delegate ChatMessage privateMessageSent(string message);
     /// <summary>
     /// Send chat message to everyone including the current player, This will also work in single-player.
