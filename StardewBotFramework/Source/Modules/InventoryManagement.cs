@@ -2,6 +2,7 @@ using Netcode;
 using StardewValley;
 using StardewValley.Inventories;
 using StardewValley.Menus;
+using StardewValley.Objects;
 using StardewValley.Objects.Trinkets;
 using Logger = StardewBotFramework.Debug.Logger;
 
@@ -129,6 +130,102 @@ public class InventoryManagement
     }
     #endregion
 
+    #region ClothingItems
+
+    public Item? ChangeRings(Ring? ring, bool topRing)
+    {
+        NetRef<Ring> ringSlot = topRing ? BotBase.Farmer.leftRing : BotBase.Farmer.rightRing;
+        
+        Ring previousClothing = ringSlot.Value;
+
+        if (ring == null)
+        {
+            if (!BotBase.Farmer.addItemToInventoryBool(previousClothing))
+            {
+                BotBase.Farmer.dropItem(previousClothing);
+            }
+            return Utility.PerformSpecialItemGrabReplacement(BotBase.Farmer.Equip(null, ringSlot!));
+        }
+        
+        if (ringSlot.Value != null && BotBase.Farmer.Items.Contains(ring))
+        {
+            return Utility.PerformSpecialItemGrabReplacement(BotBase.Farmer.Equip(ring, ringSlot));
+        }
+
+        return null;
+    }
+
+    public Item? ChangeClothing(bool shirt,Clothing? clothing)
+    {
+        NetRef<Clothing> clothingSlot = shirt ? BotBase.Farmer.shirtItem : BotBase.Farmer.pantsItem;
+
+        Clothing previousClothing = clothingSlot.Value;
+
+        if (clothing == null)
+        {
+            if (!BotBase.Farmer.addItemToInventoryBool(previousClothing))
+            {
+                BotBase.Farmer.dropItem(previousClothing);
+            }
+            return Utility.PerformSpecialItemGrabReplacement(BotBase.Farmer.Equip(null, clothingSlot!));
+        }
+        
+        if (clothingSlot.Value != null && BotBase.Farmer.Items.Contains(clothing))
+        {
+            return Utility.PerformSpecialItemGrabReplacement(BotBase.Farmer.Equip(clothing, clothingSlot!));
+        }
+
+        return null;
+    }
+
+    public Item? ChangeHat(Hat? hat)
+    {
+        NetRef<Hat> hatSlot = BotBase.Farmer.hat;
+        
+        Hat previousClothing = hatSlot.Value;
+
+        if (hat == null)
+        {
+            if (!BotBase.Farmer.addItemToInventoryBool(previousClothing))
+            {
+                BotBase.Farmer.dropItem(previousClothing);
+            }
+            return Utility.PerformSpecialItemGrabReplacement(BotBase.Farmer.Equip(null, hatSlot!));
+        }
+
+        if (hatSlot.Value != null && BotBase.Farmer.Items.Contains(hat))
+        {
+            return Utility.PerformSpecialItemGrabReplacement(BotBase.Farmer.Equip(hat, hatSlot!));
+        }
+
+        return null;
+    }
+
+    public Item? ChangeBoots(Boots? boots)
+    {
+        NetRef<Boots> bootsSlot = BotBase.Farmer.boots;
+        
+        Boots previousClothing = bootsSlot.Value;
+
+        if (boots == null)
+        {
+            if (!BotBase.Farmer.addItemToInventoryBool(previousClothing))
+            {
+                BotBase.Farmer.dropItem(previousClothing);
+            }
+            return Utility.PerformSpecialItemGrabReplacement(BotBase.Farmer.Equip(null, bootsSlot!));
+        }
+
+        if (bootsSlot.Value != null && BotBase.Farmer.Items.Contains(boots))
+        {
+            return Utility.PerformSpecialItemGrabReplacement(BotBase.Farmer.Equip(boots, bootsSlot!));
+        }
+
+        return null;
+    }
+
+    #endregion
+    
     #region Trinkets
 
     /// <summary>

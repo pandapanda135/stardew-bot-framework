@@ -58,11 +58,13 @@ public class Blacksmith : IShopMenu
         //
         // Logger.Info($"Dialogue: {dialogueBox.characterDialogue}");
 
-        // DialogueManager.AdvanceDialogue(0,0); // TODO: make this work so it will go through the dialogue box that shows up when you interact with npc
+        // DialogueManager.AdvanceDialogue(0,0);
         // DialogueManager.ChooseResponse(option, Game1.activeClickableMenu as DialogueBox, dialogueBox.characterDialogue, dialogueBox.responses[option]);
         // should try to move this to using dialogue but I cant make it work that way right now.
 
         // if (StardewClient.CurrentLocation is not ShopLocation) return false;
+        
+        // make this work so it will go through the dialogue box that shows up when you interact with npc as current solution is quite jank
         switch (option)
         {
             case 0:
