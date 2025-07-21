@@ -156,8 +156,8 @@ public class CharacterCreation
     /// <param name="petBreed">This will change the selected pet breed, these can only be "0" to "4" in vanilla however there is no check in the function for this</param>
     public void ChangePet(string petType, string petBreed)
     {
-        StardewClient.Farmer.whichPetType = petType;
-        StardewClient.Farmer.whichPetBreed = petBreed;
+        BotBase.Farmer.whichPetType = petType;
+        BotBase.Farmer.whichPetBreed = petBreed;
     }
 
     /// <summary>

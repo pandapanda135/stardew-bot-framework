@@ -5,7 +5,7 @@ using StardewValley.Tools;
 
 namespace StardewBotFramework.Source.ObjectToolSwaps;
 
-// general item swapping implementation take inspiration from https://github.com/Caua-Oliveira/StardewMods/blob/main/AutomateToolSwap/InteractionRules
+// general item swapping implementation takes heavy inspiration from https://github.com/Caua-Oliveira/StardewMods/blob/main/AutomateToolSwap/InteractionRules
 public class SwapItemHandler
 {
     public static void SwapItem(Type toolType,string meleeWeapon)

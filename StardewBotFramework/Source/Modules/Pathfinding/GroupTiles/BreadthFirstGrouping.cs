@@ -21,7 +21,6 @@ public class BreadthFirstGrouping : AlgorithmBase
             throw new NotImplementedException();
         }
 
-        // make this run asynchronously so we can await it when using bot as don't want running actions when pathfinding or just make character controller async (as don't want moving while dropping items as an example)
         public async Task<Stack<Point>> GetGroup(Point startPoint, string property, GameLocation location, int limit)
         {
             ClearVariables();

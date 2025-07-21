@@ -3,7 +3,6 @@ using Netcode;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Modules.Pathfinding.Algorithms;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
-using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.GameData.Characters;
 using StardewValley.Inventories;
@@ -60,8 +59,23 @@ public class Player
     /// Will use currently held tool.
     /// </summary>
     /// <param name="direction">This acts as a shortcut to <see cref="ChangeFacingDirection"/>. If this is not set or not a valid value the tool will be used in the currently facing direction</param>
-    public void UseTool(int direction = -1)
+    public void UseTool(int direction = -1, bool currentTile = false)
     {
+        if (BotBase.Farmer.UsingTool == true)
+        {
+            Logger.Error($"Already UsingTool when trying to use direction at {BotBase.Farmer.TilePoint}");
+            return;
+        }
+        
+        if (currentTile)
+        {
+            Logger.Info($"Using current tile");
+            BotBase.Farmer.lastClick = new Vector2(BotBase.Farmer.TilePoint.X * 64,
+                BotBase.Farmer.TilePoint.Y * 64);
+            BotBase.Farmer.BeginUsingTool();
+            return;
+        }
+        
         Logger.Info($"direction: {direction}");
         if (direction < 0 || direction > 4) // should account for if user uses a none valid value
         {
@@ -69,34 +83,40 @@ public class Player
             Game1.player.BeginUsingTool(); // Object.performToolAction
             return;
         }
-        
+
         Logger.Info($"using tool at direction: {direction}");
         ChangeFacingDirection(direction);
         switch (direction) // N,E,S,W
         {
             case 0:
-                StardewClient.Farmer.lastClick = new Vector2(StardewClient.Farmer.lastClick.X,
-                    StardewClient.Farmer.lastClick.Y - 1 * 64);
-                StardewClient.Farmer.BeginUsingTool();
+                BotBase.Farmer.lastClick = new Vector2(BotBase.Farmer.lastClick.X,
+                    BotBase.Farmer.lastClick.Y - 1 * 64);
+                BotBase.Farmer.BeginUsingTool();
                 break;
             case 1:
-                StardewClient.Farmer.lastClick = new Vector2(StardewClient.Farmer.lastClick.X - 1 * 64,
-                    StardewClient.Farmer.lastClick.Y);
-                StardewClient.Farmer.BeginUsingTool();
+                BotBase.Farmer.lastClick = new Vector2(BotBase.Farmer.lastClick.X - 1 * 64,
+                    BotBase.Farmer.lastClick.Y);
+                BotBase.Farmer.BeginUsingTool();
                 break;
             case 2:
-                StardewClient.Farmer.lastClick = new Vector2(StardewClient.Farmer.lastClick.X,
-                    StardewClient.Farmer.lastClick.Y + 1 * 64);
-                StardewClient.Farmer.BeginUsingTool();
+                BotBase.Farmer.lastClick = new Vector2(BotBase.Farmer.lastClick.X,
+                    BotBase.Farmer.lastClick.Y + 1 * 64);
+                BotBase.Farmer.BeginUsingTool();
                 break;
             case 3:
-                StardewClient.Farmer.lastClick = new Vector2(StardewClient.Farmer.lastClick.X + 1 * 64,
-                    StardewClient.Farmer.lastClick.Y);
-                StardewClient.Farmer.BeginUsingTool();
+                BotBase.Farmer.lastClick = new Vector2(BotBase.Farmer.lastClick.X + 1 * 64,
+                    BotBase.Farmer.lastClick.Y);
+                BotBase.Farmer.BeginUsingTool();
+                break;
+            default:
+                Logger.Error($"{direction} is not in switch statement");
                 break;
         }
+
+        return;
     }
 
+    // TODO change to group class
     public async Task UseToolOnGroup(List<TerrainFeature> group,Tool tool)
     {
         if (BotBase.Farmer.Items.Contains(tool))
@@ -112,29 +132,50 @@ public class Player
         
         AlgorithmBase.IPathing pathing = new AStar.Pathing();
         pathing.BuildCollisionMap(BotBase.CurrentLocation);
-        foreach (var point in group) // TODO: the use tool at direction is very inaccurate I think this is partially related to the other todo
-        {
+        foreach (var point in group) // TODO: if tries to interact with multiple tiles will only interact with one need way to queue them and wait for tiles to be done. can maybe be done with UsingTool 
+        { // TODO: will sometimes crash relating to networking audio stuff
             StardewClient.debugTiles.Remove(point);
+
+            // should wait until not using tool
+            while (BotBase.Farmer.UsingTool)
+            {
+            }
+            
+            if (point.Tile == BotBase.Farmer.Tile)
+            {
+                Logger.Error($"Same place in else");
+                UseTool(-2,true);
+                continue;
+            }
+            
             if (Graph.IsInNeighbours(BotBase.Farmer.TilePoint, point.Tile.ToPoint(), out var direction, 3))
             {
                 Logger.Info($"using neighbour if");
                 if (direction == -1) continue;
-                UseTool(direction);
+                ChangeFacingDirection(direction);
+                UseTool(direction,false);
             }
             else // pathfind to node
             {
                 PathNode start = new PathNode(BotBase.Farmer.TilePoint.X, BotBase.Farmer.TilePoint.Y, null);
                 
-                // TODO: pathfinding lets going on top of the plant on not next to it this also happens with GoalNearby with a radius of 1
                 Stack<PathNode> path = await pathing.FindPath(start,new Goal.GetToTile((int)point.Tile.X,(int)point.Tile.Y),BotBase.CurrentLocation,10000);
-        
-                CharacterController.StartMoveCharacter(path, Game1.player, Game1.currentLocation,
+
+                if (path == new Stack<PathNode>())
+                {
+                    Logger.Error($"Stack was empty");
+                    UseTool(-2,true);
+                    continue;
+                }
+                
+                CharacterController.StartMoveCharacter(path, BotBase.Farmer, BotBase.CurrentLocation,
                     Game1.currentGameTime);
 
                 while (CharacterController.IsMoving()) continue; // this is not async
 
                 if (!Graph.IsInNeighbours(BotBase.Farmer.TilePoint, point.Tile.ToPoint(), out var pathDirection, 3)) continue;
-                UseTool(pathDirection);
+                ChangeFacingDirection(pathDirection);
+                UseTool(pathDirection,false);
             }
         }
     }

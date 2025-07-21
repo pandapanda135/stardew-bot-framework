@@ -9,11 +9,11 @@ namespace StardewBotFramework.Source;
 
 public abstract class BotBase
 {
-    private static BotBase? Instance { get; set; }
-    private readonly IModHelper _helper;
-    private readonly IManifest _manifest;
-    private readonly IMonitor _monitor;
-    private readonly IMultiplayerHelper _multiplayer;
+    protected static BotBase? Instance { get; set; }
+    protected IModHelper _helper;
+    protected IManifest _manifest;
+    protected IMonitor _monitor;
+    protected IMultiplayerHelper _multiplayer;
     internal static Farmer Farmer => Game1.player;
     internal static GameLocation CurrentLocation => Game1.currentLocation;
     internal IModHelper Helper => _helper;

@@ -91,7 +91,7 @@ public class GroupedTiles
         return groups;
     }
 
-    public async Task UsePropertyFunc(Point tile,string property,GameLocation location)
+    private async Task UsePropertyFunc(Point tile,string property,GameLocation location)
     {
         Logger.Info($"running func");
         Stack<Point> points = await breadthFirstGrouping.GetGroup(tile, property, location, 100);
@@ -102,14 +102,14 @@ public class GroupedTiles
         }
     }
 
-    public async Task UseDirtFunc(Point tile, GameLocation location)
+    private async Task UseDirtFunc(Point tile, GameLocation location)
     {
         Logger.Info($"running func");
         Stack<HoeDirt> points = await breadthFirstGrouping.GetTerrainGroup(tile, location, 100000);
         Group group = new();
         foreach (var point in points)
         {
-            group.Add(new PlantTile(point,point.needsWatering(),point.needsWatering(),point.paddyWaterCheck()));
+            group.Add(new PlantTile(point,point.isWatered(),point.needsWatering(),point.paddyWaterCheck()));
         }
         _validFeatures.Add(group);
         foreach (var point in points)

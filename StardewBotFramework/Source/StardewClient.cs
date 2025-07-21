@@ -16,12 +16,12 @@ namespace StardewBotFramework.Source;
 public class StardewClient : BotBase
 {
     public static List<TerrainFeature> debugTiles = new();
-    private static StardewClient? Instance { get; set; }
+    // private static BotBase? Instance { get; set; }
 
-    private readonly IModHelper _helper;
-    private readonly IManifest _manifest;
-    private readonly IMonitor _monitor;
-    private readonly IMultiplayerHelper _multiplayer;
+    // private readonly IModHelper _helper;
+    // private readonly IManifest _manifest;
+    // private readonly IMonitor _monitor;
+    // private readonly IMultiplayerHelper _multiplayer;
 
     #region Modules
 

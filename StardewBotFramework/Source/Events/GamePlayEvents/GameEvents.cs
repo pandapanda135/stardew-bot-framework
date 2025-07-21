@@ -15,9 +15,9 @@ public class GameEvents
     public GameEvents(IModHelper _helper)
     {
         _helper.Events.GameLoop.GameLaunched += OnGameLaunch;
+        _helper.Events.GameLoop.DayStarted += OnDayStarted;
         _helper.Events.GameLoop.DayEnding += OnDayEnding;
         _helper.Events.GameLoop.TimeChanged += OnTimeChanged;
-        _helper.Events.GameLoop.DayStarted += OnDayStarted;
         
         _helper.Events.Multiplayer.PeerConnected += OnPeerConnected;
         _helper.Events.Multiplayer.PeerDisconnected += OnPeerDisconnected;
@@ -35,6 +35,10 @@ public class GameEvents
         _helper.Events.World.LargeTerrainFeatureListChanged += OnLargeTerrainFeatureListChanged;
         
         _helper.Events.GameLoop.UpdateTicking += CharacterController.Update;
+        
+        StaticChatMessageReceived += OnStaticChatMessageReceived;
+        StaticOnBotDeath += OnStaticOnBotDeath;
+        StaticOnOtherPlayerDeath += OnStaticOnOtherPlayerDeath;
     }
 
     private static IModHelper _helper;
@@ -49,68 +53,72 @@ public class GameEvents
     /// <summary>
     /// On new Day Started.
     /// </summary>
-    public event EventHandler<BotDayStartedEventArgs> DayStarted;
+    public event EventHandler<BotDayStartedEventArgs>? DayStarted;
     /// <summary>
     /// On day ended
     /// </summary>
-    public event EventHandler<BotDayEndedEventArgs> DayEnded; 
+    public event EventHandler<BotDayEndedEventArgs>? DayEnded; 
     /// <summary>
     /// When a player connects to multiplayer world.
     /// </summary>
-    public event EventHandler<BotPlayerConnectedEventArgs> PlayerConnected;
+    public event EventHandler<BotPlayerConnectedEventArgs>? PlayerConnected;
     /// <summary>
     /// When a player disconnects to multiplayer world.
     /// </summary>
-    public event EventHandler<BotPlayerDisconnectedEventArgs> PlayerDisconnected;
+    public event EventHandler<BotPlayerDisconnectedEventArgs>? PlayerDisconnected;
     /// <summary>
     /// When the bot moves location.
     /// </summary>
-    public event EventHandler<BotWarpedEventArgs> BotWarped;
+    public event EventHandler<BotWarpedEventArgs>? BotWarped;
     /// <summary>
     /// When the bot's inventory changes 
     /// </summary>
-    public event EventHandler<BotInventoryChangedEventArgs> BotInventoryChanged;
+    public event EventHandler<BotInventoryChangedEventArgs>? BotInventoryChanged;
     /// <summary>
     /// When a skill the bot has changes, this will be called when it happens in the game and not be queued for when the day ends
     /// </summary>
-    public event EventHandler<BotSkillLevelChangedEventArgs> BotSkillChanged;
+    public event EventHandler<BotSkillLevelChangedEventArgs>? BotSkillChanged;
     /// <summary>
     /// When an object in the bot's current location changes.
     /// </summary>
-    public event EventHandler<BotObjectListChangedEventArgs> BotObjectChanged;
+    public event EventHandler<BotObjectListChangedEventArgs>? BotObjectChanged;
     /// <summary>
     /// When a NPC leaves or enters the bot's current locaiton.
     /// </summary>
-    public event EventHandler<BotCharacterListChangedEventArgs> BotLocationNpcChanged;
+    public event EventHandler<BotCharacterListChangedEventArgs>? BotLocationNpcChanged;
     /// <summary>
     /// When debris in the bot's current location changes.
     /// </summary>
-    public event EventHandler<BotDebrisChangedEventArgs> BotLocationDebrisChanged;
+    public event EventHandler<BotDebrisChangedEventArgs>? BotLocationDebrisChanged;
     /// <summary>
     /// When a building in the bot's current location changes.
     /// </summary>
-    public event EventHandler<BotBuildingChangedEventArgs> BotLocationBuildingsChanged;
+    public event EventHandler<BotBuildingChangedEventArgs>? BotLocationBuildingsChanged;
     /// <summary>
     /// When furniture in the bot's current location changes.
     /// </summary>
-    public event EventHandler<BotFurnitureChangedEventArgs> BotLocationFurnitureChanged;
+    public event EventHandler<BotFurnitureChangedEventArgs>? BotLocationFurnitureChanged;
     /// <summary>
     /// When a Terrain feature (e.g. a tree or floor) in the bot's current location changes.
     /// </summary>
-    public event EventHandler<BotTerrainFeatureChangedEventArgs> BotTerrainFeatureChanged;
+    public event EventHandler<BotTerrainFeatureChangedEventArgs>? BotTerrainFeatureChanged;
     /// <summary>
     /// When a Large terrain feature (e.g. bushes) in the bot's current location changes.
     /// </summary>
-    public event EventHandler<BotLargeTerrainFeatureChangedEventArgs> BotLargeTerrainFeatureChanged;
+    public event EventHandler<BotLargeTerrainFeatureChangedEventArgs>? BotLargeTerrainFeatureChanged;
     /// <summary>
     /// When the time on the clock shown in-game changes, this is sent in the notation of.
     /// 24-hour notation (like 1600 for 4pm). The clock time resets when the player sleeps, so 2am (before sleeping) is 2600.
     /// </summary>
-    public event EventHandler<TimeEventArgs> UiTimeChanged;
+    public event EventHandler<TimeEventArgs>? UiTimeChanged;
     
-    public static event EventHandler<BotOnDeathEventArgs> OnBotDeath;
-    public static event EventHandler<OnOtherPlayerDeathEventArgs> OnOtherPlayerDeath;
-    public static event EventHandler<ChatMessageReceivedEventArgs> ChatMessageReceived; 
+    public event EventHandler<BotOnDeathEventArgs>? OnBotDeath;
+    public event EventHandler<OnOtherPlayerDeathEventArgs>? OnOtherPlayerDeath; // not tested probably works though
+    public event EventHandler<ChatMessageReceivedEventArgs>? ChatMessageReceived;
+    
+    private static event EventHandler<BotOnDeathEventArgs>? StaticOnBotDeath;
+    private static event EventHandler<OnOtherPlayerDeathEventArgs>? StaticOnOtherPlayerDeath;
+    private static event EventHandler<ChatMessageReceivedEventArgs>? StaticChatMessageReceived; 
     #endregion
 
     #region Methods
@@ -180,6 +188,14 @@ public class GameEvents
     }
     
     private void OnGameLaunch(object? sender, GameLaunchedEventArgs e) => Logger.Log($"Game launched setting up bot");
+
+    private void OnStaticChatMessageReceived(object? sender, ChatMessageReceivedEventArgs e) =>
+        ChatMessageReceived.Invoke(sender, e);
+
+    private void OnStaticOnOtherPlayerDeath(object? sender, OnOtherPlayerDeathEventArgs e) =>
+        OnOtherPlayerDeath.Invoke(sender, e);
+
+    private void OnStaticOnBotDeath(object? sender, BotOnDeathEventArgs e) => OnBotDeath.Invoke(sender, e);
         
     #endregion
 
@@ -191,11 +207,11 @@ public class GameEvents
             {
                 if (__instance == BotBase.Farmer)
                 {
-                    OnBotDeath.Invoke(new DeathPatch(), new BotOnDeathEventArgs(BotBase.CurrentLocation,BotBase.Farmer.TilePoint,__result));  
+                    StaticOnBotDeath.Invoke(new DeathPatch(), new BotOnDeathEventArgs(BotBase.CurrentLocation,BotBase.Farmer.TilePoint,__result));  
                 }
                 else
                 {
-                    OnOtherPlayerDeath.Invoke(new DeathPatch(), new OnOtherPlayerDeathEventArgs()); 
+                    StaticOnOtherPlayerDeath.Invoke(new DeathPatch(), new OnOtherPlayerDeathEventArgs(__instance));
                 }
             }
             catch (Exception e)
@@ -218,16 +234,16 @@ public class GameEvents
                     string[] chat = snippet.message.Split(":");
                     int index = snippet.message.IndexOf(":", StringComparison.Ordinal);
                     string removedMessage = snippet.message.Remove(0, index + 2); // we add 2 to remove padding after the colon
-                    if (chat[0] != BotBase.Farmer.Name)
+                    if (chat[0] == BotBase.Farmer.Name)
                     {
                         Logger.Info($"chat: {chat[0]}  index: {index}  removedMessage: {removedMessage}");
-                        ChatMessageReceived.Invoke(new MessagePatch(), new ChatMessageReceivedEventArgs(chat[0],removedMessage,0,false));
+                        StaticChatMessageReceived.Invoke(new MessagePatch(), new ChatMessageReceivedEventArgs(chat[0],removedMessage,0,false));
                     }
                 }
             }
             catch (Exception e)
             {
-                Logger.Log($"Failed in DeathPatch \n {e} \n This is mostly likely because it is not subscribed to anything", LogLevel.Error);
+                Logger.Error($"Failed in DeathPatch \n {e} \n This is mostly likely because it is not subscribed to anything");
             }
         }
     }

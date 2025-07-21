@@ -18,14 +18,12 @@ public class AStar : AlgorithmBase
         {
             Stack<PathNode> correctPath = await Task.Run(() => RunAStar(startPoint, goal, location, limit,canDestroy)); // this is for it to run on a background thread
             
+            ClearVariables();
             if (correctPath.Count == 0)
             {
                 Logger.Error($"Rebuild path returned empty stack");
                 return new Stack<PathNode>();
             }
-            
-            ClearVariables();
-
             return correctPath;
         }
 
