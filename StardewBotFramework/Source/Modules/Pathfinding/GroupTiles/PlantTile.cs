@@ -10,7 +10,7 @@ public class PlantTile : ITile
     public TerrainFeature TerrainFeature;
 
     /// <summary>
-    /// Where this plant has been watered already.
+    /// Whether this plant has been watered already.
     /// </summary>
     public bool Watered;
     /// <summary>
@@ -24,6 +24,9 @@ public class PlantTile : ITile
 
     public PlantTile(TerrainFeature terrainFeature, bool watered, bool needsWater, bool waterTile)
     {
+        X = (int)terrainFeature.Tile.X;
+        Y = (int)terrainFeature.Tile.Y;
+        
         TerrainFeature = terrainFeature;
         Watered = watered;
         NeedsWater = needsWater;

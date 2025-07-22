@@ -21,7 +21,7 @@ public class BreadthFirstGrouping : AlgorithmBase
             throw new NotImplementedException();
         }
 
-        public async Task<Stack<Point>> GetGroup(Point startPoint, string property, GameLocation location, int limit)
+        internal async Task<Stack<Point>> GetPropertyGroup(Point startPoint, string property, GameLocation location, int limit)
         {
             ClearVariables();
 
@@ -35,7 +35,7 @@ public class BreadthFirstGrouping : AlgorithmBase
             return correctPath;
         }
 
-        public async Task<Stack<HoeDirt>> GetTerrainGroup(Point startPoint,GameLocation location, int limit)
+        internal async Task<Stack<HoeDirt>> GetTerrainGroup(Point startPoint,GameLocation location, int limit)
         {
             ClearVariables();
 

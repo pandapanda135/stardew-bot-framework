@@ -51,7 +51,7 @@ public class GroupedTiles
     /// </summary>
     /// <param name="location">location to query</param>
     /// <returns>A lists of lists that contains the patches of <see cref="HoeDirt"/></returns>
-    public async Task<List<Group>> StartDirtCheck(GameLocation location)
+    public async Task<List<Group>> StartDirtCheck(GameLocation location) //TODO: does this need to be a list<Group> ??
     {
         _validFeatures = new();
         _usedFeatureTiles = new();
@@ -94,7 +94,7 @@ public class GroupedTiles
     private async Task UsePropertyFunc(Point tile,string property,GameLocation location)
     {
         Logger.Info($"running func");
-        Stack<Point> points = await breadthFirstGrouping.GetGroup(tile, property, location, 100);
+        Stack<Point> points = await breadthFirstGrouping.GetPropertyGroup(tile, property, location, 100);
         foreach (var point in points)
         {
             Logger.Info($"adding point: {point}");

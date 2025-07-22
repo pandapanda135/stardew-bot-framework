@@ -3,12 +3,14 @@ using Netcode;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Modules.Pathfinding.Algorithms;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
+using StardewBotFramework.Source.Modules.Pathfinding.GroupTiles;
 using StardewValley;
 using StardewValley.GameData.Characters;
 using StardewValley.Inventories;
 using StardewValley.Menus;
 using StardewValley.Objects.Trinkets;
 using StardewValley.TerrainFeatures;
+using StardewValley.Tools;
 using Object = StardewValley.Object;
 
 namespace StardewBotFramework.Source.Modules;
@@ -61,7 +63,7 @@ public class Player
     /// <param name="direction">This acts as a shortcut to <see cref="ChangeFacingDirection"/>. If this is not set or not a valid value the tool will be used in the currently facing direction</param>
     public void UseTool(int direction = -1, bool currentTile = false)
     {
-        if (BotBase.Farmer.UsingTool == true)
+        if (BotBase.Farmer.UsingTool)
         {
             Logger.Error($"Already UsingTool when trying to use direction at {BotBase.Farmer.TilePoint}");
             return;
@@ -116,69 +118,68 @@ public class Player
         return;
     }
 
-    // TODO change to group class
-    public async Task UseToolOnGroup(List<TerrainFeature> group,Tool tool)
+    /// <summary>
+    /// Water all patches in this current location, This will only work if the bot is in the farm.
+    /// </summary>
+    public async Task WaterAllPatches()
     {
-        if (BotBase.Farmer.Items.Contains(tool))
+        if (BotBase.CurrentLocation is not Farm) return;
+
+        GroupedTiles groupedTiles = new();
+        Task<List<Group>> list = groupedTiles.StartDirtCheck(Game1.currentLocation);
+        Group finalGroup = new();
+        foreach (var kvp in list.Result) // go through groups of dirt
         {
-            int index = BotBase.Farmer.Items.IndexOf(tool);
-            for (int i = 0; i < (int)Math.Floor((double)index / 11); i++)
+            foreach (var itile in kvp.GetTiles())
             {
-                BotBase.Farmer.shiftToolbar(true);    
-            }
-
-            BotBase.Farmer.CurrentToolIndex = index;
-        }
-        
-        AlgorithmBase.IPathing pathing = new AStar.Pathing();
-        pathing.BuildCollisionMap(BotBase.CurrentLocation);
-        foreach (var point in group) // TODO: if tries to interact with multiple tiles will only interact with one need way to queue them and wait for tiles to be done. can maybe be done with UsingTool 
-        { // TODO: will sometimes crash relating to networking audio stuff
-            StardewClient.debugTiles.Remove(point);
-
-            // should wait until not using tool
-            while (BotBase.Farmer.UsingTool)
-            {
-            }
-            
-            if (point.Tile == BotBase.Farmer.Tile)
-            {
-                Logger.Error($"Same place in else");
-                UseTool(-2,true);
-                continue;
-            }
-            
-            if (Graph.IsInNeighbours(BotBase.Farmer.TilePoint, point.Tile.ToPoint(), out var direction, 3))
-            {
-                Logger.Info($"using neighbour if");
-                if (direction == -1) continue;
-                ChangeFacingDirection(direction);
-                UseTool(direction,false);
-            }
-            else // pathfind to node
-            {
-                PathNode start = new PathNode(BotBase.Farmer.TilePoint.X, BotBase.Farmer.TilePoint.Y, null);
+                PlantTile tile = (itile as PlantTile)!;
+                    
+                HoeDirt dirt = (tile.TerrainFeature as HoeDirt)!;
+                if (dirt.crop is null) continue;
                 
-                Stack<PathNode> path = await pathing.FindPath(start,new Goal.GetToTile((int)point.Tile.X,(int)point.Tile.Y),BotBase.CurrentLocation,10000);
-
-                if (path == new Stack<PathNode>())
+                // this is because I'm a horrible programmer that's too dumb to find a better way to do this
+                IEnumerable<ITile> tiles = finalGroup.GetTiles().Where(tile1 => tile1.Position == tile.Position);
+                if (tiles.Any())
                 {
-                    Logger.Error($"Stack was empty");
-                    UseTool(-2,true);
                     continue;
                 }
                 
-                CharacterController.StartMoveCharacter(path, BotBase.Farmer, BotBase.CurrentLocation,
-                    Game1.currentGameTime);
-
-                while (CharacterController.IsMoving()) continue; // this is not async
-
-                if (!Graph.IsInNeighbours(BotBase.Farmer.TilePoint, point.Tile.ToPoint(), out var pathDirection, 3)) continue;
-                ChangeFacingDirection(pathDirection);
-                UseTool(pathDirection,false);
+                Logger.Info($"final group point: {tile.Position}");
+                finalGroup.Add(tile);
+                StardewClient.debugTiles.Add(tile);
             }
         }
+            
+        await UseToolOnGroup(finalGroup,new WateringCan());
+        Logger.Info($"Ending watering");
     }
+
+    public async Task RefillWateringCan()
+    {
+        GetNearestWaterTiles groupedTiles = new();
+        Task<Group> group = groupedTiles.GetWaterGroup(BotBase.Farmer.TilePoint,Game1.currentLocation);
+        Group finalGroup = new();
+        Logger.Info($"count of result: {group.Result.GetTiles().Count}");
+        foreach (var iTile in group.Result.GetTiles()) // go through group of water
+        {
+            WaterTile tile = (iTile as WaterTile)!;
+            
+            // this is because I'm a horrible programmer that's too dumb to find a better way to do this. continue if duplicate tile.
+            IEnumerable<ITile> tiles = finalGroup.GetTiles().Where(tile1 => tile1.Position == tile.Position);
+            if (tiles.Any())
+            {
+                continue;
+            }
+            
+            Logger.Info($"final group point: {tile.Position}");
+            finalGroup.Add(tile);
+            StardewClient.debugTiles.Add(tile);
+        }
+        
+        await RefillWateringCan(finalGroup,new WateringCan());
+        Logger.Info($"Ending watering");
+    }
+    
     /// <summary>
     /// Try to add item to an object (e.g. input for machine, placed on a table)
     /// </summary>
@@ -201,6 +202,140 @@ public class Player
     public Point BotTilePosition()
     {
         return Game1.player.TilePoint;
+    }
+    
+    private async Task UseToolOnGroup(Group group,Tool tool)
+    {
+        if (BotBase.Farmer.Items.Contains(tool))
+        {
+            int index = BotBase.Farmer.Items.IndexOf(tool);
+            for (int i = 0; i < (int)Math.Floor((double)index / 11); i++)
+            {
+                BotBase.Farmer.shiftToolbar(true);    
+            }
+
+            BotBase.Farmer.CurrentToolIndex = index;
+        }
+        
+        AlgorithmBase.IPathing pathing = new AStar.Pathing();
+        pathing.BuildCollisionMap(BotBase.CurrentLocation);
+        foreach (var point in group.GetTiles())
+        { // TODO: will sometimes crash relating to networking audio stuff (might be fixed)
+            WateringCan wateringCan = (BotBase.Farmer.CurrentTool as WateringCan)!;
+            if (wateringCan.WaterLeft < 1)
+            {
+                // TODO: go to nearest water source
+                Logger.Error($"Ran out of water");
+                return;
+            }
+            // should wait until not using tool
+            while (BotBase.Farmer.UsingTool)
+            {
+            }
+            StardewClient.debugTiles.Remove(point);
+
+            if (point.Position == BotBase.Farmer.TilePoint)
+            {
+                Logger.Error($"Same place in else");
+                UseTool(-2,true);
+                continue;
+            }
+            
+            if (Graph.IsInNeighbours(BotBase.Farmer.TilePoint, point.Position, out var direction, 3))
+            {
+                Logger.Info($"using neighbour if");
+                if (direction == -1) continue;
+                ChangeFacingDirection(direction);
+                UseTool(direction,false);
+            }
+            else // pathfind to node
+            {
+                PathNode start = new PathNode(BotBase.Farmer.TilePoint.X, BotBase.Farmer.TilePoint.Y, null);
+                
+                Stack<PathNode> path = await pathing.FindPath(start,new Goal.GetToTile(point.Position.X,point.Position.Y),BotBase.CurrentLocation,10000);
+
+                if (path == new Stack<PathNode>())
+                {
+                    Logger.Error($"Stack was empty");
+                    UseTool(-2,true);
+                    continue;
+                }
+                
+                CharacterController.StartMoveCharacter(path, BotBase.Farmer, BotBase.CurrentLocation,
+                    Game1.currentGameTime);
+
+                while (CharacterController.IsMoving()) continue; // this is not async
+                
+                if (BotBase.Farmer.TilePoint == point.Position) // will sometimes path-find to tile, this should not happen, I'm too lazy to fix this.
+                {
+                    UseTool(-2,true);
+                    continue;
+                }
+                
+                if (!Graph.IsInNeighbours(BotBase.Farmer.TilePoint, point.Position, out var pathDirection, 3)) continue;
+                ChangeFacingDirection(pathDirection);
+                Logger.Error($"using bottom of useTool else");
+                UseTool(pathDirection,false);
+            }
+        }
+    }
+
+    private async Task RefillWateringCan(Group group, Tool tool)
+    {
+        Logger.Info($"Running refill watering can: {group.GetTiles().Count}");
+        if (BotBase.Farmer.Items.Contains(tool))
+        {
+            int index = BotBase.Farmer.Items.IndexOf(tool);
+            for (int i = 0; i < (int)Math.Floor((double)index / 11); i++)
+            {
+                BotBase.Farmer.shiftToolbar(true);    
+            }
+
+            BotBase.Farmer.CurrentToolIndex = index;
+        }
+        
+        AlgorithmBase.IPathing pathing = new AStar.Pathing();
+        pathing.BuildCollisionMap(BotBase.CurrentLocation);
+        foreach (var point in group.GetTiles())
+        { // TODO: will sometimes crash relating to networking audio stuff (might be fixed)
+            WateringCan wateringCan = (BotBase.Farmer.CurrentTool as WateringCan)!;
+            
+            if (Graph.IsInNeighbours(BotBase.Farmer.TilePoint, point.Position, out var direction, 3))
+            {
+                if (direction == -1) continue;
+                ChangeFacingDirection(direction);
+                UseTool(direction,false);
+            }
+            else // pathfind to node
+            {
+                PathNode start = new PathNode(BotBase.Farmer.TilePoint.X, BotBase.Farmer.TilePoint.Y, null);
+                
+                Stack<PathNode> path = await pathing.FindPath(start,new Goal.GetToTile(point.Position.X,point.Position.Y),BotBase.CurrentLocation,10000);
+
+                if (path == new Stack<PathNode>())
+                {
+                    Logger.Error($"Stack was empty");
+                    UseTool(-2,true);
+                    continue;
+                }
+                
+                CharacterController.StartMoveCharacter(path, BotBase.Farmer, BotBase.CurrentLocation,
+                    Game1.currentGameTime);
+
+                while (CharacterController.IsMoving()) continue; // this is not async
+                
+                if (BotBase.Farmer.TilePoint == point.Position) // will sometimes path-find to tile, this should not happen, I'm too lazy to fix this.
+                {
+                    UseTool(-2,true);
+                    continue;
+                }
+                
+                if (!Graph.IsInNeighbours(BotBase.Farmer.TilePoint, point.Position, out var pathDirection, 3)) continue;
+                ChangeFacingDirection(pathDirection);
+                Logger.Error($"using bottom of useTool else");
+                UseTool(pathDirection,false);
+            }
+        }
     }
 }
 

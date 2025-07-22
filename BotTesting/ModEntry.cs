@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Threading.Tasks.Dataflow;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -239,29 +240,13 @@ internal sealed class ModEntry : Mod
                 Logger.Info($"skill: {skill}");
             }
         }
+        // else if (e.Button == SButton.B)
+        // {
+        //     await _bot.Player.WaterAllPatches();
+        // }
         else if (e.Button == SButton.B)
         {
-            Task<List<Group>> list = _bot.GroupedTiles.StartDirtCheck(Game1.currentLocation);
-            List<TerrainFeature> tiles = new();
-            foreach (var kvp in list.Result) // go through groups of dirt
-            {
-                foreach (var itile in kvp.GetTiles())
-                {
-                    PlantTile tile = (itile as PlantTile)!;
-                    HoeDirt dirt = (tile.TerrainFeature as HoeDirt)!;
-                    if (dirt.crop is null) continue;
-    
-                    tiles.Add(dirt);
-                    StardewClient.debugTiles.Add(dirt);
-                    Logger.Info($"final point: {dirt.Tile}   plant: {dirt.crop}");
-                }
-            }
-            
-            await _bot.Player.UseToolOnGroup(tiles,new WateringCan());
-            Logger.Info($"ending group \n \n \n");
-        }
-        else if (e.Button == SButton.E)
-        {
+            await _bot.Player.RefillWateringCan();
         }
     }
 
