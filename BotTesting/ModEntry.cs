@@ -246,7 +246,7 @@ internal sealed class ModEntry : Mod
         // }
         else if (e.Button == SButton.B)
         {
-            await _bot.Player.RefillWateringCan();
+            await _bot.Player.WaterAllPatches();
         }
     }
 

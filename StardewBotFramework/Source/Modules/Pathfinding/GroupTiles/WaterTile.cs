@@ -17,6 +17,9 @@ public class WaterTile : ITile
     /// Will be false if this water is from a building
     /// </summary>
     public bool NaturalWater;
+
+    public int Cost = 0;
+    
     public WaterTile(Point position,GameLocation location)
     {
         X = position.X;
@@ -25,5 +28,6 @@ public class WaterTile : ITile
         Location = location;
         NaturalWater = location.isOpenWater(X,Y); // This should remove water from buildings (like wells or fishponds)
         WaterTileData = location.waterTiles.waterTiles[X, Y];
+        Cost = Heuristic(BotBase.Farmer.TilePoint);
     }
 }

@@ -20,4 +20,14 @@ public abstract class ITile
     {
         return tile.X == this.X && tile.Y == this.Y;
     }
+
+    public int Heuristic(ITile tile)
+    {
+        return Math.Abs(X - tile.X) + Math.Abs(Y - tile.Y);
+    }
+    
+    public int Heuristic(Point tile)
+    {
+        return Math.Abs(X - tile.X) + Math.Abs(Y - tile.Y);
+    }
 }

@@ -8,13 +8,12 @@ namespace StardewBotFramework.Source.Modules.Pathfinding.GroupTiles;
 
 public class GetNearestWaterTiles : AlgorithmBase
 {
-    private static readonly Queue<Point> _frontier = new();
+    private static readonly Queue<Point> Frontier = new();
 
-    private static readonly Stack<Point> _closedList = new();
+    private static readonly Stack<Point> ClosedList = new();
 
-    private static Dictionary<Point,WaterTiles.WaterTileData> _waterTiles = new();
-    private static readonly Stack<Point> _tileGroup = new();
-    private static List<WaterTile> _usedWaterTiles = new();
+    private static readonly Dictionary<Point,WaterTiles.WaterTileData> WaterTiles = new();
+    private static readonly List<WaterTile> UsedWaterTiles = new();
 
     public async Task<Group> GetWaterGroup(Point startPoint, GameLocation location)
     {
@@ -26,7 +25,24 @@ public class GetNearestWaterTiles : AlgorithmBase
             group.Add(waterTile);
         }
 
-        return group;
+        Group finalGroup = new();
+        Logger.Info($"count of result: {group.GetTiles().Count}");
+        foreach (var iTile in group.GetTiles()) // go through group of water
+        {
+            WaterTile tile = (iTile as WaterTile)!;
+            
+            // this is because I'm a horrible programmer that's too dumb to find a better way to do this. continue if duplicate tile.
+            IEnumerable<ITile> ieTiles = finalGroup.GetTiles().Where(tile1 => tile1.Position == tile.Position);
+            if (ieTiles.Any())
+            {
+                continue;
+            }
+            
+            Logger.Info($"final group point: {tile.Position}");
+            finalGroup.Add(tile);
+        }
+        
+        return finalGroup;
     }
     
     public class Pathing : IPathing
@@ -52,9 +68,9 @@ public class GetNearestWaterTiles : AlgorithmBase
 
                     if (tile.isWater)
                     {
-                        correctPath = await Task.Run(() => RunBreadthFirstWater(startPoint, location, limit));
-                        _usedWaterTiles.AddRange(correctPath);
-                        _waterTiles.Add(new Point(x,y),tile);
+                        WaterTiles.Add(new Point(x,y),tile);
+                        correctPath = await Task.Run(() => RunBreadthFirstWater(new Point(x,y), location, limit));
+                        UsedWaterTiles.AddRange(correctPath);
                         foreach (var waterTile in correctPath)
                         {
                             allWaterTiles.Push(waterTile);
@@ -63,26 +79,27 @@ public class GetNearestWaterTiles : AlgorithmBase
                 }
             }
             
-            if (_waterTiles.Count == 0)
+            if (allWaterTiles.Count == 0)
             {
                 Logger.Error($"Rebuild path returned empty stack");
                 return new Stack<WaterTile>();
             }
+            _usedStartPoint.Clear();
             return allWaterTiles;
         }
 
         private static readonly Stack<WaterTile> _WaterTileGroup = new();
         public static List<Point> _usedStartPoint = new();
-        private static Stack<WaterTile> RunBreadthFirstWater(Point startTile, GameLocation location ,int limit) //TODO: move checks to own function
+        private static Stack<WaterTile> RunBreadthFirstWater(Point startTile, GameLocation location ,int limit)
         {
-            var locationWater = _waterTiles;
+            var locationWater = WaterTiles;
             int runs = 0;
             
             _usedStartPoint.Add(startTile);
-            _frontier.Enqueue(startTile);
-            _closedList.Push(startTile);
+            Frontier.Enqueue(startTile);
+            ClosedList.Push(startTile);
     
-            while (_frontier.Count > 0)
+            while (Frontier.Count > 0)
             {
                 Logger.Info($"running while");
                 if (runs > limit)
@@ -91,7 +108,7 @@ public class GetNearestWaterTiles : AlgorithmBase
                     break;
                 }
                 
-                Point current = _frontier.Dequeue();
+                Point current = Frontier.Dequeue();
 
                 if (_usedStartPoint.Contains(current) && runs != 0) return new();
     
@@ -105,19 +122,19 @@ public class GetNearestWaterTiles : AlgorithmBase
                     continue;
                 }
     
-                if (_closedList.Contains(current) && current != startTile) continue;
+                if (ClosedList.Contains(current) && current != startTile) continue;
                 
                 if (!locationWater.Keys.Contains(current)) continue;
                 
-                _closedList.Push(current);
+                ClosedList.Push(current);
                 
                 Queue<Point> neighbours = IPathing.Graph.GroupNeighbours(current,7);
-                foreach (var node in neighbours.Where(node => !_closedList.Contains(node)))
+                foreach (var node in neighbours.Where(node => !ClosedList.Contains(node)))
                 {
                     Logger.Info($"in foreach this is node: {node.X},{node.Y}");
                     WaterTile waterTile = new WaterTile(current,location);
-                    if (_usedWaterTiles.Contains(waterTile)) continue;
-                    _frontier.Enqueue(new Point(node.X,node.Y));
+                    if (UsedWaterTiles.Contains(waterTile)) continue;
+                    Frontier.Enqueue(new Point(node.X,node.Y));
                     _WaterTileGroup.Push(waterTile);
                 }
     
@@ -126,14 +143,59 @@ public class GetNearestWaterTiles : AlgorithmBase
 
             return _WaterTileGroup;
         }
-        
+
+        internal static Group RemoveNonBorderWater(Group group,GameLocation location)
+        {
+            var waterTiles = location.waterTiles.waterTiles;
+            Group newGroup = new();
+            foreach (var tile in group.GetTiles())
+            {
+                foreach (var groupNeighbour in IPathing.Graph.GroupNeighbours(tile.Position,3))
+                {
+                    try
+                    {
+                        if (!waterTiles[groupNeighbour.X, groupNeighbour.Y].isWater)
+                        {
+                            if (!newGroup.Contains(tile))
+                            {
+                                newGroup.Add(new WaterTile(new Point(groupNeighbour.X,groupNeighbour.Y),location));
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        break;
+                    }
+                }
+
+            }
+
+            return newGroup;
+        }
+
+        internal static WaterTile? GetNeighbourWaterTile(WaterTile tile,GameLocation location)
+        {
+            var waterTiles = location.waterTiles.waterTiles;
+
+            Queue<Point> tiles = IPathing.Graph.GroupNeighbours(tile.Position, 3);
+
+            foreach (var point in tiles)
+            {
+                if (waterTiles[point.X, point.Y].isWater)
+                {
+                    return new WaterTile(point, location);
+                }
+            }
+
+            return null;
+        }
         
         private static void ClearVariables()
         {
-            _frontier.Clear();
+            Frontier.Clear();
             _WaterTileGroup.Clear();
-            _closedList.Clear();
-            _tileGroup.Clear();
+            WaterTiles.Clear();
+            ClosedList.Clear();
         }
         
     }
