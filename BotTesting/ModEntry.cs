@@ -117,7 +117,7 @@ internal sealed class ModEntry : Mod
         }
         else if (e.Button == SButton.Y)
         {
-            _bot.Player.UseTool();
+            _bot.Tool.UseTool();
         }
         else if (e.Button == SButton.O)
         {
@@ -246,7 +246,7 @@ internal sealed class ModEntry : Mod
         // }
         else if (e.Button == SButton.B)
         {
-            await _bot.Player.WaterAllPatches();
+            await _bot.Tool.WaterAllPatches();
         }
     }
 

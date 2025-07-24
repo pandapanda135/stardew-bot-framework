@@ -2,7 +2,7 @@ namespace StardewBotFramework.Source.Modules.Pathfinding.Base;
 
 public interface IGraph
 {
-    protected static readonly sbyte[,] Directions = new sbyte[8,2]
+    protected static readonly sbyte[,] Directions = new sbyte[,]
     {
         { -1, 0 }, // west
         { 1, 0 }, // east
@@ -16,7 +16,7 @@ public interface IGraph
         {1,1}, // south-east
     };
     
-    protected static readonly sbyte[,] GroupDirections = new sbyte[8,2]
+    protected static readonly sbyte[,] GroupDirections = new sbyte[,]
     {
         { 0, -1 }, // north
         { 1, 0 }, // east

@@ -34,21 +34,16 @@ public class Goal
         return false;
     }
 
-    public bool IsInEndRadius(PathNode node,int radius)
+    public bool IsInEndRadius(PathNode node,int radius,bool cardinal = false)
     {
-        for (int x = VectorLocation.X + radius; x > VectorLocation.X - radius; x--)
+        if (cardinal)
         {
-            for (int y = VectorLocation.Y + radius; y > VectorLocation.Y - radius; y--)
-            {
-                if (node.X == x && node.Y == y) // check if node is in radius
-                {
-                    Logger.Warning($"IsInEndRadius is returning true");
-                    return true;
-                }
-            }
+            return Graph.IsInNeighbours(VectorLocation, node.VectorLocation, out var direction, 3);
         }
-        
-        return false;
+        else
+        {
+            return Graph.IsInNeighbours(VectorLocation, node.VectorLocation, out var direction, 7);
+        }
     }
     
     /// <summary>

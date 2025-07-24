@@ -47,6 +47,7 @@ public class StardewClient : BotBase
     public CreateFarmBuilding FarmBuilding { get; }
     public ShippingBinInteraction ShippingBinInteraction { get; }
     public GroupedTiles GroupedTiles { get; }
+    public ToolHandling Tool { get; }
 
     #endregion
     
@@ -67,28 +68,29 @@ public class StardewClient : BotBase
 
         #region repetitive
 
-        Inventory = new InventoryManagement();
-        Time = new Time();
-        Player = new Player();
-        PlayerInformation = new PlayerInformation();
-        Chat = new Chat();
-        Pathfinding = new Pathfinder();
-        Building = new Buildings();
-        Dialogue = new DialogueManager();
-        Characters = new Characters();
-        Chest = new ChestModule();
-        Shop = new Shop();
-        CharacterCreation = new CharacterCreation();
-        MainMenuNavigation = new MainMenuNavigation();
-        LoadMenu = new LoadGame();
-        ObjectInteraction = new ObjectInteraction();
-        Blacksmith = new Blacksmith();
-        GameInformation = new GameInformation();
-        EndDaySkillMenu = new EndDaySkillMenu();
-        EndDayShippingMenu = new EndDayShippingMenu();
-        FarmBuilding = new CreateFarmBuilding();
-        ShippingBinInteraction = new ShippingBinInteraction();
-        GroupedTiles = new GroupedTiles();
+        Inventory = new ();
+        Time = new ();
+        Player = new ();
+        PlayerInformation = new ();
+        Chat = new ();
+        Pathfinding = new ();
+        Building = new ();
+        Dialogue = new ();
+        Characters = new ();
+        Chest = new ();
+        Shop = new ();
+        CharacterCreation = new ();
+        MainMenuNavigation = new ();
+        LoadMenu = new ();
+        ObjectInteraction = new ();
+        Blacksmith = new ();
+        GameInformation = new ();
+        EndDaySkillMenu = new ();
+        EndDayShippingMenu = new ();
+        FarmBuilding = new ();
+        ShippingBinInteraction = new ();
+        GroupedTiles = new ();
+        Tool = new();
 
         #endregion
         

@@ -131,8 +131,8 @@ public class AlgorithmBase
         /// <summary>
         /// Check if is at end, shortcut for all goal type's is end function
         /// </summary>
-        /// <returns>Will return true if at end or in radius else false</returns>
-        public static bool CanEnd(PathNode currentNode,Goal goal)
+        /// <returns>Will return true if at end or in within radius else false</returns>
+        public static bool CanEnd(PathNode currentNode,Goal goal,bool cardinal = true)
         {
             switch (goal)
             {
@@ -142,20 +142,20 @@ public class AlgorithmBase
                         return true;
                     }
                     break;
-                case Goal.GoalNearby goalNearby:
-                    if (goalNearby.IsInEndRadius(currentNode, goalNearby.Radius))
+                case Goal.GoalNearby goalNearby: //TODO: maybe make cardinal optional as it being false is better for movement but doesn't work for using items
+                    if (goalNearby.IsInEndRadius(currentNode, goalNearby.Radius,cardinal))
                     {
                         return true;
                     }
                     break;
                 case Goal.GoalDynamic goalDynamic:
-                    if (goalDynamic.IsInEndRadius(currentNode, goalDynamic.Radius))
+                    if (goalDynamic.IsInEndRadius(currentNode, goalDynamic.Radius,cardinal))
                     {
                         return true;
                     }
                     break;
                 case Goal.GetToTile getToTile:
-                    if (getToTile.IsInEndRadius(currentNode, getToTile.Radius))
+                    if (getToTile.IsInEndRadius(currentNode, getToTile.Radius,cardinal))
                     {
                         return true;
                     }

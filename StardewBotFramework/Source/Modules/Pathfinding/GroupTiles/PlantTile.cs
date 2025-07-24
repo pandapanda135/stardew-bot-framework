@@ -21,6 +21,7 @@ public class PlantTile : ITile
     /// This is used for if it is next to a water tile as it will be watered automatically.
     /// </summary>
     public bool WaterTile;
+    public int Cost => Heuristic(BotBase.Farmer.TilePoint);
 
     public PlantTile(TerrainFeature terrainFeature, bool watered, bool needsWater, bool waterTile)
     {
