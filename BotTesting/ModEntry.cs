@@ -60,6 +60,7 @@ internal sealed class ModEntry : Mod
         helper.ConsoleCommands.Add("advance", "", AdvanceDialogueCommand);
         helper.ConsoleCommands.Add("placeBuilding", "", PlaceBuildingCommand);
         helper.ConsoleCommands.Add("shippingBin", "", AddItemToBinCommand);
+        helper.ConsoleCommands.Add("farm-land", "", CreateFarmLandCommand);
 
         helper.Events.Display.Rendered += DrawFoundTiles.OnRenderTiles;
     }
@@ -248,6 +249,17 @@ internal sealed class ModEntry : Mod
         {
             await _bot.Tool.WaterAllPatches();
         }
+    }
+
+    private async void CreateFarmLandCommand(string arg, string[] args)
+    {
+        int startX = int.Parse(args[0]);
+        int startY = int.Parse(args[1]);
+        int endX = int.Parse(args[2]);
+        int endY = int.Parse(args[3]);
+
+        List<GroundTile> tiles = _bot.Tool.CreateFarmLandTiles(startX, startY, endX, endY);
+        await _bot.Tool.MakeFarmLand(tiles);
     }
 
     private void AddItemToBinCommand(string arg, string[] args)

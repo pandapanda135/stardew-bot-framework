@@ -1,13 +1,14 @@
+using System.Runtime.CompilerServices;
 using Netcode;
 using StardewBotFramework.Debug;
 using StardewValley;
 using StardewValley.ItemTypeDefinitions;
+using StardewValley.TerrainFeatures;
 using StardewValley.Tools;
 
 namespace StardewBotFramework.Source.ObjectToolSwaps;
 
 // general item swapping implementation takes heavy inspiration from https://github.com/Caua-Oliveira/StardewMods/blob/main/AutomateToolSwap/InteractionRules
-// TODO: need to make this change UI aswell as current tool look at how UseToolOnGroup to see how it could be done
 public class SwapItemHandler
 {
     /// <summary>
@@ -30,7 +31,7 @@ public class SwapItemHandler
                             {
                                 if (BotBase.Farmer.CurrentToolIndex != BotBase.Farmer.Items.IndexOf(item))
                                 {
-                                    MoveToolbar(BotBase.Farmer.Items.IndexOf(item));
+                                    ChangeToolbar(BotBase.Farmer.Items.IndexOf(item));
                                     BotBase.Farmer.CurrentToolIndex = BotBase.Farmer.Items.IndexOf(item);
                                 }
 
@@ -47,7 +48,7 @@ public class SwapItemHandler
                             {
                                 if (BotBase.Farmer.CurrentToolIndex != BotBase.Farmer.Items.IndexOf(item))
                                 {
-                                    MoveToolbar(BotBase.Farmer.Items.IndexOf(item));
+                                    ChangeToolbar(BotBase.Farmer.Items.IndexOf(item));
                                     BotBase.Farmer.CurrentToolIndex = BotBase.Farmer.Items.IndexOf(item);
                                     return;
                                 }
@@ -66,7 +67,7 @@ public class SwapItemHandler
                     {
                         if (BotBase.Farmer.CurrentToolIndex != BotBase.Farmer.Items.IndexOf(item))
                         {
-                            MoveToolbar(BotBase.Farmer.Items.IndexOf(item));
+                            ChangeToolbar(BotBase.Farmer.Items.IndexOf(item));
                             BotBase.Farmer.CurrentToolIndex = BotBase.Farmer.Items.IndexOf(item);
                             return;
                         }
@@ -76,8 +77,53 @@ public class SwapItemHandler
                 return;
         }
     }
+    
+    private static readonly List<string> FertilizerItemIds = new() { "368", "369", "370", "371" };
+    /// <summary>
+    /// Equip fertilizer
+    /// </summary>
+    /// <param name="dirt"><see cref="HoeDirt"/></param>
+    /// <returns>True if fertilizer can be used, false if cannot</returns>
+    public static bool EquipFertilizer(HoeDirt dirt)
+    {
+        foreach (var item in BotBase.Farmer.Items)
+        {
+            if (FertilizerItemIds.Contains(item.ItemId))
+            {
+                if (BotBase.Farmer.CurrentToolIndex != BotBase.Farmer.Items.IndexOf(item))
+                {
+                    ChangeToolbar(BotBase.Farmer.Items.IndexOf(item));
+                    if (dirt.CheckApplyFertilizerRules(item.ItemId) != HoeDirtFertilizerApplyStatus.Okay)
+                    {
+                        return false;
+                    }
+                    BotBase.Farmer.CurrentToolIndex = BotBase.Farmer.Items.IndexOf(item);
+                    return true;
+                }
+            }
+        }
 
-    private static void MoveToolbar(int index)
+        return false;
+    }
+
+    public static bool EquipTapper()
+    {
+        foreach (var item in BotBase.Farmer.Items)
+        {
+            if (item is null) continue;
+            if (!item.Name.Contains("Tapper")) continue;
+            if (BotBase.Farmer.CurrentToolIndex != BotBase.Farmer.Items.IndexOf(item))
+            {
+                ChangeToolbar(BotBase.Farmer.Items.IndexOf(item));
+                BotBase.Farmer.CurrentToolIndex = BotBase.Farmer.Items.IndexOf(item);
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
+    private static void ChangeToolbar(int index)
     {
         for (int i = 0; i < (int)Math.Floor((double)index / 11); i++)
         {

@@ -17,6 +17,7 @@ public class ResourceClumpToolSwap
         
         foreach (var clump in location.resourceClumps)
         {
+            if (clump.Tile != tile.ToVector2()) continue;
             if (clump.occupiesTile(tile.X,tile.Y))
             {
                 if (clump is GiantCrop)
