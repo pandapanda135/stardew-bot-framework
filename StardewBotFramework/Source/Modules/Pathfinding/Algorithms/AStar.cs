@@ -55,8 +55,14 @@ public class AStar : AlgorithmBase
             // check if goal is blocked before pathfinding
             if (IPathing.collisionMap.IsBlocked(goal.X, goal.Y))
             {
-                Logger.Info($"goal is not an available tile");
-                return new Stack<PathNode>();
+                if (goal is Goal.GoalNearby || goal is Goal.GetToTile)
+                {
+                }
+                else
+                {
+                    Logger.Info($"goal is not an available tile");
+                    return new Stack<PathNode>();    
+                }
             }
             
             while (!IPathing.PriorityFrontier.IsEmpty())

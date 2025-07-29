@@ -15,19 +15,39 @@ public class DestroyTerrainFeature
 		Logger.Info($"terrain feature in destroy: {terrainFeature.GetType()}");
 		if (terrainFeature is Bush)
 		{
-			DestroyObject.UseTool();
+			do
+			{ 
+				DestroyObject.UseTool();
+			} while (location.largeTerrainFeatures.Any(node => node.getBoundingBox().Contains(terrainFeature.Tile)));
 		}
 
 		switch (terrainFeature)
 		{
 			case Tree tree:
+				if (tree.growthStage.Value < 3 && !tree.stump.Value)
+				{
+					DestroyObject.UseTool();
+					break;
+				}
+				
 				while (tree.health.Value > 0)
 				{
 					DestroyObject.UseTool();
 				}
-				while (tree.health.Value > 0) // we do this in case there are stumps. ugly solution but it works
+				
+				Logger.Info($"tree stump: {tree.stump.Value}");
+				while (!tree.stump.Value && tree.growthStage.Value >= 5) // after 5, the chance of moss growing increases 
+				{} // sometimes this doesn't work idk why
+				if (tree.stump.Value)
 				{
-					DestroyObject.UseTool();
+					Logger.Info($"running if");
+					while (tree.falling.Value)
+					{}
+					
+					while (tree.health.Value > 0) // we do this in case there are stumps. ugly solution but it works
+					{
+						DestroyObject.UseTool();
+					}
 				}
 
 				break;

@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using StardewBotFramework.Debug;
 using StardewValley;
 using StardewValley.TerrainFeatures;
 using StardewValley.Tools;
@@ -17,7 +18,7 @@ public class ResourceClumpToolSwap
         
         foreach (var clump in location.resourceClumps)
         {
-            if (clump.Tile != tile.ToVector2()) continue;
+            // if (clump.Tile != tile.ToVector2()) continue;
             if (clump.occupiesTile(tile.X,tile.Y))
             {
                 if (clump is GiantCrop)
@@ -32,12 +33,14 @@ public class ResourceClumpToolSwap
                 
                 if (IsLog(clump))
                 {
+                    Logger.Info($"Switching to log");
                     SwapItemHandler.SwapItem(typeof(Axe), "");
                     return true;
                 }
 
                 if (IsBoulder(clump))
                 {
+                    Logger.Info($"switching to boulder");
                     SwapItemHandler.SwapItem(typeof(Pickaxe), "");
                     return true;
                 }

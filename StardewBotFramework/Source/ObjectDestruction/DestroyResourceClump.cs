@@ -1,3 +1,4 @@
+using StardewBotFramework.Debug;
 using StardewValley;
 using StardewValley.TerrainFeatures;
 
@@ -21,7 +22,25 @@ public class DestroyResourceClump
 		{
 			while (clump.health.Value > 0)
 			{
+				switch (clump.parentSheetIndex.Value)
+				{
+					case 600:
+						if (BotBase.Farmer.CurrentTool.UpgradeLevel < 1) return;
+						break;
+					case 602:
+						if (BotBase.Farmer.CurrentTool.UpgradeLevel < 2) return;
+						break;
+					case 622:
+						if (BotBase.Farmer.CurrentTool.UpgradeLevel < 3) return;
+						break;
+					case 672:
+						if (BotBase.Farmer.CurrentTool.UpgradeLevel < 2) return;
+						break;
+				}
+				Logger.Info($"Destroying resourceClump");
+				// if (BotBase.Farmer.UsingTool) continue;
 				DestroyObject.UseTool();
+				Logger.Info($"after DestroyObject useTool");
 			}
 		}
 

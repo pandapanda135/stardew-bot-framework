@@ -1,3 +1,5 @@
+using System.Net;
+using System.Xml.Resolvers;
 using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Modules.Pathfinding.Algorithms;
@@ -8,6 +10,7 @@ using StardewBotFramework.Source.ObjectToolSwaps;
 using StardewValley;
 using StardewValley.TerrainFeatures;
 using StardewValley.Tools;
+using Object = StardewValley.Object;
 
 namespace StardewBotFramework.Source.Modules;
 
@@ -431,7 +434,7 @@ public class ToolHandling
     /// Remove object at tile, current tool needs to be changed before this is called.
     /// </summary>
     /// <param name="tile">The tile of the object you want to destroy</param>
-    public async Task RemoveObject(Point tile)
+    public async Task RemoveObject(Point tile) //TODO: can have weird pathing as it does not account for updated collision map
     {
         AlgorithmBase.IPathing pathing = new AStar.Pathing();
         // pathing.BuildCollisionMap(BotBase.CurrentLocation);
@@ -473,6 +476,120 @@ public class ToolHandling
             GetObjectType(tile);
         }
     }
+    
+    /// <summary>
+    /// Get radius of startPoint as a square.
+    /// </summary>
+    /// <param name="startPoint">The Point to get tiles in radius of.</param>
+    /// <param name="radius">radius you want to extend to</param>
+    public async Task RemoveObjectsInRadius(Point startPoint,int radius)
+    {
+        List<GroundTile> tiles = new();
+        GameLocation location = BotBase.CurrentLocation;
+        Point endPoint = new(startPoint.X + radius,startPoint.Y + radius);
+        startPoint.X -= radius;
+        startPoint.Y -= radius;
+        for (int x = startPoint.X; x < endPoint.X; x++)
+        {
+            for (int y = startPoint.Y; y < endPoint.Y + radius; y++)
+            {
+                TerrainFeature? terrainFeature = null;
+                ResourceClump? resourceClump = null;
+                Object? obj = null;
+                if (location.terrainFeatures.ContainsKey(new Vector2(x, y)))
+                {
+                    terrainFeature = location.terrainFeatures[new Vector2(x, y)];
+                }
+                List<ResourceClump> list = location.resourceClumps.ToList()
+                    .FindAll(clump => clump.Tile == new Vector2(x,y));
+                if (list.Count > 0)
+                {
+                    resourceClump = list[0];
+                }
+
+                foreach (var objDict in location.Objects)
+                {
+                    if (objDict.ContainsKey(new Vector2(x, y)))
+                    {
+                        obj = objDict[new Vector2(x, y)];
+                    }
+                }
+                Logger.Info($"Adding tile at: {new Point(x,y)}");
+                tiles.Add(new GroundTile(new Point(x,y),location,terrainFeature,resourceClump,obj));
+            }
+        }
+
+        await RemoveObjectsInTiles(tiles);
+    }
+    public async Task RemoveObjectsInDimension(int startX, int startY, int endX, int endY)
+    {
+        GameLocation location = BotBase.CurrentLocation;
+        List<GroundTile> tiles = new();
+        for (int x = startX; x < endX + 1; x++)
+        {
+            for (int y = startY; y < endY + 1; y++)
+            {
+                TerrainFeature? terrainFeature = null;
+                ResourceClump? resourceClump = null;
+                Object? obj = null;
+                if (location.terrainFeatures.ContainsKey(new Vector2(x, y)))
+                {
+                    terrainFeature = location.terrainFeatures[new Vector2(x, y)];
+                }
+                List<ResourceClump> list = BotBase.CurrentLocation.resourceClumps.ToList()
+                    .FindAll(clump => clump.Tile == new Vector2(x,y));
+                if (list.Count > 0)
+                {
+                    resourceClump = list[0];
+                }
+                foreach (var objDict in location.Objects)
+                {
+                    if (objDict.ContainsKey(new Vector2(x, y)))
+                    {
+                        obj = objDict[new Vector2(x, y)];
+                    }
+                }
+                Logger.Info($"Adding tile at: {new Point(x,y)}");
+                tiles.Add(new GroundTile(new Point(x,y),location,terrainFeature,resourceClump,obj));
+            }
+        }
+
+        await RemoveObjectsInTiles(tiles);
+    }
+
+    private async Task RemoveObjectsInTiles(List<GroundTile> tiles) // should probably change from 
+    {
+        AlgorithmBase.IPathing pathing = new AStar.Pathing();
+        pathing.BuildCollisionMap(BotBase.CurrentLocation);
+        PriorityQueue<GroundTile, int> groundTileQueue = new();
+        int tileAmount = tiles.Count;
+        Logger.Info($"tile amount: {tileAmount}");
+        for (int i = 0; i < tileAmount; i++)
+        {
+            Logger.Info($"running for loop");
+            groundTileQueue.Clear();
+            foreach (var tile in tiles)
+            {
+                GroundTile newTile = tile;
+                groundTileQueue.Enqueue(newTile,newTile.Cost);
+            }
+            GroundTile groundTile = groundTileQueue.Dequeue();
+            tiles.Remove(groundTile);
+            
+            while (BotBase.Farmer.UsingTool)
+            {
+            }
+            
+            if (groundTile.WaterTile) continue;
+            if (groundTile.TerrainFeature is HoeDirt) continue;
+            if (groundTile.TerrainFeature is null && groundTile.ResourceClump is null && groundTile.Obj is null) continue;
+            
+            Logger.Info($"running object in way at: {groundTile.Position}");
+            bool result = await ObjectInWay(groundTile.Position,true);
+            
+            Logger.Info($"result of object in way: {result}");
+        }
+    }
 
     private static async Task DestroyObject(Point tile)
     {
@@ -483,28 +600,39 @@ public class ToolHandling
 
     private static bool GetObjectType(Point tile)
     {
+        GameLocation location = BotBase.CurrentLocation;
         Logger.Info($"running get object type");
-        if (BotBase.CurrentLocation.terrainFeatures.Keys.Contains(tile.ToVector2()) || BotBase.CurrentLocation.largeTerrainFeatures.Count(feature => feature.getBoundingBox().Contains(tile.ToVector2())) > 0)
+        if (location.terrainFeatures.Keys.Contains(tile.ToVector2()) || location.largeTerrainFeatures.Count(feature => feature.getBoundingBox().Contains(tile.ToVector2())) > 0)
         {
             if (BotBase.CurrentLocation.terrainFeatures.ContainsKey(tile.ToVector2()))
             {
                 Logger.Info($"terrain feature destroy");
-                DestroyTerrainFeature.Destroy(BotBase.CurrentLocation.terrainFeatures[tile.ToVector2()]);
+                DestroyTerrainFeature.Destroy(location.terrainFeatures[tile.ToVector2()]);
                 return true;
             }
             Logger.Info($"large terrain destroy");
-            List<LargeTerrainFeature> list = BotBase.CurrentLocation.largeTerrainFeatures.ToList()
+            List<LargeTerrainFeature> list = location.largeTerrainFeatures.ToList()
                 .FindAll(feature => feature.Tile == tile.ToVector2());
             DestroyTerrainFeature.Destroy(list[0]);
             return true;
         }
 
-        if (BotBase.CurrentLocation.resourceClumps.Count(clump => clump.Tile == tile.ToVector2()) > 0)
+        if (location.resourceClumps.Count(clump => clump.Tile == tile.ToVector2()) > 0)
         {
-            List<ResourceClump> list = BotBase.CurrentLocation.resourceClumps.ToList()
+            List<ResourceClump> list = location.resourceClumps.ToList()
                 .FindAll(clump => clump.Tile == tile.ToVector2());
-            DestroyTerrainFeature.Destroy(list[0]);
+            DestroyResourceClump.Destroy(list[0]);
             return true;
+        }
+
+        foreach (var objDict in location.Objects)
+        {
+            if (objDict.ContainsKey(tile.ToVector2()))
+            {
+                Object obj = objDict[tile.ToVector2()];
+                DestroyLitterObject.Destroy(obj);
+                return true;
+            }
         }
 
         return false;
@@ -512,12 +640,17 @@ public class ToolHandling
 
     #endregion
 
+    /// <summary>
+    /// change item and path-find then destroy object that is on specified tile.
+    /// </summary>
+    /// <returns></returns>
     private static async Task<bool> ObjectInWay(Point tile,bool modifyCollisionMap = false,bool destroy = true)
     {
         if (TerrainFeatureToolSwap.Swap(tile, false)) // we also handle bushes here
         {
             Logger.Info($"terrain feature swap");
             TerrainFeatureToolSwap.Swap(tile, false);
+            AlgorithmBase.IPathing.collisionMap.RemoveBlockedTile(tile.X, tile.Y);
             await DestroyObject(tile);
             return true;
         }
@@ -526,6 +659,16 @@ public class ToolHandling
         {
             Logger.Info($"resource set");
             ResourceClumpToolSwap.Swap(tile);
+            AlgorithmBase.IPathing.collisionMap.RemoveBlockedTile(tile.X,tile.Y);
+            await DestroyObject(tile);
+            return true;
+        }
+
+        if (LitterObjectToolSwap.Swap(tile))
+        {
+            Logger.Info($"object set");
+            LitterObjectToolSwap.Swap(tile);
+            AlgorithmBase.IPathing.collisionMap.RemoveBlockedTile(tile.X,tile.Y);
             await DestroyObject(tile);
             return true;
         }

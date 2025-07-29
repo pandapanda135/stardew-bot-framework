@@ -29,6 +29,7 @@ public class TerrainFeatureToolSwap
         {
             if (feature.getBoundingBox().Contains(tile))
             {
+                Logger.Info($"Changing to large terrain feature");
                 SwapItemHandler.SwapItem(typeof(MeleeWeapon),"Scythe");
                 return true;
             }
@@ -64,7 +65,11 @@ public class TerrainFeatureToolSwap
                             return true;
                         case Grass:
                             Logger.Info($"switch to grass");
-                            // SwapItemHandler.SwapItem(typeof(MeleeWeapon),"Scythe");
+                            SwapItemHandler.SwapItem(typeof(MeleeWeapon),"Scythe");
+                            return true;
+                        case Bush:
+                            Logger.Info($"switch to bush");
+                            SwapItemHandler.SwapItem(typeof(MeleeWeapon),"Scythe");
                             return true;
                     }
             }

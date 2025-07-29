@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewBotFramework.Source;
@@ -205,35 +206,34 @@ internal sealed class ModEntry : Mod
                 }
             }
         }
-        else if (e.Button == SButton.Z)
-        {
-            Logger.Info($"running Z");
-
-            foreach (var furniture in Game1.currentLocation.furniture)
-            {
-                Logger.Info($"furniture name: {furniture.name}  furniture location: {furniture.TileLocation}");
-                if (furniture.heldObject != null) // held item is when an item is placed on furniture e.g. the mug in the farm house
-                {
-                    Logger.Info($"furnitre held item: {furniture.heldObject.Name}  held item value: {furniture.heldObject.Value}");
-                }
-                Logger.Info(_bot.ObjectInteraction.PickUpFurniture(furniture).ToString());
-                _bot.ObjectInteraction.PickUpItemOnFurniture(furniture);
-            }
-            
-            foreach (var locationObjectDict in Game1.currentLocation.objects)
-            {
-                foreach (var kvp in locationObjectDict)
-                {
-                    Logger.Info($"Key: {kvp.Key}  cursor tile: {Game1.currentCursorTile}");
-                    if (kvp.Key == Game1.currentCursorTile)
-                    {
-                        Logger.Info($"tile: {kvp.Key}  object: {kvp.Value.name}");
-                        _bot.ObjectInteraction.InteractWithObject(kvp.Value);
-                        Logger.Info($"object name: {kvp.Value.name} object: {_bot.ObjectInteraction.InteractWithObject(kvp.Value)}");
-                    }
-                }
-            }
-        }
+        // else if (e.Button == SButton.Z)
+        // {
+        //     Logger.Info($"running Z");
+        //
+        //     foreach (var furniture in Game1.currentLocation.furniture)
+        //     {
+        //         Logger.Info($"furniture name: {furniture.name}  furniture location: {furniture.TileLocation}");
+        //         if (furniture.heldObject != null) // held item is when an item is placed on furniture e.g. the mug in the farm house
+        //         {
+        //             Logger.Info($"furnitre held item: {furniture.heldObject.Name}  held item value: {furniture.heldObject.Value}");
+        //         }
+        //         Logger.Info(_bot.ObjectInteraction.PickUpFurniture(furniture).ToString());
+        //         _bot.ObjectInteraction.PickUpItemOnFurniture(furniture);
+        //     }
+        //     foreach (var locationObjectDict in Game1.currentLocation.objects)
+        //     {
+        //         foreach (var kvp in locationObjectDict)
+        //         {
+        //             Logger.Info($"Key: {kvp.Key}  cursor tile: {Game1.currentCursorTile}");
+        //             if (kvp.Key == Game1.currentCursorTile)
+        //             {
+        //                 Logger.Info($"tile: {kvp.Key}  object: {kvp.Value.name}");
+        //                 _bot.ObjectInteraction.InteractWithObject(kvp.Value);
+        //                 Logger.Info($"object name: {kvp.Value.name} object: {_bot.ObjectInteraction.InteractWithObject(kvp.Value)}");
+        //             }
+        //         }
+        //     }
+        // }
         else if (e.Button == SButton.H)
         {
             foreach (var skill in _bot.PlayerInformation.SkillLevel())
@@ -247,7 +247,36 @@ internal sealed class ModEntry : Mod
         // }
         else if (e.Button == SButton.B)
         {
-            await _bot.Tool.WaterAllPatches();
+            await _bot.Tool.RemoveObjectsInRadius(Game1.player.TilePoint, 10);
+        }
+        else if (e.Button == SButton.Z)
+        {
+            Point point = new Point((Game1.getMousePosition().X + Game1.viewport.X) / Game1.tileSize, (Game1.getMousePosition().Y + Game1.viewport.Y) / Game1.tileSize);
+            if (Game1.currentLocation.terrainFeatures.ContainsKey(point.ToVector2()))
+            {
+                Logger.Info($"{Game1.currentLocation.terrainFeatures[point.ToVector2()].Tile} contains a terrain feature");
+                return;
+            }
+
+            foreach (var resourceClump in Game1.currentLocation.resourceClumps)
+            {
+                if (resourceClump.getBoundingBox().Contains(point) || resourceClump.Tile == point.ToVector2())
+                {
+                    Logger.Info($"{resourceClump.Tile} contains a resource clump: {resourceClump.parentSheetIndex.Value}");
+                    return;
+                }
+            }
+
+            foreach (var dict in Game1.currentLocation.Objects)
+            {
+                if (dict.ContainsKey(point.ToVector2()))
+                {
+                    Object obj = dict[point.ToVector2()];
+                    Logger.Info($"{obj.TileLocation} contains an object: {obj.Name}   fragility: {obj.Fragility}  health: {obj.getHealth()}   {obj.IsBreakableStone()}");
+                }
+            }
+            
+            Logger.Info($"Nothing on this tile: {point}");
         }
     }
 
