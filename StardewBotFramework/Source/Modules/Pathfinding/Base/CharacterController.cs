@@ -1,11 +1,9 @@
 using Microsoft.Xna.Framework;
+using StardewBotFramework.Source.ObjectToolSwaps;
 using StardewModdingAPI.Events;
 using StardewValley;
-using StardewValley.Audio;
-using StardewValley.GameData;
-using StardewValley.Locations;
-using StardewValley.Pathfinding;
 using Logger = StardewBotFramework.Debug.Logger;
+using Object = StardewValley.Object;
 
 namespace StardewBotFramework.Source.Modules.Pathfinding.Base;
 
@@ -33,22 +31,35 @@ public class CharacterController
 		{ 0, 1 }, // south
 		{ 0, -1 }, // north
 	};
-	
+
+	private static int _pausedTimer;
+	/// <summary>
+	/// The maximum amount of time the bot can stay in the same position for. This is in milliseconds e.g. 5 seconds would be 5000
+	/// </summary>
+	public static int MaxPauseTime = 5000;
 	public static void Update(object? sender, UpdateTickingEventArgs e)
 	{
-		// if it has been a minute
-		// if (_runningTimer + 10000 > Game1.currentGameTime.TotalGameTime.Ticks)
-		// {
-		// 	_movingCharacter = false;
-		// }
-
 		if (_endPath.Count < 1) _movingCharacter = false;
 		
 		if (!_movingCharacter) return;
 
-		if (!StardewClient.CurrentLocation.Equals(_currentLocation)) return; // stop issue with moving to the left when go through warp
-		
+		if (!BotBase.CurrentLocation.Equals(_currentLocation)) return; // stop issue with moving to the left when go through warp
+
+		Vector2 position = BotBase.Farmer.Position;
 		MoveCharacter(_time);
+		if (position == BotBase.Farmer.Position)
+		{
+			_pausedTimer += _time.ElapsedGameTime.Milliseconds;
+		}
+		else
+		{
+			_pausedTimer = 0;
+		}
+		if (_pausedTimer >= MaxPauseTime)
+		{
+			Logger.Error($"Paused for too long");
+			_endPath.Clear();
+		}
 	}
 
 	public static void StartMoveCharacter(Stack<PathNode> endPointPath, Character character, GameLocation location,
@@ -65,9 +76,9 @@ public class CharacterController
 		MoveCharacter(time);
 	}
 	
-	private static void MoveCharacter(GameTime time)
+	private static void MoveCharacter(GameTime time) //TODO: figure out why movePosition does not change character's animation.
 	{
-		if (Game1.player.UsingTool) return; // check if animation running
+		if (BotBase.Farmer.UsingTool) return; // check if animation running
 		
 		if (_isDestroying) // check if destroy
 		{
@@ -77,7 +88,7 @@ public class CharacterController
 		}
 		
 		PathNode node = _endPath.Peek();
-		Rectangle targetTile = new Rectangle(node.X * 64, node.Y * 64, 64, 64);
+		Rectangle targetTile = new Rectangle(node.X * 64, node.Y * 64, 64, 64); // could probably change this if we want more precise pathfinding onto specific parts of tile
 		Rectangle bbox = _character.GetBoundingBox();
 
 		if ((targetTile.Contains(bbox) || (bbox.Width > targetTile.Width && targetTile.Contains(bbox.Center))) &&
@@ -94,10 +105,14 @@ public class CharacterController
 
 			return;
 		}
-		
-		Farmer farmer = _character as Farmer;
-		if (farmer != null)
+
+		if (_character is Farmer farmer)
 		{
+			if (farmer != BotBase.Farmer)
+			{
+				Logger.Error($"Farmer is not BotBase Farmer");
+				return;
+			}
 			farmer.movementDirections.Clear();
 		}
 		
@@ -116,7 +131,7 @@ public class CharacterController
 			_character.SetMovingDown(true);
 			_character.FacingDirection = 2;
 		}
-		else if (bbox.Bottom >= targetTile.Bottom - 2)
+		else if (bbox.Bottom >= targetTile.Bottom)
 		{
 			_character.SetMovingUp(true);
 			_character.FacingDirection = 0;
@@ -125,50 +140,69 @@ public class CharacterController
 		foreach (var pathNode in _endPath)
 		{
 			_nextIndex = _endPath.ToList().IndexOf(pathNode);
-			if (_nextIndex < 0)
+			if (_nextIndex == 0)
 			{
-				_nextNode = _endPath.ToList()[_nextIndex - 1];
+				int indexPlus = _nextIndex; // idk what this was meant to do in the first place this works though
+				if (_endPath.Count > 1) indexPlus += 1;
+				_nextNode = _endPath.ToList()[indexPlus];
 				_neighbourIndex = _endPath.ToList().IndexOf(_nextNode); // need this to set next PathNode.Destroy to false
-			}
-
-			if (pathNode.Destroy && !_isDestroying)
-			{
-				for (int i = 0; i <= 3; i++)
+				indexPlus = 0;
+				Object objectInNextTile = _currentLocation.getObjectAtTile(_nextNode.X,_nextNode.Y);
+			
+				if (objectInNextTile != null)
 				{
-					// get cardinal directions
-					int neighborX = pathNode.X + Directions[i, 0];
-					int neighborY = pathNode.Y + Directions[i, 1];
-
-					if (neighborX == Game1.player.TilePoint.X && neighborY == Game1.player.TilePoint.Y) // need to get neighbour 
+					Fence? fence = objectInNextTile as Fence;
+					if (fence is not null && fence.isGate.Value && !fence.isPassable())
 					{
-						// this is to fix issues with sudden direction changes in path (should maybe try to make it so the bot goes in the middle of a tile as this is kind of a patch fix)
-						switch (i)
-						{
-							case 0:
-								_character.FacingDirection = 1; // west
-								break;
-							case 1:
-								_character.FacingDirection = 3; // east
-								break;
-							case 2:
-								_character.FacingDirection = 0; // south
-								break;
-							case 3:
-								_character.FacingDirection = 2; // north
-								break;
-						}
-						
-						Logger.Info($"trying to use tool");
-						_isDestroying = true;
-						Game1.player.BeginUsingTool();
-						_character.MovePosition(time, Game1.viewport, _currentLocation);
-						return;
+						fence.toggleGate(true);
 					}
+					// else if (fence is not null && !fence.isPassable()) // if is normal fence not gate
+					// {
+					// 	continue;
+					// }
+				}
+			}
+			
+			if (!pathNode.Destroy || _isDestroying)
+			{
+				Logger.Info($"using move position time: {time.TotalGameTime.Milliseconds}");
+				_character.MovePosition(time, Game1.viewport, _currentLocation);
+				return;
+			}
+			for (int i = 0; i <= 3; i++)
+			{
+				// get cardinal directions
+				int neighborX = pathNode.X + Directions[i, 0];
+				int neighborY = pathNode.Y + Directions[i, 1];
+
+				if (neighborX == Game1.player.TilePoint.X && neighborY == Game1.player.TilePoint.Y) // need to get neighbour 
+				{
+					// this is to fix issues with sudden direction changes in path (should maybe try to make it so the bot goes in the middle of a tile as this is kind of a patch fix)
+					switch (i)
+					{
+						case 0:
+							_character.FacingDirection = 1; // west
+							break;
+						case 1:
+							_character.FacingDirection = 3; // east
+							break;
+						case 2:
+							_character.FacingDirection = 0; // south
+							break;
+						case 3:
+							_character.FacingDirection = 2; // north
+							break;
+					}
+						
+					Logger.Info($"trying to use tool");
+					_isDestroying = true;
+					SwapItem(node.VectorLocation);
+					Game1.player.BeginUsingTool();
+					_character.MovePosition(time, Game1.viewport, _currentLocation);
+					return;
 				}
 			}
 		}
-		
-		_character.MovePosition(time, Game1.viewport, _currentLocation);
 	}
 	
 	public static bool isPlayerPresent()
@@ -176,4 +210,27 @@ public class CharacterController
 		return _currentLocation.farmers.Any();
 	}
 	public static bool IsMoving() => _movingCharacter;
+	
+	private static bool SwapItem(Point tile)
+	{
+		if (TerrainFeatureToolSwap.Swap(tile)) // we also handle bushes here
+		{
+			TerrainFeatureToolSwap.Swap(tile);
+			return true;
+		}
+
+		if (ResourceClumpToolSwap.Swap(tile))
+		{
+			ResourceClumpToolSwap.Swap(tile);
+			return true;
+		}
+
+		if (LitterObjectToolSwap.Swap(tile))
+		{
+			LitterObjectToolSwap.Swap(tile);
+			return true;
+		}
+
+		return false;
+	}
 }

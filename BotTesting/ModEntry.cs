@@ -94,7 +94,7 @@ internal sealed class ModEntry : Mod
         {
             Goal end = new Goal.GoalPosition((int)Game1.currentCursorTile.X, (int)Game1.currentCursorTile.Y);
             _bot.Pathfinding.DestructibleObjects = _desObjects;
-            await _bot.Pathfinding.Goto(end, false, false);
+            await _bot.Pathfinding.Goto(end, false, true);
             _bot.Chat.SendPublicMessage("This should send after the bot has path-found :)");
         }
         else if (e.Button == SButton.U)

@@ -195,7 +195,7 @@ public class AlgorithmBase
                 for (int y = minY; y <= maxY; y++)
                 {
                     Rectangle rect = new Rectangle(x * Game1.tileSize + 1, y * Game1.tileSize + 1, 62, 62);
-                    if (!Game1.currentLocation.isCollidingPosition(rect, Game1.viewport, true, 0, false, Game1.player))
+                    if (!CollisionMap.IsCurrentlyBlocked(x,y))
                         continue;
                     map.BlockedTiles.Add((x,y));
                 }

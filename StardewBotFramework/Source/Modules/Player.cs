@@ -1,16 +1,11 @@
 using Microsoft.Xna.Framework;
 using Netcode;
-using StardewBotFramework.Debug;
-using StardewBotFramework.Source.Modules.Pathfinding.Algorithms;
-using StardewBotFramework.Source.Modules.Pathfinding.Base;
-using StardewBotFramework.Source.Modules.Pathfinding.GroupTiles;
 using StardewValley;
 using StardewValley.GameData.Characters;
 using StardewValley.Inventories;
 using StardewValley.Menus;
+using StardewValley.Objects;
 using StardewValley.Objects.Trinkets;
-using StardewValley.TerrainFeatures;
-using StardewValley.Tools;
 using Object = StardewValley.Object;
 
 namespace StardewBotFramework.Source.Modules;
@@ -20,17 +15,10 @@ namespace StardewBotFramework.Source.Modules;
 /// </summary>
 public class Player
 {
-    public int Health => StardewClient.Farmer.health;
-    public float Stamina => StardewClient.Farmer.Stamina;
-    public Inventory Inventory => StardewClient.Farmer.Items;
-    public Item? HeldItem => StardewClient.Farmer.CurrentItem;
-    public NetList<Trinket, NetRef<Trinket>> Trinkets => StardewClient.Farmer.trinketItems;
-    public IDictionary<string, CharacterData> NpcData => Game1.characterData;// this can be used for relationship and stuff this information is cached by the game
-
     /// <summary>
     /// Goes 0-3 from North,East,South,West
     /// </summary>
-    public int FacingDirection => StardewClient.Farmer.FacingDirection;
+    public int FacingDirection => BotBase.Farmer.FacingDirection;
 
     /// <summary>
     /// Changes direction the player sprite is facing
@@ -88,6 +76,43 @@ public class Player
 /// </summary>
 public class PlayerInformation
 {
+    /// <summary>
+    /// bot's current health
+    /// </summary>
+    public int Health => StardewClient.Farmer.health;
+
+    public int MaxHealth => BotBase.Farmer.maxHealth;
+    /// <summary>
+    /// Bot's current stamina
+    /// </summary>
+    public float Stamina => StardewClient.Farmer.Stamina;
+    public float MaxStamina => BotBase.Farmer.MaxStamina;
+    /// <summary>
+    /// Bot's current Inventory
+    /// </summary>
+    public Inventory Inventory => StardewClient.Farmer.Items;
+    public int MaxItems => BotBase.Farmer.MaxItems;
+    /// <summary>
+    /// Bot's Current held Item
+    /// </summary>
+    public Item? HeldItem => BotBase.Farmer.CurrentItem;
+    /// <summary>
+    /// The rings currently equipped by the player, the first will be the left ring the second the right
+    /// </summary>
+    public List<NetRef<Ring>> EquippedRings => new() { BotBase.Farmer.leftRing, BotBase.Farmer.rightRing };
+    /// <summary>
+    /// Bot's current Trinkets
+    /// </summary>
+    public NetList<Trinket, NetRef<Trinket>> Trinkets => BotBase.Farmer.trinketItems;
+    /// <summary>
+    /// this can be used for relationship this information is cached by the game
+    /// </summary>
+    public IDictionary<string, CharacterData> NpcData => Game1.characterData;
+
+    public NetRef<Hat> EquippedHat => BotBase.Farmer.hat;
+    public NetRef<Clothing> EquippedShirt => BotBase.Farmer.shirtItem;
+    public NetRef<Clothing> EquippedPants => BotBase.Farmer.pantsItem;
+    public NetRef<Boots> EquippedBoots => BotBase.Farmer.boots;
     
     /// <summary>
     /// The pages that the active clickable menu can be if you are using the methods provided by the framework this is changed for you.

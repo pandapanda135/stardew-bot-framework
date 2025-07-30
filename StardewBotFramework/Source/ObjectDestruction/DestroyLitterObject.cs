@@ -13,4 +13,16 @@ public class DestroyLitterObject
 			DestroyObject.UseTool();
 		}
 	}
+
+	/// <summary>
+	/// Is a Litter object that can be destroyed
+	/// </summary>
+	public static bool IsDestructible(Object obj)
+	{
+		if (obj.IsTwig() || obj.IsBreakableStone() || obj.isSapling() || obj.IsFruitTreeSapling() || obj.IsWeeds())
+		{
+			return true;
+		}
+		return false;
+	}
 }

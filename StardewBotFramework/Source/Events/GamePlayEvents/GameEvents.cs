@@ -243,7 +243,7 @@ public class GameEvents
             }
             catch (Exception e)
             {
-                Logger.Error($"Failed in DeathPatch \n {e} \n This is mostly likely because it is not subscribed to anything");
+                Logger.Error($"Failed in ReceiveChatMessage \n {e} \n This is mostly likely because it is not subscribed to anything");
             }
         }
     }

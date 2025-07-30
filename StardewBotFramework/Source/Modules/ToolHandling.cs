@@ -14,13 +14,16 @@ using Object = StardewValley.Object;
 
 namespace StardewBotFramework.Source.Modules;
 
+/// <summary>
+/// This is for stuff you can do with tools, this also includes some helper methods for making farm-land, watering it and destroying objects
+/// </summary>
 public class ToolHandling
 {
     /// <summary>
     /// Changes direction the player sprite is facing
     /// </summary>
     /// <param name="direction">Goes 0-3 from North,East,South,West</param>
-    public void ChangeFacingDirection(int direction)
+    private void ChangeFacingDirection(int direction)
     {
         BotBase.Farmer.FacingDirection = direction;
     }
@@ -364,7 +367,7 @@ public class ToolHandling
             if (groundTile.WaterTile) continue;
             if (groundTile.TerrainFeature is HoeDirt) continue;
             
-            bool result = await ObjectInWay(groundTile.Position,true);
+            bool result = await SwapItemAndDestroy(groundTile.Position,true);
             
             Logger.Info($"result of object in way: {result}");
             if (BotBase.Farmer.CurrentTool is not Hoe hoe)
@@ -521,6 +524,13 @@ public class ToolHandling
 
         await RemoveObjectsInTiles(tiles);
     }
+    /// <summary>
+    /// Remove objects that are in the provided dimensions
+    /// </summary>
+    /// <param name="startX">This should be thought of as the most left edge of a square</param>
+    /// <param name="startY">This should be the top of the square</param>
+    /// <param name="endX">This should be thought of as the most right edge of a square</param>
+    /// <param name="endY">This should be the bottom of the square</param>
     public async Task RemoveObjectsInDimension(int startX, int startY, int endX, int endY)
     {
         GameLocation location = BotBase.CurrentLocation;
@@ -557,7 +567,7 @@ public class ToolHandling
         await RemoveObjectsInTiles(tiles);
     }
 
-    private async Task RemoveObjectsInTiles(List<GroundTile> tiles) // should probably change from 
+    private async Task RemoveObjectsInTiles(List<GroundTile> tiles)
     {
         AlgorithmBase.IPathing pathing = new AStar.Pathing();
         pathing.BuildCollisionMap(BotBase.CurrentLocation);
@@ -585,13 +595,13 @@ public class ToolHandling
             if (groundTile.TerrainFeature is null && groundTile.ResourceClump is null && groundTile.Obj is null) continue;
             
             Logger.Info($"running object in way at: {groundTile.Position}");
-            bool result = await ObjectInWay(groundTile.Position,true);
+            bool result = await SwapItemAndDestroy(groundTile.Position,true);
             
             Logger.Info($"result of object in way: {result}");
         }
     }
 
-    private static async Task DestroyObject(Point tile)
+    private static async Task PrivateDestroyObject(Point tile)
     {
         Logger.Info($"destroy object private");
         ToolHandling toolHandling = new();
@@ -644,14 +654,14 @@ public class ToolHandling
     /// change item and path-find then destroy object that is on specified tile.
     /// </summary>
     /// <returns></returns>
-    private static async Task<bool> ObjectInWay(Point tile,bool modifyCollisionMap = false,bool destroy = true)
+    private static async Task<bool> SwapItemAndDestroy(Point tile,bool modifyCollisionMap = false,bool destroy = true)
     {
-        if (TerrainFeatureToolSwap.Swap(tile, false)) // we also handle bushes here
+        if (TerrainFeatureToolSwap.Swap(tile,false)) // we also handle bushes here
         {
             Logger.Info($"terrain feature swap");
-            TerrainFeatureToolSwap.Swap(tile, false);
+            TerrainFeatureToolSwap.Swap(tile,false);
             AlgorithmBase.IPathing.collisionMap.RemoveBlockedTile(tile.X, tile.Y);
-            await DestroyObject(tile);
+            await PrivateDestroyObject(tile);
             return true;
         }
 
@@ -660,7 +670,7 @@ public class ToolHandling
             Logger.Info($"resource set");
             ResourceClumpToolSwap.Swap(tile);
             AlgorithmBase.IPathing.collisionMap.RemoveBlockedTile(tile.X,tile.Y);
-            await DestroyObject(tile);
+            await PrivateDestroyObject(tile);
             return true;
         }
 
@@ -669,7 +679,7 @@ public class ToolHandling
             Logger.Info($"object set");
             LitterObjectToolSwap.Swap(tile);
             AlgorithmBase.IPathing.collisionMap.RemoveBlockedTile(tile.X,tile.Y);
-            await DestroyObject(tile);
+            await PrivateDestroyObject(tile);
             return true;
         }
         

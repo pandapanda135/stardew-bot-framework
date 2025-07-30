@@ -1,8 +1,12 @@
+using System.Runtime.Serialization;
 using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
+using StardewBotFramework.Source.ObjectDestruction;
+using StardewBotFramework.Source.ObjectToolSwaps;
 using StardewValley;
 using StardewValley.Network;
+using StardewValley.Projectiles;
 using Object = StardewValley.Object;
 
 namespace StardewBotFramework.Source.Modules.Pathfinding.Algorithms;
@@ -27,7 +31,7 @@ public class AStar : AlgorithmBase
             return correctPath;
         }
 
-        private Stack<PathNode> RunAStar(PathNode startPoint, Goal goal, GameLocation location,int limit, bool canDestroy)
+        private Stack<PathNode> RunAStar(PathNode startPoint, Goal goal, GameLocation location,int limit, bool canDestroyObjects)
         {
             ClearVariables();
             
@@ -41,13 +45,17 @@ public class AStar : AlgorithmBase
             
             OverlaidDictionary locationObjectsDict = location.objects;
             SerializableDictionary<Vector2, Object> locationObjects = new();
-            if (canDestroy)
+            if (canDestroyObjects)
             {
                 foreach (var locationObject in locationObjectsDict)
                 {
                     foreach (var kvp in locationObject)
                     {
-                        locationObjects.Add(kvp.Key,kvp.Value);
+                        Object obj = kvp.Value;
+                        if (DestroyLitterObject.IsDestructible(obj))
+                        {
+                            locationObjects.Add(kvp.Key,kvp.Value);
+                        }
                     }
                 }
             }
@@ -90,13 +98,13 @@ public class AStar : AlgorithmBase
                 // Neighbour search
                 Queue<PathNode> neighbours = IPathing.Graph.Neighbours(current);
                 foreach (var next in neighbours.Where(node => !IPathing.ClosedList.Contains(node) && !IPathing.collisionMap.IsBlocked(node.X, node.Y) 
-                                                              || canDestroy && locationObjects.ContainsKey(node.VectorLocation.ToVector2())))
+                            || canDestroyObjects && locationObjects.ContainsKey(node.VectorLocation.ToVector2())))
                 {
                     int newCost = current.Cost + Graph.Cost(current, next);
                     if (!IPathing.PriorityFrontier.Contains(next) || newCost < next.Cost)
                     {
                         // ugly but it works
-                        if (canDestroy && IPathing.collisionMap.IsBlocked(next.X,next.Y))
+                        if (canDestroyObjects && IPathing.collisionMap.IsBlocked(next.X,next.Y))
                         {
                             if (IPathing.DestructibleObjects.Contains(locationObjects[next.VectorLocation.ToVector2()].Name)) next.Destroy = true;
                         }
