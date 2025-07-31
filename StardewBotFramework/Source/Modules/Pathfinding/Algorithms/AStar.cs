@@ -94,7 +94,7 @@ public class AStar : AlgorithmBase
                     break; // this is here as cant return in NodeChecks. This checks if this is goal
                 }
                 
-                Logger.Info($"this is current: {current}");
+                Logger.Info($"this is current: {current.VectorLocation}");
                 // Neighbour search
                 Queue<PathNode> neighbours = IPathing.Graph.Neighbours(current);
                 foreach (var next in neighbours.Where(node => !IPathing.ClosedList.Contains(node) && !IPathing.collisionMap.IsBlocked(node.X, node.Y) 

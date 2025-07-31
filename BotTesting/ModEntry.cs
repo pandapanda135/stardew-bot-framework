@@ -247,7 +247,7 @@ internal sealed class ModEntry : Mod
         // }
         else if (e.Button == SButton.B)
         {
-            await _bot.Tool.RemoveObjectsInRadius(Game1.player.TilePoint, 10);
+            await _bot.Tool.RemoveObjectsInRadius(Game1.player.TilePoint,10);
         }
         else if (e.Button == SButton.Z)
         {

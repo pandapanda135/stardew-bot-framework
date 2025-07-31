@@ -146,7 +146,6 @@ public class CharacterController
 				if (_endPath.Count > 1) indexPlus += 1;
 				_nextNode = _endPath.ToList()[indexPlus];
 				_neighbourIndex = _endPath.ToList().IndexOf(_nextNode); // need this to set next PathNode.Destroy to false
-				indexPlus = 0;
 				Object objectInNextTile = _currentLocation.getObjectAtTile(_nextNode.X,_nextNode.Y);
 			
 				if (objectInNextTile != null)
@@ -163,9 +162,9 @@ public class CharacterController
 				}
 			}
 			
+			Logger.Info($"_character xvelocity: {_character.xVelocity} yVelocity: {_character.yVelocity}");
 			if (!pathNode.Destroy || _isDestroying)
 			{
-				Logger.Info($"using move position time: {time.TotalGameTime.Milliseconds}");
 				_character.MovePosition(time, Game1.viewport, _currentLocation);
 				return;
 			}
@@ -193,7 +192,7 @@ public class CharacterController
 							_character.FacingDirection = 2; // north
 							break;
 					}
-						
+					
 					Logger.Info($"trying to use tool");
 					_isDestroying = true;
 					SwapItem(node.VectorLocation);
