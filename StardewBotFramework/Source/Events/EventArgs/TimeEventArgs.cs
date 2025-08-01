@@ -4,8 +4,8 @@ public class TimeEventArgs : System.EventArgs
 {
     internal TimeEventArgs(int oldTime, int newTime)
     {
-        oldTime = OldTime;
-        newTime = NewTime;
+        OldTime = oldTime;
+        NewTime = newTime;
     }
     
     public int OldTime;

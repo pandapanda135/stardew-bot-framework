@@ -95,6 +95,44 @@ public class ToolHandling
 
     #region WateringPlants
 
+    public async Task WaterSelectPatches(int leftX,int topY,int rightX,int bottomY)
+    {
+        Group finalGroup = new();
+        GroupedTiles groupedTiles = new();
+        Task<List<Group>> list = groupedTiles.StartDirtCheck(BotBase.CurrentLocation);
+        
+        for (int x = leftX; x < rightX; x++)
+        {
+            for (int y = topY; y < bottomY; y++)
+            {
+                foreach (var kvp in list.Result) // go through groups of dirt
+                {
+                    foreach (var itile in kvp.GetTiles())
+                    {
+                        if (itile.Position != new Point(x, y)) continue;
+                        PlantTile tile = (itile as PlantTile)!;
+                    
+                        HoeDirt dirt = (tile.TerrainFeature as HoeDirt)!;
+                        if (dirt.crop is null || dirt.isWatered()) continue;
+                
+                        // this is because I'm a horrible programmer that's too dumb to find a better way to do this
+                        IEnumerable<ITile> tiles = finalGroup.GetTiles().Where(tile1 => tile1.Position == tile.Position);
+                        if (tiles.Any())
+                        {
+                            continue;
+                        }
+                
+                        Logger.Info($"final group point: {tile.Position}");
+                        finalGroup.Add(tile);
+                        StardewClient.debugTiles.Add(tile);
+                    }
+                }
+            }
+        }
+
+        await UseToolOnGroup(finalGroup,new WateringCan());
+    }
+    
     /// <summary>
     /// Water all patches in this current location, This will only work if the bot is in the farm.
     /// </summary>

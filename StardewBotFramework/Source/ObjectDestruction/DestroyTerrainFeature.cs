@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
 using StardewValley;
 using StardewValley.TerrainFeatures;
@@ -60,5 +61,47 @@ public class DestroyTerrainFeature
 				DestroyObject.UseTool();
 				break;
 		}
+	}
+
+	public static bool IsDestructible(Point tile)
+	{
+		foreach (var dict in BotBase.CurrentLocation.terrainFeatures)
+		{
+			if (dict.ContainsKey(tile.ToVector2()))
+			{
+				TerrainFeature terrainFeature = dict[tile.ToVector2()];
+				
+				switch (terrainFeature)
+				{
+					case Tree:
+						return true;
+					case Bush:
+						return true;
+					case HoeDirt:
+						return true;
+					case Grass:
+						return true;
+				}
+			}
+		}
+
+		return false;
+	}
+	
+	public static bool IsDestructible(TerrainFeature terrainFeature)
+	{
+		switch (terrainFeature)
+		{
+			case Tree:
+				return true;
+			case Bush:
+				return true;
+			case HoeDirt:
+				return true;
+			case Grass:
+				return true;
+		}
+
+		return false;
 	}
 }

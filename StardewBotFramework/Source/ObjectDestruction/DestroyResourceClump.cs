@@ -1,3 +1,4 @@
+using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
 using StardewValley;
 using StardewValley.TerrainFeatures;
@@ -48,6 +49,48 @@ public class DestroyResourceClump
 		{
 			DestroyObject.UseTool();
 		}
+	}
+
+	public static bool IsDestructible(ResourceClump clump)
+	{
+		if (clump is GiantCrop crop)
+		{
+			return true;
+		}
+
+		if (IsLog(clump) || IsBoulder(clump))
+		{
+			return true;
+		}
+
+		if (IsGreenRainBush(clump))
+		{
+			return true;
+		}
+
+		return false;
+	}
+	public static bool IsDestructible(Point tile)
+	{
+		foreach (var resourceClump in BotBase.CurrentLocation.resourceClumps.Where(clump => clump.Tile.ToPoint() == tile))
+		{
+			if (resourceClump is GiantCrop crop)
+			{
+				return true;
+			}
+
+			if (IsLog(resourceClump) || IsBoulder(resourceClump))
+			{
+				return true;
+			}
+
+			if (IsGreenRainBush(resourceClump))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 	
 	private static bool IsLog(ResourceClump resourceClump)

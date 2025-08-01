@@ -1,3 +1,4 @@
+using Microsoft.Xna.Framework;
 using StardewValley;
 using Object = StardewValley.Object;
 
@@ -14,6 +15,26 @@ public class DestroyLitterObject
 		}
 	}
 
+	/// <summary>
+	/// Is a Litter object that can be destroyed
+	/// </summary>
+	public static bool IsDestructible(Point tile)
+	{
+		foreach (var currentLocationObject in BotBase.CurrentLocation.Objects.Where(objects => objects.ContainsKey(tile.ToVector2())))
+		{
+			foreach (var kvp in currentLocationObject)
+			{
+				Object obj = kvp.Value;
+				if (obj.IsTwig() || obj.IsBreakableStone() || obj.isSapling() || obj.IsFruitTreeSapling() || obj.IsWeeds())
+				{
+					return true;
+				}
+			}
+		}
+		
+		return false;
+	}
+	
 	/// <summary>
 	/// Is a Litter object that can be destroyed
 	/// </summary>

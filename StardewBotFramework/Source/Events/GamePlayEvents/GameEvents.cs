@@ -127,7 +127,7 @@ public class GameEvents
     
     private void OnDayEnding(object? sender, DayEndingEventArgs e) => DayEnded.Invoke(sender, new BotDayEndedEventArgs());
     
-    private void OnTimeChanged(object? sender, TimeChangedEventArgs e) => UiTimeChanged.Invoke(sender,new TimeEventArgs(e.OldTime,e.NewTime));
+    private void OnTimeChanged(object? sender, TimeChangedEventArgs e) => UiTimeChanged.Invoke(sender, new TimeEventArgs(e.OldTime, e.NewTime));
 
     private void OnWarped(object? sender, WarpedEventArgs e) => BotWarped.Invoke(sender, new BotWarpedEventArgs(e.Player, e.OldLocation, e.NewLocation, e.IsLocalPlayer));
     private void OnPeerConnected(object? sender, PeerConnectedEventArgs e) => PlayerConnected.Invoke(sender,new BotPlayerConnectedEventArgs(e.Peer)); 
