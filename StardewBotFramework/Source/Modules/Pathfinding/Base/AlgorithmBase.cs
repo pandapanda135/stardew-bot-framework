@@ -37,8 +37,6 @@ public class AlgorithmBase
     // this is so multiple types of pathing can be implemented more easily
     public interface IPathing
     {
-        public static List<string> DestructibleObjects = new();
-        
         protected static PathQueue Frontier = new();
 
         protected static PathPriorityQueue PriorityFrontier = new();

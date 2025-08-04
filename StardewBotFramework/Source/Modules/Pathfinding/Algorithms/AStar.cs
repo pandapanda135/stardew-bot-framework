@@ -106,7 +106,9 @@ public class AStar : AlgorithmBase
                         // ugly but it works
                         if (canDestroyObjects && IPathing.collisionMap.IsBlocked(next.X,next.Y))
                         {
-                            if (IPathing.DestructibleObjects.Contains(locationObjects[next.VectorLocation.ToVector2()].Name)) next.Destroy = true;
+                            if (DestroyLitterObject.IsDestructible(locationObjects[next.VectorLocation.ToVector2()]))
+                                next.Destroy = true;
+                            // if (IPathing.DestructibleObjects.Contains(locationObjects[next.VectorLocation.ToVector2()].Name)) next.Destroy = true;
                         }
                         
                         next.Cost = newCost;

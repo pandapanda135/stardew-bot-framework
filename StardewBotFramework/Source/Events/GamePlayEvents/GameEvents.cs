@@ -6,6 +6,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Menus;
+using StardewValley.Minigames;
 
 namespace StardewBotFramework.Source.Events.GamePlayEvents;
 
@@ -18,6 +19,7 @@ public class GameEvents
         _helper.Events.GameLoop.DayStarted += OnDayStarted;
         _helper.Events.GameLoop.DayEnding += OnDayEnding;
         _helper.Events.GameLoop.TimeChanged += OnTimeChanged;
+        _helper.Events.Display.MenuChanged += DisplayOnMenuChanged;
         
         _helper.Events.Multiplayer.PeerConnected += OnPeerConnected;
         _helper.Events.Multiplayer.PeerDisconnected += OnPeerDisconnected;
@@ -49,7 +51,6 @@ public class GameEvents
     }
 
     #region Events
-    
     /// <summary>
     /// On new Day Started.
     /// </summary>
@@ -111,18 +112,22 @@ public class GameEvents
     /// 24-hour notation (like 1600 for 4pm). The clock time resets when the player sleeps, so 2am (before sleeping) is 2600.
     /// </summary>
     public event EventHandler<TimeEventArgs>? UiTimeChanged;
-    
+    /// <summary>
+    /// When the current modal that is displayed is changed, this can be used to detect when dialogue starts
+    /// </summary>
     public event EventHandler<BotOnDeathEventArgs>? OnBotDeath;
     public event EventHandler<OnOtherPlayerDeathEventArgs>? OnOtherPlayerDeath; // not tested probably works though
     public event EventHandler<ChatMessageReceivedEventArgs>? ChatMessageReceived;
-    
+    public event EventHandler<BotMenuChangedEventArgs> MenuChanged;
     private static event EventHandler<BotOnDeathEventArgs>? StaticOnBotDeath;
     private static event EventHandler<OnOtherPlayerDeathEventArgs>? StaticOnOtherPlayerDeath;
     private static event EventHandler<ChatMessageReceivedEventArgs>? StaticChatMessageReceived; 
     #endregion
 
     #region Methods
-    
+    // StardewValley.Event
+    private void DisplayOnMenuChanged(object? sender, MenuChangedEventArgs e) =>
+        MenuChanged.Invoke(sender, new BotMenuChangedEventArgs(e.NewMenu,e.OldMenu)); 
     private void OnDayStarted(object? sender, DayStartedEventArgs e) => DayStarted.Invoke(sender,new BotDayStartedEventArgs());
     
     private void OnDayEnding(object? sender, DayEndingEventArgs e) => DayEnded.Invoke(sender, new BotDayEndedEventArgs());

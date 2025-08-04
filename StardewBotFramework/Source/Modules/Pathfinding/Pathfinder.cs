@@ -12,11 +12,6 @@ public class Pathfinder
 {
     private static AlgorithmBase.IPathing _pathfinder = new AStar.Pathing();
     /// <summary>
-    /// These are the objects the pathfinding can destroy.
-    /// </summary>
-    public List<string> DestructibleObjects = new();
-    
-    /// <summary>
     /// The bot will go to the goal. This should be awaited as finding the path is asynchronous. However the character moving is not
     /// </summary>
     /// <param name="goal"><see cref="Goal"/></param>
@@ -24,19 +19,11 @@ public class Pathfinder
     /// <param name="dynamic">If that goal will change position this in the future will be used for npcs.</param>
     public async Task Goto(Goal goal, bool dynamic, bool canDestroy = false)
     {
-        if (canDestroy && DestructibleObjects.Count == 0)
-        {
-            Logger.Warning("No set destructible objects");
-            return;
-        }
-
         AlgorithmBase.IPathing pathing = new AStar.Pathing();
         
         pathing.BuildCollisionMap(Game1.currentLocation);
         
         PathNode start = new PathNode(Game1.player.TilePoint.X, Game1.player.TilePoint.Y, null);
-
-        AlgorithmBase.IPathing.DestructibleObjects = DestructibleObjects;
         
         Stack<PathNode> path = await pathing.FindPath(start,goal,Game1.currentLocation,10000,canDestroy);
         
