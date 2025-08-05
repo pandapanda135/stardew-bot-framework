@@ -1,5 +1,4 @@
 using HarmonyLib;
-using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Events.GamePlayEvents;
 using StardewBotFramework.Source.Modules;
@@ -9,7 +8,6 @@ using StardewBotFramework.Source.Modules.Pathfinding.GroupTiles;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Menus;
-using StardewValley.TerrainFeatures;
 
 namespace StardewBotFramework.Source;
 
@@ -99,6 +97,9 @@ public class StardewClient : BotBase
 
         harmony.Patch(original: AccessTools.Method(typeof(ChatBox), nameof(ChatBox.receiveChatMessage)),
             postfix: new HarmonyMethod(typeof(GameEvents.MessagePatch), nameof(GameEvents.MessagePatch.receiveChatMessage_Postfix)));
+
+        harmony.Patch(original: AccessTools.Method(typeof(Game1), nameof(Game1.addHUDMessage)),
+            postfix: new HarmonyMethod(typeof(GameEvents.HudMessagePatch), nameof(GameEvents.HudMessagePatch.addHUDMessage_postfix)));
     }
     
 }

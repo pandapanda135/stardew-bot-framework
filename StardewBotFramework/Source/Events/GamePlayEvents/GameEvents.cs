@@ -12,7 +12,6 @@ namespace StardewBotFramework.Source.Events.GamePlayEvents;
 
 public class GameEvents
 {
-    
     public GameEvents(IModHelper _helper)
     {
         _helper.Events.GameLoop.GameLaunched += OnGameLaunch;
@@ -41,6 +40,7 @@ public class GameEvents
         StaticChatMessageReceived += OnStaticChatMessageReceived;
         StaticOnBotDeath += OnStaticOnBotDeath;
         StaticOnOtherPlayerDeath += OnStaticOnOtherPlayerDeath;
+        StaticHUDMessageAdded += OnStaticHUDMessageAdded;
     }
 
     private static IModHelper _helper;
@@ -118,9 +118,11 @@ public class GameEvents
     public event EventHandler<BotOnDeathEventArgs>? OnBotDeath;
     public event EventHandler<OnOtherPlayerDeathEventArgs>? OnOtherPlayerDeath; // not tested probably works though
     public event EventHandler<ChatMessageReceivedEventArgs>? ChatMessageReceived;
+    public event EventHandler<HUDMessageAddedEventArgs>? HUDMessageAdded; 
     public event EventHandler<BotMenuChangedEventArgs> MenuChanged;
     private static event EventHandler<BotOnDeathEventArgs>? StaticOnBotDeath;
     private static event EventHandler<OnOtherPlayerDeathEventArgs>? StaticOnOtherPlayerDeath;
+    private static event EventHandler<HUDMessageAddedEventArgs>? StaticHUDMessageAdded;
     private static event EventHandler<ChatMessageReceivedEventArgs>? StaticChatMessageReceived; 
     #endregion
 
@@ -199,6 +201,12 @@ public class GameEvents
 
     private void OnStaticOnOtherPlayerDeath(object? sender, OnOtherPlayerDeathEventArgs e) =>
         OnOtherPlayerDeath.Invoke(sender, e);
+    private void OnStaticHUDMessageAdded(object? sender, HUDMessageAddedEventArgs e)
+    {
+        // Logger.Info($"sender: {sender}");
+        // Logger.Info($"e: {e}");
+        HUDMessageAdded.Invoke(sender, e);
+    }
 
     private void OnStaticOnBotDeath(object? sender, BotOnDeathEventArgs e) => OnBotDeath.Invoke(sender, e);
         
@@ -253,5 +261,23 @@ public class GameEvents
         }
     }
 
-
+    public class HudMessagePatch
+    {
+        public static void addHUDMessage_postfix(Game1 __instance,HUDMessage message)
+        {
+            try
+            {
+                if (message.transparency < 1) return;
+                // Logger.Info($"game: {__instance}");
+                // Logger.Info($"message: {message}");
+                StaticHUDMessageAdded.Invoke(__instance,
+                    new HUDMessageAddedEventArgs(message.message, message.type, message.whatType,message.number, message.achievement,
+                        message.noIcon, message.messageSubject));
+            }
+            catch (Exception e)
+            {
+                Logger.Error($"Failed in addHUDMessage \n {e} \n This is mostly likely because it is not subscribed to anything");
+            }
+        }
+    }
 }
