@@ -101,7 +101,7 @@ public class GetNearestWaterTiles : AlgorithmBase
     
             while (Frontier.Count > 0)
             {
-                Logger.Info($"running while");
+                // Logger.Info($"running while");
                 if (runs > limit)
                 {
                     Logger.Error($"Breaking due to limit");
@@ -131,7 +131,7 @@ public class GetNearestWaterTiles : AlgorithmBase
                 Queue<Point> neighbours = IPathing.Graph.GroupNeighbours(current,7);
                 foreach (var node in neighbours.Where(node => !ClosedList.Contains(node)))
                 {
-                    Logger.Info($"in foreach this is node: {node.X},{node.Y}");
+                    // Logger.Info($"in foreach this is node: {node.X},{node.Y}");
                     WaterTile waterTile = new WaterTile(current,location);
                     if (UsedWaterTiles.Contains(waterTile)) continue;
                     Frontier.Enqueue(new Point(node.X,node.Y));

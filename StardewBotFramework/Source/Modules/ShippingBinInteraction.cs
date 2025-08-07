@@ -39,9 +39,9 @@ public class ShippingBinInteraction : GrabItemMenuInteraction
         List<ShippingBin> buildings = new();
         foreach (var building in location.buildings)
         {
-            if (building is ShippingBin){
+            if (building is ShippingBin shippingBin){
             {
-                buildings.Add((ShippingBin)building);
+                buildings.Add(shippingBin);
             }}
         }
 
@@ -55,6 +55,11 @@ public class ShippingBinInteraction : GrabItemMenuInteraction
     public void ShipHeldItem(ShippingBin shippingBin)
     {
         shippingBin.leftClicked();
+    }
+
+    public void OpenBin(ShippingBin shippingBin)
+    {
+        shippingBin.doAction(new Vector2(shippingBin.tileX.Value, shippingBin.tileY.Value), BotBase.Farmer); // TODO: this does not work as need to hold down right click
     }
 
     /// <summary>
