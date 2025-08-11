@@ -3,6 +3,7 @@ using Sickhead.Engine.Util;
 using StardewBotFramework.Debug;
 using StardewValley;
 using StardewValley.Characters;
+using StardewValley.GameData.Pets;
 using StardewValley.Menus;
 
 namespace StardewBotFramework.Source.Modules.MainMenu;
@@ -148,16 +149,29 @@ public class CharacterCreation
     {
         Game1.player.changeAccessory(Game1.player.accessory.Value + change);
     }
+
+    /// <summary>
+    /// Returns the pet date from <c>'Data/Pets'</c> 
+    /// </summary>
+    public IDictionary<string, PetData> GetPetData()
+    {
+        return BotBase.GetPetData();
+    } 
     
     /// <summary>
     /// This will change the selected pet in the menu
     /// </summary>
     /// <param name="petType">This will change the selected pet type, these can only be "Cat" or "Dog" in vanilla however there is no check in the function for this</param>
     /// <param name="petBreed">This will change the selected pet breed, these can only be "0" to "4" in vanilla however there is no check in the function for this</param>
-    public void ChangePet(string petType, string petBreed)
+    public bool ChangePet(string petType, string petBreed)
     {
+        IDictionary<string, PetData> petTypes = BotBase.GetPetData();
+
+        if (!petTypes[petType].Breeds[int.Parse(petBreed)].CanBeChosenAtStart) return false;
+        
         BotBase.Farmer.whichPetType = petType;
         BotBase.Farmer.whichPetBreed = petBreed;
+        return true;
     }
 
     /// <summary>

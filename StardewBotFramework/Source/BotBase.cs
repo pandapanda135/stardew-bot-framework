@@ -2,6 +2,8 @@ using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Events.GamePlayEvents;
 using StardewModdingAPI;
 using StardewValley;
+using StardewValley.Characters;
+using StardewValley.GameData.Pets;
 using StardewValley.Menus;
 using StardewValley.Network;
 
@@ -82,5 +84,15 @@ public abstract class BotBase
         }
         
         _reflectedObjectDestroy.SetValue(value);
+    }
+
+    internal static IDictionary<string,PetData> GetPetData()
+    {
+        if (Instance is null)
+        {
+            Logger.Error($"Instance is not set");
+            return new Dictionary<string, PetData>();
+        }
+        return Instance.Helper.GameContent.Load<Dictionary<string,PetData>>("Data/Pets");
     }
 }
