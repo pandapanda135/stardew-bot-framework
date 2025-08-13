@@ -30,7 +30,7 @@ public class ShippingBinInteraction : GrabItemMenuInteraction
         return tileLocations;
     }
     /// <summary>
-    /// Get the all of the shipping bins in the location.
+    /// Get all shipping bins in the location.
     /// </summary>
     /// <param name="location"><see cref="GameLocation"/> of where you want to query</param>
     /// <returns>A list of the shipping bins in the locations</returns>

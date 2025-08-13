@@ -46,6 +46,7 @@ public class StardewClient : BotBase
     public ShippingBinInteraction ShippingBinInteraction { get; }
     public GroupedTiles GroupedTiles { get; }
     public ToolHandling Tool { get; }
+    public QuestLogInteraction QuestLog { get;}
 
     #endregion
     
@@ -89,6 +90,7 @@ public class StardewClient : BotBase
         ShippingBinInteraction = new ();
         GroupedTiles = new ();
         Tool = new();
+        QuestLog = new();
 
         #endregion
         

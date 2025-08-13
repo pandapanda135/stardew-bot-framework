@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework.Input;
 using StardewBotFramework.Debug;
 using StardewValley;
 using StardewValley.Inventories;
+using StardewValley.Menus;
 using StardewValley.Objects;
 
 namespace StardewBotFramework.Source.Modules;
@@ -10,7 +11,7 @@ public class ChestModule
 {
     private IInventory CurrentChestInventory;
     
-    protected bool ChestOpen = false;
+    private static bool ChestOpen => Game1.activeClickableMenu is ItemGrabMenu;
     
     /// <summary>
     /// Open a valid chest, this must be performed before being able to change the contents of the chest
@@ -20,7 +21,6 @@ public class ChestModule
     public IInventory? OpenChest(Chest chest)
     {
         if (ChestOpen) return null;
-        ChestOpen = true;
 
         CurrentChestInventory = chest.GetItemsForPlayer();
 
@@ -43,8 +43,6 @@ public class ChestModule
     public void CloseChest(Chest? chest = null)
     {
         Logger.Warning("Running CloseChest");
-        if (!ChestOpen) return;
-        ChestOpen = false;
         Game1.activeClickableMenu = null;
         // chest.frameCounter.Value = 0;
     }

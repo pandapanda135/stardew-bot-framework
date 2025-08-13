@@ -45,6 +45,6 @@ public class Characters
     /// <returns>Will return amount of characters nearby</returns>
     public int GetNumberOfCharacterNearby(Point position, int radius)
     {
-        return Utility.getNumberOfCharactersInRadius(StardewClient.CurrentLocation, position, radius);
+        return Utility.getNumberOfCharactersInRadius(BotBase.CurrentLocation, position, radius);
     }
 }

@@ -10,6 +10,7 @@ public class DialogueManager
 {
     public Stack<Dialogue>? CurrentDialogueStack;
     public Dialogue? CurrentDialogue;
+    public DialogueBox? CurrentDialogueBox = new DialogueBox(0,0,0,0);
 
     public NPC CurrentNpc;
     
@@ -135,26 +136,34 @@ public class DialogueManager
         return checkAction;
     }
 
+    public void SetCurrentDialogue(Dialogue dialogue)
+    {
+        CurrentDialogue = dialogue;
+    }
+    
     /// <summary>
-    /// Advance current dialogue
+    /// Advance current dialogue, this is done by simulating a left click, this can cause skipping the dialogue box instead of advancing it properly.
     /// </summary>
     /// <returns>Will return true if Game1.activeClickableMenu is <see cref="DialogueBox"/> else false</returns>
     public bool AdvanceDialogBox(out string dialogueLine,int x = 0, int y = 0, bool playSound = true)
     {
+        dialogueLine = "";
+
+        if (CurrentDialogueBox is null) return false;
         if (Game1.activeClickableMenu is DialogueBox)
         {
             Game1.activeClickableMenu.receiveLeftClick(x, y, playSound);
-            if (CurrentDialogue is null)
+            if (CurrentDialogueBox.characterDialogue is not null)
             {
                 Logger.Error($"CurrentDialogue is null in advance dialogue");
-                dialogueLine = "";
-                return false;
+                dialogueLine = !CurrentDialogueBox.characterDialogue.isOnFinalDialogue() ? CurrentNpc.Dialogue[CurrentNpc.LoadedDialogueKey] : "";
+                return true;
             }
-            dialogueLine = !CurrentDialogue.isOnFinalDialogue() ? CurrentNpc.Dialogue[CurrentNpc.LoadedDialogueKey] : "";
+
+            dialogueLine = CurrentDialogueBox.getCurrentString();
             return true;
         }
-
-        dialogueLine = "";
+        
         return false;
     }
     
@@ -172,7 +181,7 @@ public class DialogueManager
             if (responses[i] == response)
             {
                 Logger.Info($"setting response to: {i}");
-                StardewClient.ChangeSelectedResponse(i);
+                BotBase.ChangeSelectedResponse(i);
                 break;
             }
         }
@@ -192,11 +201,13 @@ public class DialogueManager
         return CurrentDialogue.getNPCResponseOptions();
     }
 
-    public Response[]? PossibleResponses()
+    public Response[] PossibleResponses()
     {
-        if (!CurrentDialogue.isCurrentDialogueAQuestion()) return null; // here
+        if (CurrentDialogueBox is null) return Array.Empty<Response>();
+        // Logger.Error($"is question: {CurrentDialogueBox.isQuestion}");
+        // if (!CurrentDialogueBox.isQuestion) return null;
 
-        return CurrentDialogue.getResponseOptions();
+        return CurrentDialogueBox.responses;
     }
 
     internal static void ChooseResponse(int option,DialogueBox dialogueBox,Response response)
