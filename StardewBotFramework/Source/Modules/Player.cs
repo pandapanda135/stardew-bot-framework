@@ -142,8 +142,7 @@ public class Player
                 continue;
             }
 
-            CharacterController.StartMoveCharacter(path, BotBase.Farmer, BotBase.CurrentLocation,
-                Game1.currentGameTime);
+            CharacterController.StartMoveCharacter(path, Game1.currentGameTime);
 
             while (CharacterController.IsMoving()) continue; // this is not async
         }

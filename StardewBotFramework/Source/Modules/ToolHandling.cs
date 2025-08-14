@@ -257,8 +257,7 @@ public class ToolHandling
                     continue;
                 }
                 
-                CharacterController.StartMoveCharacter(path, BotBase.Farmer, BotBase.CurrentLocation,
-                    Game1.currentGameTime);
+                CharacterController.StartMoveCharacter(path,Game1.currentGameTime);
 
                 while (CharacterController.IsMoving()) continue; // this is not async
                 
@@ -323,8 +322,7 @@ public class ToolHandling
                 break;
             }
             
-            CharacterController.StartMoveCharacter(path, BotBase.Farmer, BotBase.CurrentLocation,
-                Game1.currentGameTime);
+            CharacterController.StartMoveCharacter(path,Game1.currentGameTime);
 
             while (CharacterController.IsMoving()) continue; // this is not async
             
@@ -443,8 +441,7 @@ public class ToolHandling
                     continue;
                 }
                 
-                CharacterController.StartMoveCharacter(path, BotBase.Farmer, BotBase.CurrentLocation,
-                    Game1.currentGameTime);
+                CharacterController.StartMoveCharacter(path,Game1.currentGameTime);
 
                 while (CharacterController.IsMoving()) continue; // this is not async
                 
@@ -498,8 +495,7 @@ public class ToolHandling
                 GetObjectType(tile);
             }
 
-            CharacterController.StartMoveCharacter(path, BotBase.Farmer, BotBase.CurrentLocation,
-                Game1.currentGameTime);
+            CharacterController.StartMoveCharacter(path,Game1.currentGameTime);
 
             while (CharacterController.IsMoving()) continue; // this is not async
 

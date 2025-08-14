@@ -9,8 +9,18 @@ namespace StardewBotFramework.Source.Modules;
 public class DialogueManager
 {
     public Stack<Dialogue>? CurrentDialogueStack;
-    public Dialogue? CurrentDialogue;
-    public DialogueBox? CurrentDialogueBox = new DialogueBox(0,0,0,0);
+
+    private Dialogue? _dialogue;
+    /// <summary>
+    /// The current dialogue, this should not need to be set.
+    /// </summary>
+    public Dialogue? CurrentDialogue
+    {
+        get => CurrentDialogueBox?.characterDialogue;
+        set => _dialogue = value;
+    }
+
+    public DialogueBox? CurrentDialogueBox = null;
 
     public NPC CurrentNpc;
     

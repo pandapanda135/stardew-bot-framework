@@ -24,7 +24,7 @@ public class PathNode : IComparable<PathNode>
         X = x;
         Y = y;
         Parent = parent;
-        Cost = 1; // cost == -1 ? Random.Shared.Next(0, 6) : cost
+        Cost = GetCost(); // cost == -1 ? Random.Shared.Next(0, 6) : cost
         Destroy = destroy;
     }
 
@@ -33,7 +33,7 @@ public class PathNode : IComparable<PathNode>
         X = vector.X;
         Y = vector.Y;
         Parent = parent;
-        Cost = 1; // cost == -1 ? Random.Shared.Next(0, 6) : cost
+        Cost = GetCost(); // cost == -1 ? Random.Shared.Next(0, 6) : cost
         Destroy = destroy;
     }
     
@@ -41,6 +41,25 @@ public class PathNode : IComparable<PathNode>
     public static bool IsNotPassable(int x, int y)
     {
         return Game1.currentLocation.isCollidingPosition(new Rectangle(x * Game1.tileSize + 1, y * Game1.tileSize + 1, 62, 62), Game1.viewport, isFarmer: true, -1, glider: false, Game1.player);
+    }
+
+    private int GetCost()
+    {
+        string type = BotBase.CurrentLocation.doesTileHaveProperty(X, Y, "Type", "Back");
+        Logger.Info($"THIS IS TYPE: {type}");
+        switch (type?.ToLower()) // we take these values from the game, it probably knows best.
+        {
+            case "stone":
+                return -7; // -7
+            case "wood":
+                return -4; // -4
+            case "dirt":
+                return -2; // -2
+            case "grass":
+                return -1; // -1
+            default:
+                return 0;
+        }
     }
 
     public int CompareTo(PathNode? other)
@@ -63,9 +82,9 @@ public class PathNode : IComparable<PathNode>
         return HashCode.Combine(X, Y);
     }
     
-    public static int ManhattanHeuristic(Vector2 start,Vector2 end)
+    public static int ManhattanHeuristic(Point start,Point end)
     {
         Logger.Info($"X:{start.X - end.X}   Y: {start.Y - end.Y}");
-        return (int)Math.Abs(start.X - end.X) + (int)Math.Abs(start.Y - end.Y);
+        return Math.Abs(start.X - end.X) + Math.Abs(start.Y - end.Y);
     }
 }

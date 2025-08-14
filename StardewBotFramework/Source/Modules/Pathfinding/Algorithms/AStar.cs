@@ -101,22 +101,21 @@ public class AStar : AlgorithmBase
                             || canDestroyObjects && locationObjects.ContainsKey(node.VectorLocation.ToVector2())))
                 {
                     int newCost = current.Cost + Graph.Cost(current, next);
-                    if (!IPathing.PriorityFrontier.Contains(next) || newCost < next.Cost)
+                    if (IPathing.PriorityFrontier.Contains(next) && newCost > next.Cost) continue;
+                    
+                    // ugly but it works
+                    if (canDestroyObjects && IPathing.collisionMap.IsBlocked(next.X,next.Y))
                     {
-                        // ugly but it works
-                        if (canDestroyObjects && IPathing.collisionMap.IsBlocked(next.X,next.Y))
-                        {
-                            if (DestroyLitterObject.IsDestructible(locationObjects[next.VectorLocation.ToVector2()]))
-                                next.Destroy = true;
-                            // if (IPathing.DestructibleObjects.Contains(locationObjects[next.VectorLocation.ToVector2()].Name)) next.Destroy = true;
-                        }
-                        
-                        next.Cost = newCost;
-                        int priority = newCost + PathNode.ManhattanHeuristic(next.VectorLocation.ToVector2(),goal.VectorLocation.ToVector2());
-                        Logger.Info($"A Star estimated heuristic {priority}");
-                        IPathing.PriorityFrontier.Enqueue(next, priority);
-                        IPathing.PathToEndPoint.Push(next);
+                        if (DestroyLitterObject.IsDestructible(locationObjects[next.VectorLocation.ToVector2()]))
+                            next.Destroy = true;
+                        // if (IPathing.DestructibleObjects.Contains(locationObjects[next.VectorLocation.ToVector2()].Name)) next.Destroy = true;
                     }
+
+                    newCost += next.Cost;
+                    int priority = newCost + PathNode.ManhattanHeuristic(next.VectorLocation,goal.VectorLocation);
+                    Logger.Info($"A Star estimated heuristic {priority}");
+                    IPathing.PriorityFrontier.Enqueue(next, priority);
+                    IPathing.PathToEndPoint.Push(next);
                 }
 
                 increase++;

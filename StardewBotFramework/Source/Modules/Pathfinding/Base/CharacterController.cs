@@ -16,8 +16,8 @@ public class CharacterController
 	private static bool _isDestroying = false;
 
 	private static Stack<PathNode> _endPath = new();
-	private static Character _character = new();
-	private static GameLocation _currentLocation = new();
+	private static Character _character => BotBase.Farmer;
+	private static GameLocation? _currentLocation;
 	private static GameTime _time = new();
 	private static int _nextIndex;
 	private static int _neighbourIndex;
@@ -36,14 +36,18 @@ public class CharacterController
 	/// <summary>
 	/// The maximum amount of time the bot can stay in the same position for. This is in milliseconds e.g. 5 seconds would be 5000
 	/// </summary>
-	public static int MaxPauseTime = 5000;
+	public static readonly int MaxPauseTime = 5000;
 	public static void Update(object? sender, UpdateTickingEventArgs e)
 	{
 		if (_endPath.Count < 1) _movingCharacter = false;
 		
 		if (!_movingCharacter) return;
 
-		if (!BotBase.CurrentLocation.Equals(_currentLocation)) return; // stop issue with moving to the left when go through warp
+		if (!BotBase.CurrentLocation.Equals(_currentLocation))
+		{
+			ForceStopMoving();
+			return;
+		} // stop issue with moving to the left when go through warp
 
 		Vector2 position = BotBase.Farmer.Position;
 		MoveCharacter(_time);
@@ -62,13 +66,11 @@ public class CharacterController
 		}
 	}
 
-	public static void StartMoveCharacter(Stack<PathNode> endPointPath, Character character, GameLocation location,
-		GameTime time)
+	public static void StartMoveCharacter(Stack<PathNode> endPointPath,GameTime time)
 	{
 		_movingCharacter = true;
 		_endPath = endPointPath;
-		_character = character;
-		_currentLocation = location;
+		_currentLocation = BotBase.CurrentLocation;
 		_time = time;
 		
 		if (IsMoving()) return;
@@ -78,6 +80,8 @@ public class CharacterController
 	
 	private static void MoveCharacter(GameTime time) //TODO: figure out why movePosition does not change character's animation.
 	{
+		if (_currentLocation is null) return;
+
 		if (BotBase.Farmer.UsingTool) return; // check if animation running
 		
 		if (_isDestroying) // check if destroy
@@ -142,16 +146,15 @@ public class CharacterController
 			_nextIndex = _endPath.ToList().IndexOf(pathNode);
 			if (_nextIndex == 0)
 			{
-				int indexPlus = _nextIndex; // idk what this was meant to do in the first place this works though
+				int indexPlus = _nextIndex; // idk what this was meant to do in the first place it works though
 				if (_endPath.Count > 1) indexPlus += 1;
 				_nextNode = _endPath.ToList()[indexPlus];
 				_neighbourIndex = _endPath.ToList().IndexOf(_nextNode); // need this to set next PathNode.Destroy to false
 				Object objectInNextTile = _currentLocation.getObjectAtTile(_nextNode.X,_nextNode.Y);
 			
-				if (objectInNextTile != null)
+				if (objectInNextTile is Fence)
 				{
-					Fence? fence = objectInNextTile as Fence;
-					if (fence is not null && fence.isGate.Value && !fence.isPassable())
+					if (objectInNextTile is Fence fence && fence.isGate.Value && !fence.isPassable())
 					{
 						fence.toggleGate(true);
 					}
@@ -162,7 +165,6 @@ public class CharacterController
 				}
 			}
 			
-			Logger.Info($"_character xvelocity: {_character.xVelocity} yVelocity: {_character.yVelocity}");
 			if (!pathNode.Destroy || _isDestroying)
 			{
 				_character.MovePosition(time, Game1.viewport, _currentLocation);
@@ -209,6 +211,13 @@ public class CharacterController
 		return _currentLocation.farmers.Any();
 	}
 	public static bool IsMoving() => _movingCharacter;
+
+	public static void ForceStopMoving()
+	{
+		_endPath = new Stack<PathNode>();
+		_currentNode = new PathNode(-1, -1, null);
+		_nextNode = _currentNode;
+	}
 	
 	private static bool SwapItem(Point tile)
 	{

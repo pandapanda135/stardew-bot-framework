@@ -27,8 +27,7 @@ public class Pathfinder
         
         Stack<PathNode> path = await pathing.FindPath(start,goal,Game1.currentLocation,10000,canDestroy);
         
-        CharacterController.StartMoveCharacter(path, Game1.player, Game1.currentLocation,
-            Game1.currentGameTime);
+        CharacterController.StartMoveCharacter(path,Game1.currentGameTime);
 
         while (IsMoving()) continue; // slightly jank way to get around MovingCharacter not being async
     }
