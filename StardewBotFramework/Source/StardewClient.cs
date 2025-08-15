@@ -4,6 +4,7 @@ using StardewBotFramework.Source.Events.GamePlayEvents;
 using StardewBotFramework.Source.Modules;
 using StardewBotFramework.Source.Modules.MainMenu;
 using StardewBotFramework.Source.Modules.Pathfinding;
+using StardewBotFramework.Source.Modules.Pathfinding.Base;
 using StardewBotFramework.Source.Modules.Pathfinding.GroupTiles;
 using StardewModdingAPI;
 using StardewValley;
@@ -14,6 +15,7 @@ namespace StardewBotFramework.Source;
 public class StardewClient : BotBase
 {
     public static List<ITile> debugTiles = new();
+    public static List<PathNode> debugNode = new();
     // private static BotBase? Instance { get; set; }
 
     // private readonly IModHelper _helper;

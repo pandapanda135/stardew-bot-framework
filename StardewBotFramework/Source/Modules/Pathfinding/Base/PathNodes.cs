@@ -24,7 +24,7 @@ public class PathNode : IComparable<PathNode>
         X = x;
         Y = y;
         Parent = parent;
-        Cost = GetCost(); // cost == -1 ? Random.Shared.Next(0, 6) : cost
+        Cost = 10 + GetCost(); // cost == -1 ? Random.Shared.Next(0, 6) : cost
         Destroy = destroy;
     }
 
@@ -33,7 +33,7 @@ public class PathNode : IComparable<PathNode>
         X = vector.X;
         Y = vector.Y;
         Parent = parent;
-        Cost = GetCost(); // cost == -1 ? Random.Shared.Next(0, 6) : cost
+        Cost = 10 + GetCost(); // cost == -1 ? Random.Shared.Next(0, 6) : cost
         Destroy = destroy;
     }
     
@@ -46,7 +46,6 @@ public class PathNode : IComparable<PathNode>
     private int GetCost()
     {
         string type = BotBase.CurrentLocation.doesTileHaveProperty(X, Y, "Type", "Back");
-        Logger.Info($"THIS IS TYPE: {type}");
         switch (type?.ToLower()) // we take these values from the game, it probably knows best.
         {
             case "stone":

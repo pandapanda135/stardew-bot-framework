@@ -34,6 +34,11 @@ public class GroundTile : ITile
 		TerrainFeature = terrainFeature;
 		ResourceClump = clump;
 		Obj = obj;
+		if (location.waterTiles is null)
+		{
+			WaterTile = false;
+			return;
+		}
 		int upperBound = location.waterTiles.waterTiles.GetUpperBound(0);
 		int upperBoundDimension = location.waterTiles.waterTiles.GetUpperBound(1);
 		if (upperBound > X && upperBoundDimension > Y)

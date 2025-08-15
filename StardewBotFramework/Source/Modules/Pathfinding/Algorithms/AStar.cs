@@ -2,6 +2,7 @@ using System.Runtime.Serialization;
 using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
+using StardewBotFramework.Source.Modules.Pathfinding.GroupTiles;
 using StardewBotFramework.Source.ObjectDestruction;
 using StardewBotFramework.Source.ObjectToolSwaps;
 using StardewValley;
@@ -100,8 +101,10 @@ public class AStar : AlgorithmBase
                 foreach (var next in neighbours.Where(node => !IPathing.ClosedList.Contains(node) && !IPathing.collisionMap.IsBlocked(node.X, node.Y) 
                             || canDestroyObjects && locationObjects.ContainsKey(node.VectorLocation.ToVector2())))
                 {
-                    int newCost = current.Cost + Graph.Cost(current, next);
-                    if (IPathing.PriorityFrontier.Contains(next) && newCost > next.Cost) continue;
+                    int newCost = current.Cost - Graph.Cost(current, next);
+                    Logger.Error($"this is new cost at start: {newCost}   next.cost: {next.Cost}    contains: {IPathing.PriorityFrontier.Contains(next)}");
+                    if (IPathing.PriorityFrontier.Contains(next) && newCost < next.Cost) continue;
+                    StardewClient.debugNode.Add(next);
                     
                     // ugly but it works
                     if (canDestroyObjects && IPathing.collisionMap.IsBlocked(next.X,next.Y))
@@ -112,6 +115,7 @@ public class AStar : AlgorithmBase
                     }
 
                     newCost += next.Cost;
+                    Logger.Error($"new cost after cost: {newCost}");
                     int priority = newCost + PathNode.ManhattanHeuristic(next.VectorLocation,goal.VectorLocation);
                     Logger.Info($"A Star estimated heuristic {priority}");
                     IPathing.PriorityFrontier.Enqueue(next, priority);
