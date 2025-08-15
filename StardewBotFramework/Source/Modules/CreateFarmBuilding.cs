@@ -10,9 +10,26 @@ namespace StardewBotFramework.Source.Modules;
 
 public class CreateFarmBuilding
 {
-    private CarpenterMenu? _carpenterMenu;
-    private BuildingSkinMenu? _buildingSkinMenu;
+    public CarpenterMenu? _carpenterMenu;
+    public BuildingSkinMenu? _buildingSkinMenu;
 
+    public Building Building
+    {
+        get
+        {
+            if (_carpenterMenu is null) return new Building();
+            return _carpenterMenu.currentBuilding;
+        }
+    }
+
+    public CarpenterMenu.BlueprintEntry BlueprintEntry
+    {
+        get
+        {
+            if (_carpenterMenu is null) return null;
+            return _carpenterMenu.Blueprint;
+        }
+    }
     public void SetCarpenterUI(CarpenterMenu menu)
     {
         _carpenterMenu = menu;
@@ -23,7 +40,19 @@ public class CreateFarmBuilding
         _buildingSkinMenu = menu;
     }
 
-    public void ChangeBuiding(CarpenterMenu.BlueprintEntry blueprintEntry)
+    /// <summary>
+    /// Change buildings current skin.
+    /// </summary>
+    /// <param name="skin"><see cref="BuildingSkinMenu.SkinEntry"/></param>
+    public void ChangeSkin(BuildingSkinMenu.SkinEntry skin)
+    {
+        if (_buildingSkinMenu is null) return;
+        _buildingSkinMenu.Skin = skin;
+        _buildingSkinMenu.receiveLeftClick(_buildingSkinMenu.OkButton.bounds.X + 1,_buildingSkinMenu.OkButton.bounds.Y + 1);
+        _buildingSkinMenu = null;
+    }
+
+    public void ChangeBuilding(CarpenterMenu.BlueprintEntry blueprintEntry)
     {
         if (blueprintEntry == _carpenterMenu.Blueprint) return;
         int blueprintIndex = _carpenterMenu.Blueprints.IndexOf(blueprintEntry);
@@ -76,7 +105,7 @@ public class CreateFarmBuilding
     /// </summary>
     /// <param name="tile">Top left tile of building</param>
     /// <returns>Will return true if, can build a building at tile location else false</returns>
-    public bool CreateBuilding(Point tile)
+    public bool CreateBuilding(Point tile) // TODO: I don't think this stuff works and I forgot to fix it
     {
         if (_carpenterMenu is null) return false;
         Game1.panScreen((tile.X * Game1.tileSize) - Game1.viewport.X,(tile.Y * Game1.tileSize) - Game1.viewport.Y);
@@ -89,7 +118,6 @@ public class CreateFarmBuilding
         return tryToBuild;
     }
     
-    
     /// <summary>
     /// This can be used for demolishing, painting and upgrading buildings 
     /// </summary>
@@ -101,12 +129,6 @@ public class CreateFarmBuilding
         
         Game1.oldMouseState = new MouseState((tile.X * Game1.tileSize) - Game1.viewport.X,(tile.Y * Game1.tileSize) - Game1.viewport.Y, 0, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
         _carpenterMenu.receiveLeftClick(tile.X * 64, tile.Y * 64);
-    }
-
-    public Building CurrentBuilding()
-    {
-        if (_carpenterMenu is null) return new Building();
-        return _carpenterMenu.currentBuilding;
     }
 
     /// <summary>

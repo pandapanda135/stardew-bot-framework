@@ -63,7 +63,7 @@ public class Shop
     /// <returns>Will return false if there is no shop at the location else will return true</returns>
     public bool OpenShopUi(int x,int y)
     {
-        StardewClient.CurrentLocation.checkAction(new Location(x,y),Game1.viewport,StardewClient.Farmer);
+        BotBase.CurrentLocation.checkAction(new Location(x,y),Game1.viewport,BotBase.Farmer);
         if (Game1.activeClickableMenu is not ShopMenu)
         {
             Logger.Warning($"There is no shop at {x},{y}");
@@ -85,7 +85,16 @@ public class Shop
         if (index < 4)
         {
             for (int i = 0; i < quantity; i++)
-            { _currentShop.receiveLeftClick(_currentShop.forSaleButtons[index].bounds.X + 10, _currentShop.forSaleButtons[index].bounds.Y + 10, true); }
+            { _currentShop.receiveLeftClick(_currentShop.forSaleButtons[index].bounds.X + 10, _currentShop.forSaleButtons[index].bounds.Y + 10); }
+
+            for (int i = 0; i < _currentShop.inventory.actualInventory.Count; i++)
+            {
+                if (_currentShop.inventory.actualInventory[i] is null)
+                {
+                    _currentShop.receiveLeftClick(_currentShop.inventory.inventory[i].bounds.X + 1, _currentShop.inventory.inventory[i].bounds.Y + 1);
+                }
+            }
+            
             return;
         }
         
@@ -101,6 +110,14 @@ public class Shop
         {
             Logger.Info($"buying click {i}");
             _currentShop.receiveLeftClick(_currentShop.forSaleButtons[maxIndex].bounds.X, _currentShop.forSaleButtons[maxIndex].bounds.Y, true);    
+        }
+        
+        for (int i = 0; i < _currentShop.inventory.actualInventory.Count; i++)
+        {
+            if (_currentShop.inventory.actualInventory[i] is null)
+            {
+                _currentShop.receiveLeftClick(_currentShop.inventory.inventory[i].bounds.X + 1, _currentShop.inventory.inventory[i].bounds.Y + 1);
+            }
         }
         
         // go back to top
