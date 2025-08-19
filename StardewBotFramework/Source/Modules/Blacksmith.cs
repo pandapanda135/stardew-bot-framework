@@ -105,13 +105,13 @@ public class Blacksmith : IShopMenu
             return null;
         }
 
-        if (StardewClient.Farmer._money < 25)
+        if (BotBase.Farmer._money < 25)
         {
             Logger.Warning($"Player does not have enough money");
             return null;
         }
 
-        if (StardewClient.Farmer.freeSpotsInInventory() == 0)
+        if (BotBase.Farmer.freeSpotsInInventory() == 0)
         {
             Logger.Warning($"Player does not have enough inventory slots free");
             return null;

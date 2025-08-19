@@ -46,33 +46,28 @@ public class CreateFarmBuilding
     /// <param name="skin"><see cref="BuildingSkinMenu.SkinEntry"/></param>
     public void ChangeSkin(BuildingSkinMenu.SkinEntry skin)
     {
-        if (_buildingSkinMenu is null) return;
-        _buildingSkinMenu.Skin = skin;
-        _buildingSkinMenu.receiveLeftClick(_buildingSkinMenu.OkButton.bounds.X + 1,_buildingSkinMenu.OkButton.bounds.Y + 1);
-        _buildingSkinMenu = null;
+        if (_buildingSkinMenu is null || _carpenterMenu is null) return;
+        for (int i = 0; i < _buildingSkinMenu.Skins.Count; i++)
+        {
+            if (_buildingSkinMenu.Skin == skin)
+            {
+                break;
+            }
+            _buildingSkinMenu.receiveLeftClick(_buildingSkinMenu.NextSkinButton.bounds.X,_buildingSkinMenu.NextSkinButton.bounds.Y);
+        }
+
+        _carpenterMenu.SetChildMenu(null);
     }
 
     public void ChangeBuilding(CarpenterMenu.BlueprintEntry blueprintEntry)
     {
+        if (_carpenterMenu is null) return;
         if (blueprintEntry == _carpenterMenu.Blueprint) return;
         int blueprintIndex = _carpenterMenu.Blueprints.IndexOf(blueprintEntry);
-        if (_carpenterMenu.Blueprints.IndexOf(_carpenterMenu.Blueprint) != blueprintIndex)
+        int changeIndex = blueprintIndex - _carpenterMenu.Blueprints.IndexOf(_carpenterMenu.Blueprint);
+        for (int i = 0; i < changeIndex; i++)
         {
-            int changeIndex = _carpenterMenu.Blueprints.IndexOf(_carpenterMenu.Blueprint) - blueprintIndex;
-            if (changeIndex > 0)
-            {
-                for (int i = 0; i < changeIndex; i++)
-                {
-                    MoveBluePrintCarouselRight();
-                }
-            }
-            else
-            {
-                for (int i = changeIndex - 1; i >= 0; i--)
-                {
-                    MoveBluePrintCarouselLeft();
-                }
-            }
+            MoveBluePrintCarouselRight();
         }
     }
     
@@ -91,13 +86,15 @@ public class CreateFarmBuilding
         if (_carpenterMenu is null) return;
         Rectangle bounds = _carpenterMenu.backButton.bounds;
         _carpenterMenu.receiveLeftClick(bounds.X + 5,bounds.Y + 5);
+        Console.WriteLine($"moving left");
     }
     
     public void MoveBluePrintCarouselRight()
     {
         if (_carpenterMenu is null) return;
         Rectangle bounds = _carpenterMenu.forwardButton.bounds;
-        _carpenterMenu.receiveLeftClick(bounds.X + 5,bounds.Y + 5);
+        _carpenterMenu.receiveLeftClick(bounds.X + 1,bounds.Y + 1);
+        Console.WriteLine($"moving right");
     }
     
     /// <summary>
@@ -105,17 +102,24 @@ public class CreateFarmBuilding
     /// </summary>
     /// <param name="tile">Top left tile of building</param>
     /// <returns>Will return true if, can build a building at tile location else false</returns>
-    public bool CreateBuilding(Point tile) // TODO: I don't think this stuff works and I forgot to fix it
+    public bool CreateBuilding(Point tile)
     {
         if (_carpenterMenu is null) return false;
-        Game1.panScreen((tile.X * Game1.tileSize) - Game1.viewport.X,(tile.Y * Game1.tileSize) - Game1.viewport.Y);
-        
-        Game1.oldMouseState = new MouseState((tile.X * Game1.tileSize) - Game1.viewport.X,(tile.Y * Game1.tileSize) - Game1.viewport.Y, 0, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
-        
-        bool tryToBuild = _carpenterMenu.tryToBuild();
-        _carpenterMenu.receiveLeftClick(tile.X * 64, tile.Y * 64); // game gets locked after this idk why
+        Game1.viewport.X = (tile.X * Game1.tileSize) - Game1.viewport.X;
+        Game1.viewport.Y = tile.Y * Game1.tileSize - Game1.viewport.Y;
+        Game1.oldMouseState = new MouseState((tile.X * Game1.tileSize) - Game1.viewport.X, (tile.Y * Game1.tileSize) - Game1.viewport.Y, 0, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
+        // tryToBuild uses oldMouseState
 
-        return tryToBuild;
+        bool tryToBuild = _carpenterMenu.tryToBuild();
+        if (!tryToBuild)
+        {
+            return false;
+        }
+        
+        _carpenterMenu.ConsumeResources();
+        DelayedAction.functionAfterDelay(_carpenterMenu.returnToCarpentryMenuAfterSuccessfulBuild, 2000);
+        _carpenterMenu.freeze = true;
+        return true;
     }
     
     /// <summary>
@@ -125,9 +129,9 @@ public class CreateFarmBuilding
     public void SelectBuilding(Point tile)
     {
         if (_carpenterMenu is null) return;
-        Game1.panScreen((tile.X * Game1.tileSize) - Game1.viewport.X,(tile.Y * Game1.tileSize) - Game1.viewport.Y);
-        
-        Game1.oldMouseState = new MouseState((tile.X * Game1.tileSize) - Game1.viewport.X,(tile.Y * Game1.tileSize) - Game1.viewport.Y, 0, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
+        Game1.viewport.X = tile.X * Game1.tileSize;
+        Game1.viewport.Y = tile.Y * Game1.tileSize;
+        Game1.oldMouseState = new MouseState((tile.X * Game1.tileSize) - Game1.viewport.X, (tile.Y * Game1.tileSize) - Game1.viewport.Y, 0, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
         _carpenterMenu.receiveLeftClick(tile.X * 64, tile.Y * 64);
     }
 
