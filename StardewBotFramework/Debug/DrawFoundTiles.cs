@@ -34,7 +34,6 @@ public class DrawFoundTiles
         InitializeOutlineTextures();
 
         Vector2 tileLocation = new Vector2(Game1.tileSize, Game1.tileSize);
-        // this will be used later to show path to end point
         foreach (ITile tile in StardewClient.debugTiles)
         {
             Color tileColor = Color.Green;
@@ -58,7 +57,6 @@ public class DrawFoundTiles
         InitializeOutlineTextures();
 
         Vector2 tileLocation = new Vector2(Game1.tileSize, Game1.tileSize);
-        // this will be used later to show path to end point
         foreach (PathNode tile in StardewClient.debugNode)
         {
             Color tileColor = Color.Green;

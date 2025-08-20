@@ -8,7 +8,6 @@ using StardewValley.Tools;
 
 namespace StardewBotFramework.Source.ObjectToolSwaps;
 
-// general item swapping implementation takes heavy inspiration from https://github.com/Caua-Oliveira/StardewMods/blob/main/AutomateToolSwap/InteractionRules
 public class SwapItemHandler
 {
     /// <summary>
@@ -20,7 +19,7 @@ public class SwapItemHandler
     {
         switch (toolType)
         {
-            case Type t when t == typeof(MeleeWeapon):
+            case { } t when t == typeof(MeleeWeapon):
                 switch (meleeWeapon)
                 {
                     case "Scythe":

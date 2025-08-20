@@ -13,13 +13,11 @@ public class InventoryManagement
     /// <summary>
     /// The max amount of items in the bots inventory
     /// </summary>
-    public int MaxInventory => StardewClient.Farmer.MaxItems;
+    public int MaxInventory => BotBase.Farmer.MaxItems;
 
-    public IList<Item> ToolBarItems => StardewClient.Farmer.Items.GetRange(0, 11); // probably works
+    public IList<Item> ToolBarItems => BotBase.Farmer.Items.GetRange(0, 11); // probably works
 
     public Inventory Inventory => GetInventory();
-    // public int CurrentItemSlotCount = Game1.player.MaxItems;
-    // Items in Inventory should IList<Item> (presumably 0-35)
     
     #region GeneralMethods
 

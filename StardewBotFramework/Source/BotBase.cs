@@ -55,15 +55,11 @@ public abstract class BotBase
         
         _reflectedTextBox = Instance.Helper.Reflection.GetField<TextBox>(menu, properties[0], true);
         
-        // IReflectedField<string> reflectedText = Instance.Helper.Reflection.GetField<string>(_reflectedTextBox, properties[1], true);
-
         TextBox textBox = _reflectedTextBox.GetValue();
 
         textBox.Text = name;
         
         _reflectedTextBox.SetValue(textBox);
-        
-        // reflectedText.SetValue(name);   
     }
 
     internal static void AddRemoveFurniture(GameLocation location,Guid f)
@@ -94,5 +90,43 @@ public abstract class BotBase
             return new Dictionary<string, PetData>();
         }
         return Instance.Helper.GameContent.Load<Dictionary<string,PetData>>("Data/Pets");
+    }
+
+    internal static int GetLevelUpMenuSkill()
+    {
+        if (Instance is null)
+        {
+            Logger.Error($"Instance is not set");
+            return -1;
+        }
+
+        LevelUpMenu menu = Game1.activeClickableMenu as LevelUpMenu;
+        IReflectedField<int> reflectedField = Instance.Helper.Reflection.GetField<int>(menu, "currentSkill");
+        return reflectedField.GetValue();
+    }
+    
+    internal static int GetLevelUpMenuLevel()
+    {
+        if (Instance is null)
+        {
+            Logger.Error($"Instance is not set");
+            return -1;
+        }
+
+        LevelUpMenu menu = Game1.activeClickableMenu as LevelUpMenu;
+        IReflectedField<int> reflectedField = Instance.Helper.Reflection.GetField<int>(menu, "currentLevel");
+        return reflectedField.GetValue();
+    }
+    internal static List<int> GetLevelUpMenuProfessions()
+    {
+        if (Instance is null)
+        {
+            Logger.Error($"Instance is not set");
+            return new();
+        }
+
+        LevelUpMenu menu = Game1.activeClickableMenu as LevelUpMenu;
+        IReflectedField<List<int>> reflectedField = Instance.Helper.Reflection.GetField<List<int>>(menu, "professionsToChoose");
+        return reflectedField.GetValue();
     }
 }

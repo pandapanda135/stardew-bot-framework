@@ -12,7 +12,6 @@ public class BreadthFirstSearch : AlgorithmBase
     {
         #region PathFinding
 
-        // make this run asynchronously so we can await it when using bot as don't want running actions when pathfinding or just make character controller async (as don't want moving while dropping items as an example)
         async Task<Stack<PathNode>> IPathing.FindPath(PathNode startPoint, Goal goal, GameLocation location, int limit, bool canDestroy = false)
         {
             Stack<PathNode> correctPath = await Task.Run(() => RunBreadthFirst(startPoint, goal, location, limit));

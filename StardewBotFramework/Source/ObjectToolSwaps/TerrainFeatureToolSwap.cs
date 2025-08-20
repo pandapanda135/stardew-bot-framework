@@ -50,7 +50,7 @@ public class TerrainFeatureToolSwap
                             if (!tree.tapped.Value && includeTapper) return SwapItemHandler.EquipTapper();
                             SwapItemHandler.SwapItem(typeof(Axe),"");
                             return true;
-                        case HoeDirt dirt: // should probably include fertilizer
+                        case HoeDirt dirt:
                             Logger.Info($"switch to dirt");
                             if (!dirt.isWatered())
                             {
@@ -61,7 +61,7 @@ public class TerrainFeatureToolSwap
                             {
                                 return SwapItemHandler.EquipFertilizer(dirt);
                             }
-                            SwapItemHandler.SwapItem(typeof(Pickaxe),""); // this is for destroying crops
+                            SwapItemHandler.SwapItem(typeof(Pickaxe),""); // this is incase they want to destroy crops for fun
                             return true;
                         case Grass:
                             Logger.Info($"switch to grass");

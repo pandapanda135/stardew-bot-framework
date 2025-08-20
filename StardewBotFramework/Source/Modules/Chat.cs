@@ -46,7 +46,7 @@ public class Chat
     }
 
     /// <summary>
-    /// Use emote you can get see all emotes https://stardewvalleywiki.com/Multiplayer/Emotes.
+    /// Use emote, you can get see all emotes https://stardewvalleywiki.com/Multiplayer/Emotes.
     /// </summary>
     /// <param name="emote">the name of the emote this should be the same a normal player would use. You can see them here</param>
     public bool UseEmote(string emote) // can access emotes with Farmer.EMOTES

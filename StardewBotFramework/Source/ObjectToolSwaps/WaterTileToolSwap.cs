@@ -15,7 +15,6 @@ public class WaterTileToolSwap
         int CurrentItemCategory = BotBase.Farmer.CurrentItem.Category;
         bool CurrentItemNull = BotBase.Farmer.CurrentItem == null;
 
-        // look more into WaterTiles in stardew source
         if (!location.isWaterTile(tile.X, tile.Y))
         {
             return false;

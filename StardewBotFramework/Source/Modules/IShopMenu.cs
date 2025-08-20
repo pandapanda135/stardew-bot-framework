@@ -167,7 +167,7 @@ public abstract class IShopMenu
     /// </summary>
     /// <param name="index">this is a value of 0 to max provided by the inventory level these can only be 11-23-35 (assuming the game is not modded)</param>
     /// <returns>The amount the item has sold for. However, if this returns -1 it means there has been an issue with selling item</returns>
-    public int SellBackItem(int index) // Item item
+    public int SellBackItem(int index)
     {
         if (CurrentShop is null || CurrentShop is not ShopMenu) return -1;
         
