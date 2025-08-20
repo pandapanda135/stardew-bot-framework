@@ -1,15 +1,22 @@
+using Netcode;
 using StardewValley;
 using StardewValley.Menus;
+using StardewValley.Quests;
 
 namespace StardewBotFramework.Source.Modules;
 
 public class QuestLogInteraction
 {
-	private static QuestLog? currentMenu = null;
+	private static QuestLog? _currentMenu = null;
+
+	/// <summary>
+	/// The quests the bot has access to.
+	/// </summary>
+	public NetObjectList<Quest> Quests => Game1.player.questLog;
 
 	public void SetMenu(QuestLog? menu)
 	{
-		currentMenu = menu;
+		_currentMenu = menu;
 	}
 	
 	public void OpenLog()
@@ -20,16 +27,16 @@ public class QuestLogInteraction
 
 	public void CloseLog()
 	{
-		if (currentMenu is null) return;
-		ClickableComponent button = currentMenu.upperRightCloseButton;
-		currentMenu.receiveLeftClick(button.bounds.X,button.bounds.Y);
+		if (_currentMenu is null) return;
+		ClickableComponent button = _currentMenu.upperRightCloseButton;
+		_currentMenu.receiveLeftClick(button.bounds.X,button.bounds.Y);
 	}
 
 	public void CloseQuest()
 	{
-		if (currentMenu is null) return;
-		ClickableComponent button = currentMenu.backButton;
-		currentMenu.receiveLeftClick(button.bounds.X,button.bounds.Y);
+		if (_currentMenu is null) return;
+		ClickableComponent button = _currentMenu.backButton;
+		_currentMenu.receiveLeftClick(button.bounds.X,button.bounds.Y);
 	}
 	
 	/// <summary>
@@ -39,41 +46,41 @@ public class QuestLogInteraction
 	/// <returns>This will return false if you gave an invalid index, or you have not opened quest log through OpenLog or set menu.</returns>
 	public bool OpenQuestIndex(int index)
 	{
-		if (index >= QuestLog.questsPerPage || index < 0 || currentMenu is null)
+		if (index >= QuestLog.questsPerPage || index < 0 || _currentMenu is null)
 		{
 			return false;
 		}
 
-		ClickableComponent questButton = currentMenu.questLogButtons[index]; 
-		currentMenu.receiveLeftClick(questButton.bounds.X + 2,questButton.bounds.Y + 2);
+		ClickableComponent questButton = _currentMenu.questLogButtons[index]; 
+		_currentMenu.receiveLeftClick(questButton.bounds.X + 2,questButton.bounds.Y + 2);
 		return true;
 	}
 
 	public void NextRightPage()
 	{
-		if (currentMenu is null)
+		if (_currentMenu is null)
 		{
 			return;
 		}
-		ClickableComponent button = currentMenu.forwardButton;
-		currentMenu.receiveLeftClick(button.bounds.X + 2,button.bounds.Y + 2);
+		ClickableComponent button = _currentMenu.forwardButton;
+		_currentMenu.receiveLeftClick(button.bounds.X + 2,button.bounds.Y + 2);
 	}
 
 	public void NextLeftPage()
 	{
-		if (currentMenu is null)
+		if (_currentMenu is null)
 		{
 			return;
 		}
-		ClickableComponent button = currentMenu.backButton;
-		currentMenu.receiveLeftClick(button.bounds.X + 2,button.bounds.Y + 2);
+		ClickableComponent button = _currentMenu.backButton;
+		_currentMenu.receiveLeftClick(button.bounds.X + 2,button.bounds.Y + 2);
 	}
 
 	public void GetReward()
 	{
-		if (currentMenu is null) return;
+		if (_currentMenu is null) return;
 
-		ClickableComponent rewardButton = currentMenu.rewardBox;
-		currentMenu.receiveLeftClick(rewardButton.bounds.X + 2,rewardButton.bounds.Y + 2);
+		ClickableComponent rewardButton = _currentMenu.rewardBox;
+		_currentMenu.receiveLeftClick(rewardButton.bounds.X + 2,rewardButton.bounds.Y + 2);
 	}
 }

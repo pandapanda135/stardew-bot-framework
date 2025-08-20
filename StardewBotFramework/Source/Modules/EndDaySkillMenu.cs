@@ -21,20 +21,28 @@ public class EndDaySkillMenu
     public void SelectPerk(bool left)
     {
         if (_levelUpMenu is null) return;
-        if (left)
+        if (left) // we do this because this uses mouse state instead of how everything else in the game works.
         {
-            _levelUpMenu.receiveLeftClick(_levelUpMenu.leftProfession.bounds.X + 5,_levelUpMenu.leftProfession.bounds.Y + 5);
+            Game1.player.professions.Add(ProfessionsToChoose[0]);
+            _levelUpMenu.getImmediateProfessionPerk(ProfessionsToChoose[0]);
         }
         else
         {
-            _levelUpMenu.receiveLeftClick(_levelUpMenu.rightProfession.bounds.X + 5,_levelUpMenu.rightProfession.bounds.Y + 5);
+            Game1.player.professions.Add(ProfessionsToChoose[1]);
+            _levelUpMenu.getImmediateProfessionPerk(ProfessionsToChoose[1]);
         }
+
+        _levelUpMenu.isActive = false;
+        _levelUpMenu.informationUp = false;
+        _levelUpMenu.isProfessionChooser = false;
+        _levelUpMenu.RemoveLevelFromLevelList();
     }
 
     public void SelectOkButton()
     {
         if (_levelUpMenu is null) return;
-        _levelUpMenu.receiveLeftClick(_levelUpMenu.okButton.bounds.X + 5,_levelUpMenu.okButton.bounds.Y + 5);
+        _levelUpMenu.okButtonClicked();
+        // _levelUpMenu.receiveLeftClick(_levelUpMenu.okButton.bounds.X + 5,_levelUpMenu.okButton.bounds.Y + 5);
         _levelUpMenu = null;
     }
 }
