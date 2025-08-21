@@ -129,4 +129,16 @@ public abstract class BotBase
         IReflectedField<List<int>> reflectedField = Instance.Helper.Reflection.GetField<List<int>>(menu, "professionsToChoose");
         return reflectedField.GetValue();
     }
+
+    internal static IReflectedMethod? GetTryOutro(DialogueBox dialogueBox)
+    {
+        if (Instance is null)
+        {
+            Logger.Error($"Instance is not set");
+            return null;
+        }
+        
+        IReflectedMethod reflectedMethod = Instance.Helper.Reflection.GetMethod(dialogueBox,"tryOutro");
+        return reflectedMethod;
+    }
 }

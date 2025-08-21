@@ -1,4 +1,5 @@
 using StardewBotFramework.Debug;
+using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -111,7 +112,7 @@ public class Blacksmith : IShopMenu
             return null;
         }
 
-        if (BotBase.Farmer.freeSpotsInInventory() == 0)
+        if (BotBase.Farmer.freeSpotsInInventory() == 0 && _currentMenu.inventory.actualInventory[index].Stack > 1)
         {
             Logger.Warning($"Player does not have enough inventory slots free");
             return null;
@@ -119,10 +120,17 @@ public class Blacksmith : IShopMenu
         // move item to geode spot
 
         _currentMenu.heldItem = item.getOne();
-        item.Stack -= 1;
+        if (item.Stack == 1)
+        {
+            BotBase.Farmer.Items[index] = null;
+        }
+        else
+        {
+            BotBase.Farmer.Items[index].Stack -= 1;
+        }
         
         _currentMenu.receiveLeftClick(_currentMenu.geodeSpot.bounds.X, _currentMenu.geodeSpot.bounds.Y);
-        
+
         return _currentMenu.geodeTreasure;
     }
 }

@@ -114,7 +114,7 @@ public class CharacterController
 		{
 			if (farmer != BotBase.Farmer)
 			{
-				Logger.Error($"Farmer is not BotBase Farmer");
+				Logger.Error($"Farmer is not the bot");
 				return;
 			}
 			farmer.movementDirections.Clear();

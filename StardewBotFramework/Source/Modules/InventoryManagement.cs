@@ -222,6 +222,21 @@ public class InventoryManagement
         return null;
     }
 
+    public Dictionary<string,Item> GetEquippedClothing()
+    {
+        Dictionary<string,Item> clothing = new()
+        {
+            // only the best code
+            {"Boots", BotBase.Farmer.boots.Value},
+            { "Hat",BotBase.Farmer.hat.Value },
+            { "Shirt" ,BotBase.Farmer.shirtItem.Value},
+            { "Pants",BotBase.Farmer.pantsItem.Value},
+            { "Right ring",BotBase.Farmer.rightRing.Value},
+            { "Left ring",BotBase.Farmer.leftRing.Value}
+        };
+        return clothing;
+    }
+
     #endregion
     
     #region Trinkets

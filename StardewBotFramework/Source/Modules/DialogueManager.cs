@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using StardewBotFramework.Debug;
+using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -194,6 +195,33 @@ public class DialogueManager
                 BotBase.ChangeSelectedResponse(i);
                 break;
             }
+        }
+
+        if (CurrentDialogue is null)
+        {
+            if (CurrentDialogueBox is null)
+            {
+                Logger.Error($"current dialogue box is not null");
+                return;
+            }
+            if (Game1.eventUp && Game1.currentLocation.afterQuestion == null)
+            {
+                Game1.playSound("smallSelect");
+                Game1.currentLocation.currentEvent.answerDialogue(Game1.currentLocation.lastQuestionKey, CurrentDialogueBox.selectedResponse);
+            }
+            else
+            {
+                Game1.currentLocation.answerDialogue(responses[CurrentDialogueBox.selectedResponse]);
+            }
+            CurrentDialogueBox.selectedResponse = -1;
+            IReflectedMethod? method = BotBase.GetTryOutro(CurrentDialogueBox);
+            if (method is not null) method.Invoke();
+            else
+            {
+                Logger.Error($"method is null");
+                return;
+            }
+            return;
         }
         
         Game1.activeClickableMenu.receiveLeftClick(0, 0, true);
