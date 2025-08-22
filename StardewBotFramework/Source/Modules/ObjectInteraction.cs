@@ -1,5 +1,3 @@
-using Microsoft.VisualBasic.CompilerServices;
-using Microsoft.Xna.Framework.Graphics;
 using StardewBotFramework.Debug;
 using StardewValley;
 using StardewValley.Objects;
@@ -7,6 +5,9 @@ using Object = StardewValley.Object;
 
 namespace StardewBotFramework.Source.Modules;
 
+/// <summary>
+/// This is for interacting with <see cref="Object"/> this includes <see cref="Furniture"/>
+/// </summary>
 public class ObjectInteraction
 {
     /// <summary>
@@ -17,8 +18,9 @@ public class ObjectInteraction
     /// <returns>Will return false if the object has no item on top of if it can't get the object else will return true </returns>
     public bool PickUpItemOnFurniture(Object selectedObject)
     {
-        Furniture furniture = selectedObject as Furniture;
-        return furniture.clicked(StardewClient.Farmer);
+        Furniture? furniture = selectedObject as Furniture;
+        if (furniture is null) return false;
+        return furniture.clicked(BotBase.Farmer);
     }
 
     /// <summary>
@@ -29,15 +31,16 @@ public class ObjectInteraction
     public bool PickUpFurniture(Object selectedObject)
     {
         Logger.Info($"Object category: {selectedObject.Category}");
-        Furniture furniture = selectedObject as Furniture;
-        if (furniture.canBeRemoved(StardewClient.Farmer))
+        Furniture? furniture = selectedObject as Furniture;
+        if (furniture is null) return false;
+        if (furniture.canBeRemoved(BotBase.Farmer))
         {
             // furniture.performRemoveAction();
             furniture.AttemptRemoval(delegate(Furniture f)
             {
-                Guid guid = StardewClient.CurrentLocation.furniture.GuidOf(f);
+                Guid guid = BotBase.CurrentLocation.furniture.GuidOf(f);
                 
-                StardewClient.AddRemoveFurniture(StardewClient.CurrentLocation,guid); // use reflection to add furniture to be removed (very dodgy solution, but it works so)
+                BotBase.AddRemoveFurniture(BotBase.CurrentLocation,guid); // use reflection to add furniture to be removed (very dodgy solution, but it works so)
             });
             return true;
         }
@@ -52,7 +55,7 @@ public class ObjectInteraction
     /// <returns>Returns true if the action was performed, or false if the player should pick up the item instead.</returns>
     public bool InteractWithObject(Object selectedObject)
     {
-        return selectedObject.checkForAction(StardewClient.Farmer, false); // this should change to checkForActionOn{Object} in this function
+        return selectedObject.checkForAction(BotBase.Farmer); // this should change to checkForActionOn{Object} in this function
     }
 
     /// <summary>
@@ -65,12 +68,15 @@ public class ObjectInteraction
     /// <returns>Will return true if placing the item was a success else false</returns>
     public bool TryToPlaceObject(Object item, int x, int y)
     {
-        return Utility.tryToPlaceItem(StardewClient.CurrentLocation, item, x, y);
+        return Utility.tryToPlaceItem(BotBase.CurrentLocation, item, x, y);
     }
 
+    /// <summary>
+    /// Gets the object at the specified tile.
+    /// </summary>
     public Object? GetObjectAtTile(int x, int y)
     {
-        foreach (var dictionary in StardewClient.CurrentLocation.Objects)
+        foreach (var dictionary in BotBase.CurrentLocation.Objects)
         {
             foreach (var tileVector in dictionary.Keys)
             {

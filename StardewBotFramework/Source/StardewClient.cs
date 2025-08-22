@@ -49,6 +49,7 @@ public class StardewClient : BotBase
     public GroupedTiles GroupedTiles { get; }
     public ToolHandling Tool { get; }
     public QuestLogInteraction QuestLog { get;}
+    public WorldState WorldState { get;}
 
     #endregion
     
@@ -93,6 +94,7 @@ public class StardewClient : BotBase
         GroupedTiles = new ();
         Tool = new();
         QuestLog = new();
+        WorldState = new();
 
         #endregion
         

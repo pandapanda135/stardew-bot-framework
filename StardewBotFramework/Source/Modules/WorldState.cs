@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
 using StardewModdingAPI.Utilities;
@@ -26,7 +27,7 @@ public class WorldState
     /// <returns><see cref="LocationWeather"/> of current location</returns>
     public LocationWeather GetCurrentLocationWeather()
     {
-        return StardewClient.CurrentLocation.GetWeather();
+        return BotBase.CurrentLocation.GetWeather();
     }
 }
 
@@ -98,11 +99,48 @@ public class Time
     }
 
     /// <summary>
-    /// If there is a festival.
+    /// If there is a festival today.
     /// </summary>
     /// <returns>true if festival else false</returns>
     public bool IsFestival()
     {
-        return Game1.isFestival();
+        return Utility.isFestivalDay();
+    }
+
+    /// <summary>
+    /// If there is a passive festival today, e.g. Night market. An example of a non-passive festival would be the flower dance 
+    /// </summary>
+    /// <returns></returns>
+    public bool IsPassiveFestival()
+    {
+        return Utility.IsPassiveFestivalDay();
+    }
+
+    public bool GetTodayFestivalData(out Dictionary<string,string> data,out GameLocation location, out int startTime, out int endTime)
+    {
+        data = new();
+        location = null!;
+        startTime = -1;
+        endTime = -1;
+        
+        DefaultInterpolatedStringHandler stringHandler = new DefaultInterpolatedStringHandler(0, 2);
+        stringHandler.AppendFormatted(Utility.getSeasonKey(Game1.season));
+        stringHandler.AppendFormatted(Game1.dayOfMonth);
+        string festivalId = stringHandler.ToStringAndClear();
+        if (!DataLoader.Festivals_FestivalDates(Game1.temporaryContent).ContainsKey(festivalId))
+        {
+            return false;
+        }
+
+        if (!Event.tryToLoadFestivalData(festivalId, out var assetName, out data, out var stringLocation, out startTime, out endTime))
+        {
+            return false;
+        }
+
+        GameLocation gameLocation = Game1.getLocationFromName(stringLocation);
+        if (gameLocation is null) return false;
+
+        location = gameLocation;
+        return true;
     }
 }

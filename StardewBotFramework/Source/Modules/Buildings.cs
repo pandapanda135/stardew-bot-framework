@@ -23,7 +23,6 @@ public class Buildings
     /// <param name="building">The building that has the animal door.</param>
     public void UseAnimalDoor(Building building)
     {
-        building.ToggleAnimalDoor(StardewClient.Farmer);
+        building.ToggleAnimalDoor(BotBase.Farmer);
     }
-
 }
