@@ -23,18 +23,23 @@ public class GrabItemMenuInteraction
         return _menu.ItemsToGrabMenu.actualInventory;
     }
     
-    public void AddItem(Item item)
+    /// <summary>
+    /// Add item to this <see cref="ItemGrabMenu"/>
+    /// </summary>
+    /// <param name="item"></param>
+    /// <returns>Will return false if this item cannot be added, else true.</returns>
+    public bool AddItem(Item item)
     {
-        if (_menu is null) return;
-        if (!_menu.inventory.actualInventory.Contains(item)) return;
+        if (_menu is null) return false;
+        if (!BotBase.Farmer.Items.Contains(item)) return false;
 
-        if (_menu.ItemsToGrabMenu.tryToAddItem(item) == null)
+        if (_menu.ItemsToGrabMenu.actualInventory.Count >= _menu.ItemsToGrabMenu.capacity)
         {
-            return;
+            return false;
         }
-
-        StardewClient.Farmer.Items.Remove(item);
-        // _menu.inventory.actualInventory.Remove(item);
+        _menu.ItemsToGrabMenu.actualInventory.Add(item);
+        BotBase.Farmer.Items.Remove(item);
+        return true;
     }
 
     public void TakeItem(Item item)

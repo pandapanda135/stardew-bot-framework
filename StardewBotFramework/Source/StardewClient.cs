@@ -50,7 +50,8 @@ public class StardewClient : BotBase
     public ToolHandling Tool { get; }
     public QuestLogInteraction QuestLog { get;}
     public WorldState WorldState { get;}
-
+    public GrabItemMenuInteraction ItemGrabMenu { get; }
+    public BillBoardInteraction BillBoard { get; }
     #endregion
     
     public StardewClient(IModHelper helper, IManifest manifest,IMonitor monitor, IMultiplayerHelper multiplayer)
@@ -95,6 +96,8 @@ public class StardewClient : BotBase
         Tool = new();
         QuestLog = new();
         WorldState = new();
+        ItemGrabMenu = new();
+        BillBoard = new();
 
         #endregion
         
