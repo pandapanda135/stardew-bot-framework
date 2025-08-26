@@ -2,6 +2,8 @@ using StardewBotFramework.Source.Modules.Pathfinding.Algorithms;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
 using StardewBotFramework.Debug;
 using StardewValley;
+using StardewValley.Pathfinding;
+using PathNode = StardewBotFramework.Source.Modules.Pathfinding.Base.PathNode;
 
 namespace StardewBotFramework.Source.Modules.Pathfinding;
 
@@ -10,7 +12,7 @@ namespace StardewBotFramework.Source.Modules.Pathfinding;
 /// </summary>
 public class Pathfinder
 {
-    private static AlgorithmBase.IPathing _pathfinder = new AStar.Pathing();
+    private static readonly AlgorithmBase.IPathing Pathing = new AStar.Pathing();
     /// <summary>
     /// The bot will go to the goal. This should be awaited as finding the path is asynchronous. However the character moving is not
     /// </summary>
@@ -29,7 +31,7 @@ public class Pathfinder
         
         CharacterController.StartMoveCharacter(path,Game1.currentGameTime);
 
-        while (IsMoving()) continue; // slightly jank way to get around MovingCharacter not being async
+        while (CharacterController.IsMoving()) continue; // slightly jank way to get around MovingCharacter not being async
     }
 
     /// <summary>
@@ -41,11 +43,11 @@ public class Pathfinder
     /// <returns>A <see cref="Stack{T}"/> of <see cref="PathNode"/>, the end point will be first in dequeue and the start will be last</returns>
     public async Task<Stack<PathNode>> GetPathTo(Goal goal, int distance,bool canDestroy = false)
     {
-        _pathfinder.BuildCollisionMap(Game1.currentLocation);
+        Pathing.BuildCollisionMap(Game1.currentLocation);
 
         PathNode start = new PathNode(Game1.player.TilePoint.X, Game1.player.TilePoint.Y, null);
 
-        return await _pathfinder.FindPath(start, goal, Game1.currentLocation, distance,canDestroy);
+        return await Pathing.FindPath(start, goal, Game1.currentLocation, distance,canDestroy);
     }
 
     public bool IsBlocked(int x, int y)
@@ -55,11 +57,6 @@ public class Pathfinder
 
     public void BuildCollisionMap()
     {
-        _pathfinder.BuildCollisionMap(StardewClient.CurrentLocation);
-    }
-    
-    private bool IsMoving()
-    {
-        return CharacterController.IsMoving();
+        Pathing.BuildCollisionMap(BotBase.CurrentLocation);
     }
 }
