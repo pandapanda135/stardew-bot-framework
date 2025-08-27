@@ -1,6 +1,7 @@
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Events.EventArgs;
 using StardewBotFramework.Source.Events.World_Events;
+using StardewBotFramework.Source.Modules;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -36,6 +37,7 @@ public class GameEvents
         _helper.Events.World.LargeTerrainFeatureListChanged += OnLargeTerrainFeatureListChanged;
         
         _helper.Events.GameLoop.UpdateTicking += CharacterController.Update;
+        _helper.Events.GameLoop.UpdateTicking += FishingBar.Update;
         
         StaticChatMessageReceived += OnStaticChatMessageReceived;
         StaticOnBotDeath += OnStaticOnBotDeath;

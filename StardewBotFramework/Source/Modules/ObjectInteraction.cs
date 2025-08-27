@@ -72,19 +72,22 @@ public class ObjectInteraction
     }
 
     /// <summary>
-    /// Gets the object at the specified tile.
+    /// Gets the object at the specified tile, this includes furniture.
     /// </summary>
     public Object? GetObjectAtTile(int x, int y)
     {
         foreach (var dictionary in BotBase.CurrentLocation.Objects)
         {
-            foreach (var tileVector in dictionary.Keys)
-            {
-                if ((int)tileVector.X == x && (int)tileVector.Y == y)
-                {
-                    return dictionary[tileVector];
-                }
-            }
+            var objs = dictionary.Values.Where(obj => obj.GetBoundingBox().Contains(x * Game1.tileSize, y * Game1.tileSize)).ToArray();
+            if (!objs.Any()) continue;
+            return objs[0];
+        }
+
+        var furniture = BotBase.CurrentLocation.furniture.Where(furniture => furniture.GetBoundingBox() // this is in pixels, x and y are tiles.
+            .Contains(x * Game1.tileSize, y * Game1.tileSize)).ToArray();
+        if (furniture.Any())
+        {
+            return furniture[0];
         }
 
         return null;

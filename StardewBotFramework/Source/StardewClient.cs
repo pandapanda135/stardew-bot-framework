@@ -53,6 +53,7 @@ public class StardewClient : BotBase
     public GrabItemMenuInteraction ItemGrabMenu { get; }
     public BillBoardInteraction BillBoard { get; }
     public LetterViewer LetterViewer { get; }
+    public FishingBar FishingBar { get; }
     #endregion
     
     public StardewClient(IModHelper helper, IManifest manifest,IMonitor monitor, IMultiplayerHelper multiplayer)
@@ -100,6 +101,7 @@ public class StardewClient : BotBase
         ItemGrabMenu = new();
         BillBoard = new();
         LetterViewer = new();
+        FishingBar = new();
 
         #endregion
         
