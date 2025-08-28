@@ -39,6 +39,7 @@ public class GameEvents
         _helper.Events.GameLoop.UpdateTicking += CharacterController.Update;
         _helper.Events.GameLoop.UpdateTicking += FishingBar.Update;
         
+        FishingBar.StaticCaughtFish += OnStaticCaughtFish;
         StaticChatMessageReceived += OnStaticChatMessageReceived;
         StaticOnBotDeath += OnStaticOnBotDeath;
         StaticOnOtherPlayerDeath += OnStaticOnOtherPlayerDeath;
@@ -110,6 +111,10 @@ public class GameEvents
     /// </summary>
     public event EventHandler<BotLargeTerrainFeatureChangedEventArgs>? BotLargeTerrainFeatureChanged;
     /// <summary>
+    /// If a fish or junk has been caught by the bot
+    /// </summary>
+    public event EventHandler? CaughtFish;
+    /// <summary>
     /// When the time on the clock shown in-game changes, this is sent in the notation of.
     /// 24-hour notation (like 1600 for 4pm). The clock time resets when the player sleeps, so 2am (before sleeping) is 2600.
     /// </summary>
@@ -125,7 +130,7 @@ public class GameEvents
     private static event EventHandler<BotOnDeathEventArgs>? StaticOnBotDeath;
     private static event EventHandler<OnOtherPlayerDeathEventArgs>? StaticOnOtherPlayerDeath;
     private static event EventHandler<HUDMessageAddedEventArgs>? StaticHUDMessageAdded;
-    private static event EventHandler<ChatMessageReceivedEventArgs>? StaticChatMessageReceived; 
+    private static event EventHandler<ChatMessageReceivedEventArgs>? StaticChatMessageReceived;
     #endregion
 
     #region Methods
@@ -211,6 +216,7 @@ public class GameEvents
     }
 
     private void OnStaticOnBotDeath(object? sender, BotOnDeathEventArgs e) => OnBotDeath.Invoke(sender, e);
+    private void OnStaticCaughtFish(object? sender, System.EventArgs e) => CaughtFish.Invoke(sender, e);
         
     #endregion
 
