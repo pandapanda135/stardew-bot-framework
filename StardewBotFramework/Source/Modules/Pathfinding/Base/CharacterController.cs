@@ -168,6 +168,7 @@ public class CharacterController
 			if (!pathNode.Destroy || _isDestroying)
 			{
 				_character.MovePosition(time, Game1.viewport, _currentLocation);
+				HandleWarp(Game1.player);
 				return;
 			}
 			for (int i = 0; i <= 3; i++)
@@ -200,10 +201,27 @@ public class CharacterController
 					SwapItem(node.VectorLocation);
 					Game1.player.BeginUsingTool();
 					_character.MovePosition(time, Game1.viewport, _currentLocation);
+					HandleWarp(Game1.player);
 					return;
 				}
 			}
 		}
+	}
+
+	private static void HandleWarp(Character character)
+	{
+		Warp warp = Game1.currentLocation.isCollidingWithWarp(Game1.player.GetBoundingBox(), _character);
+		if (warp is null) return;
+		
+		if (Game1.eventUp)
+		{
+			Event currentEvent = Game1.CurrentEvent;
+			if (!((!((currentEvent != null) ? new bool?(currentEvent.isFestival) : null)) ?? true))
+			{
+				Game1.CurrentEvent.TryStartEndFestivalDialogue(character as Farmer);
+			}
+		}
+		Game1.player.warpFarmer(warp,Game1.player.FacingDirection);
 	}
 	
 	public static bool isPlayerPresent()

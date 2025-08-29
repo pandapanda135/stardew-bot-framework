@@ -38,6 +38,15 @@ public class Shop
         }
     }
 
+    public Dictionary<ISalable, ItemStockInformation> StockInformation
+    {
+        get
+        {
+            if (_currentShop is null) return new();
+            return _currentShop.itemPriceAndStock;
+        }
+    }
+
     /// <summary>
     /// Open selected shop menu, this will need to be called before anything else. If you are calling OpenShopUI this is done for you.
     /// </summary>
@@ -52,6 +61,8 @@ public class Shop
     /// </summary>
     public void CloseShop()
     {
+        if (_currentShop is null) return;
+        _currentShop.exitThisMenu();
         _currentShop = null;
     }
     

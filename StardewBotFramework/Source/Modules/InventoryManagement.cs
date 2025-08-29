@@ -362,4 +362,43 @@ public class InventoryManagement
         AddItemToInventory(crafted);
     }
     #endregion
+
+    #region Attach
+
+    public void AttachItem(Item attachItem, Item item)
+    {
+        if (!Inventory.Contains(attachItem) || !Inventory.Contains(item))
+        {
+            return;
+        }
+
+        if (Game1.activeClickableMenu is not InventoryMenu menu) return;
+
+        int itemIndex = Inventory.IndexOf(item);
+        ClickableComponent cc = menu.inventory[itemIndex];
+        menu.rightClick(cc.bounds.X, cc.bounds.Y, attachItem);
+    }
+
+    public void RemoveAttached(Item item)
+    {
+        if (!Inventory.Contains(item))
+        {
+            return;
+        }
+
+        if (Game1.activeClickableMenu is not InventoryMenu menu) return;
+
+        int itemIndex = Inventory.IndexOf(item);
+        ClickableComponent cc = menu.inventory[itemIndex];
+        menu.leftClick(cc.bounds.X, cc.bounds.Y, null);
+        for (int i = 0; i < Inventory.Count; i++)
+        {
+            if (Inventory[i] is not null) continue;
+            
+            menu.receiveLeftClick(menu.inventory[i].bounds.X,menu.inventory[i].bounds.Y);
+            break;
+        }
+    }
+
+    #endregion
 }
