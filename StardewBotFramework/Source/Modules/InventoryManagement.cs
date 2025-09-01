@@ -365,6 +365,11 @@ public class InventoryManagement
 
     #region Attach
 
+    /// <summary>
+    /// Attach an item to another.
+    /// </summary>
+    /// <param name="attachItem">Item to attach.</param>
+    /// <param name="item">Item to attach to.</param>
     public void AttachItem(Item attachItem, Item item)
     {
         if (!Inventory.Contains(attachItem) || !Inventory.Contains(item))
@@ -372,11 +377,13 @@ public class InventoryManagement
             return;
         }
 
-        if (Game1.activeClickableMenu is not InventoryMenu menu) return;
-
+        if (Game1.activeClickableMenu is not GameMenu menu) return;
+        if (menu.GetCurrentPage() is not InventoryPage page) return;
+        
         int itemIndex = Inventory.IndexOf(item);
-        ClickableComponent cc = menu.inventory[itemIndex];
-        menu.rightClick(cc.bounds.X, cc.bounds.Y, attachItem);
+        ClickableComponent cc = page.inventory.inventory[itemIndex];
+        page.inventory.rightClick(cc.bounds.X, cc.bounds.Y, attachItem);
+        Inventory.Remove(attachItem);
     }
 
     public void RemoveAttached(Item item)
@@ -385,19 +392,22 @@ public class InventoryManagement
         {
             return;
         }
-
-        if (Game1.activeClickableMenu is not InventoryMenu menu) return;
+        
+        if (Game1.activeClickableMenu is not GameMenu menu) return;
+        if (menu.GetCurrentPage() is not InventoryPage page) return;
 
         int itemIndex = Inventory.IndexOf(item);
-        ClickableComponent cc = menu.inventory[itemIndex];
-        menu.leftClick(cc.bounds.X, cc.bounds.Y, null);
-        for (int i = 0; i < Inventory.Count; i++)
+        ClickableComponent cc = page.inventory.inventory[itemIndex];
+        Item attach = page.inventory.rightClick(cc.bounds.X, cc.bounds.Y, null,false,true);
+        page.inventory.rightClick(cc.bounds.X, cc.bounds.Y, null);
+        for (int i = 0; i < Inventory.Count; i++) // get first open slot
         {
             if (Inventory[i] is not null) continue;
             
-            menu.receiveLeftClick(menu.inventory[i].bounds.X,menu.inventory[i].bounds.Y);
-            break;
+            page.inventory.leftClick(page.inventory.inventory[i].bounds.X,page.inventory.inventory[i].bounds.Y,attach);
+            return;
         }
+        Game1.player.dropItem(attach);
     }
 
     #endregion

@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using StardewBotFramework.Debug;
 using StardewValley;
 using StardewValley.Inventories;
 using StardewValley.Menus;
@@ -17,6 +18,11 @@ public class GrabItemMenuInteraction
         _menu = menu;
     }
 
+    public void RemoveUi()
+    {
+        _menu = null;
+    }
+
     public IList<Item> GetItemsInMenu()
     {
         if (_menu is null) return new Inventory();
@@ -33,12 +39,9 @@ public class GrabItemMenuInteraction
         if (_menu is null) return false;
         if (!BotBase.Farmer.Items.Contains(item)) return false;
 
-        if (_menu.ItemsToGrabMenu.actualInventory.Count >= _menu.ItemsToGrabMenu.capacity)
-        {
-            return false;
-        }
-        _menu.ItemsToGrabMenu.actualInventory.Add(item);
-        BotBase.Farmer.Items.Remove(item);
+        int itemIndex = _menu.ItemsToGrabMenu.actualInventory.IndexOf(item);
+        ClickableComponent cc = _menu.inventory.inventory[itemIndex];
+        _menu.receiveLeftClick(cc.bounds.X, cc.bounds.Y);
         return true;
     }
 

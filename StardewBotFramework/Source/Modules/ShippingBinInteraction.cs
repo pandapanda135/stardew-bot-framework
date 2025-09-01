@@ -1,5 +1,4 @@
 using Microsoft.Xna.Framework;
-using StardewBotFramework.Debug;
 using StardewValley;
 using StardewValley.Buildings;
 
@@ -47,8 +46,7 @@ public class ShippingBinInteraction : GrabItemMenuInteraction
 
         return buildings;
     }
-
-
+    
     /// <summary>
     /// Interact with shipping bin <see cref="Building"/> should not be in UI. Must be in range.
     /// </summary>

@@ -9,8 +9,12 @@ namespace StardewBotFramework.Source.Modules.Pathfinding.Base;
 
 public class CharacterController
 {
-	public delegate void OnPathfindingFinished();
-	public static event OnPathfindingFinished OnGoalReached;
+	// public delegate void OnPathfindingFinished();
+	// public static event OnPathfindingFinished OnGoalReached;
+	/// <summary>
+	/// This is for when pathfinding gets cancelled from staying in the same place for too long.
+	/// </summary>
+	public static event EventHandler? FailedPathFinding;
 	
 	private static bool _movingCharacter = false;
 	private static bool _isDestroying = false;
@@ -63,6 +67,7 @@ public class CharacterController
 		{
 			Logger.Error($"Paused for too long");
 			_endPath.Clear();
+			FailedPathFinding.Invoke(new CharacterController(),EventArgs.Empty);
 		}
 	}
 
@@ -92,7 +97,8 @@ public class CharacterController
 		}
 		
 		PathNode node = _endPath.Peek();
-		Rectangle targetTile = new Rectangle(node.X * 64, node.Y * 64, 64, 64); // could probably change this if we want more precise pathfinding onto specific parts of tile
+		int tilesize = Game1.tileSize;
+		Rectangle targetTile = new Rectangle(node.X * tilesize, node.Y * tilesize, tilesize, tilesize); // could probably change this if we want more precise pathfinding onto specific parts of tile
 		Rectangle bbox = _character.GetBoundingBox();
 
 		if ((targetTile.Contains(bbox) || (bbox.Width > targetTile.Width && targetTile.Contains(bbox.Center))) &&
