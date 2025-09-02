@@ -2,8 +2,10 @@ using Microsoft.Xna.Framework;
 using StardewBotFramework.Source.ObjectToolSwaps;
 using StardewModdingAPI.Events;
 using StardewValley;
+using StardewValley.Locations;
 using Logger = StardewBotFramework.Debug.Logger;
 using Object = StardewValley.Object;
+using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace StardewBotFramework.Source.Modules.Pathfinding.Base;
 
@@ -99,6 +101,7 @@ public class CharacterController
 		PathNode node = _endPath.Peek();
 		int tilesize = Game1.tileSize;
 		Rectangle targetTile = new Rectangle(node.X * tilesize, node.Y * tilesize, tilesize, tilesize); // could probably change this if we want more precise pathfinding onto specific parts of tile
+		targetTile.Inflate(-2, 0);
 		Rectangle bbox = _character.GetBoundingBox();
 
 		if ((targetTile.Contains(bbox) || (bbox.Width > targetTile.Width && targetTile.Contains(bbox.Center))) &&
@@ -125,6 +128,17 @@ public class CharacterController
 			}
 			farmer.movementDirections.Clear();
 		}
+
+		if (_currentLocation is not MovieTheater)
+		{
+			foreach (var npc in _currentLocation.characters)
+			{
+				if (!npc.Equals(_character) && npc.GetBoundingBox().Intersects(_character.GetBoundingBox()) && npc.isMoving())
+				{
+					Logger.Error($"Ran into a character");
+				}
+			}	
+		}
 		
 		if (bbox.Left < targetTile.Left && bbox.Right < targetTile.Right)
 		{
@@ -146,13 +160,18 @@ public class CharacterController
 			_character.SetMovingUp(true);
 			_character.FacingDirection = 0;
 		}
+		else
+		{
+			_character.SetMovingUp(true); // TODO: This is jank and idk why it works but it seems to fix pausing randomly
+			Logger.Error($"Non of the else ifs are true: {bbox}   {targetTile}");
+		}
 		
 		foreach (var pathNode in _endPath)
 		{
 			_nextIndex = _endPath.ToList().IndexOf(pathNode);
 			if (_nextIndex == 0)
 			{
-				int indexPlus = _nextIndex; // idk what this was meant to do in the first place it works though
+				int indexPlus = _nextIndex;
 				if (_endPath.Count > 1) indexPlus += 1;
 				_nextNode = _endPath.ToList()[indexPlus];
 				_neighbourIndex = _endPath.ToList().IndexOf(_nextNode); // need this to set next PathNode.Destroy to false
@@ -168,6 +187,14 @@ public class CharacterController
 					// {
 					// 	continue;
 					// }
+				}
+
+				if (objectInNextTile is not null && !objectInNextTile.isPassable())
+				{
+					Logger.Error($"The object in the next tile was not passable, the object was a {objectInNextTile.Name}");
+					_character.Halt();
+					FailedPathFinding?.Invoke(new CharacterController(),EventArgs.Empty);
+					return;
 				}
 			}
 			

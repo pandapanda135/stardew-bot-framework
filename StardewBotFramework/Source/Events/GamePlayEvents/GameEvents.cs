@@ -43,10 +43,10 @@ public class GameEvents
         StaticChatMessageReceived += OnStaticChatMessageReceived;
         StaticOnBotDeath += OnStaticOnBotDeath;
         StaticOnOtherPlayerDeath += OnStaticOnOtherPlayerDeath;
-        StaticHUDMessageAdded += OnStaticHUDMessageAdded;
+        StaticHudMessageAdded += OnStaticHUDMessageAdded;
     }
 
-    private static IModHelper _helper;
+    private static IModHelper? _helper;
 
     public static void SetHelper(IModHelper helper)
     {
@@ -123,100 +123,112 @@ public class GameEvents
     /// When the current modal that is displayed is changed, this can be used to detect when dialogue starts
     /// </summary>
     public event EventHandler<BotOnDeathEventArgs>? OnBotDeath;
+    /// <summary>
+    /// When player other than the bot dies.
+    /// </summary>
     public event EventHandler<OnOtherPlayerDeathEventArgs>? OnOtherPlayerDeath; // not tested probably works though
+    /// <summary>
+    /// When there is a bot message
+    /// </summary>
     public event EventHandler<ChatMessageReceivedEventArgs>? ChatMessageReceived;
-    public event EventHandler<HUDMessageAddedEventArgs>? HUDMessageAdded; 
+    /// <summary>
+    /// When a banner message pops up in the bottom right
+    /// </summary>
+    public event EventHandler<HUDMessageAddedEventArgs>? HUDMessageAdded;
+    /// <summary>
+    /// When <see cref="Game1.activeClickableMenu"/> Changes
+    /// </summary>
     public event EventHandler<BotMenuChangedEventArgs> MenuChanged;
     private static event EventHandler<BotOnDeathEventArgs>? StaticOnBotDeath;
     private static event EventHandler<OnOtherPlayerDeathEventArgs>? StaticOnOtherPlayerDeath;
-    private static event EventHandler<HUDMessageAddedEventArgs>? StaticHUDMessageAdded;
+    private static event EventHandler<HUDMessageAddedEventArgs>? StaticHudMessageAdded;
     private static event EventHandler<ChatMessageReceivedEventArgs>? StaticChatMessageReceived;
     #endregion
 
     #region Methods
     // StardewValley.Event
     private void DisplayOnMenuChanged(object? sender, MenuChangedEventArgs e) =>
-        MenuChanged.Invoke(sender, new BotMenuChangedEventArgs(e.NewMenu,e.OldMenu)); 
-    private void OnDayStarted(object? sender, DayStartedEventArgs e) => DayStarted.Invoke(sender,new BotDayStartedEventArgs());
+        MenuChanged.Invoke(sender, new BotMenuChangedEventArgs(e.NewMenu!,e.OldMenu!)); 
+    private void OnDayStarted(object? sender, DayStartedEventArgs e) => DayStarted?.Invoke(sender,new BotDayStartedEventArgs());
     
-    private void OnDayEnding(object? sender, DayEndingEventArgs e) => DayEnded.Invoke(sender, new BotDayEndedEventArgs());
+    private void OnDayEnding(object? sender, DayEndingEventArgs e) => DayEnded?.Invoke(sender, new BotDayEndedEventArgs());
     
-    private void OnTimeChanged(object? sender, TimeChangedEventArgs e) => UiTimeChanged.Invoke(sender, new TimeEventArgs(e.OldTime, e.NewTime));
+    private void OnTimeChanged(object? sender, TimeChangedEventArgs e) => UiTimeChanged?.Invoke(sender, new TimeEventArgs(e.OldTime, e.NewTime));
 
-    private void OnWarped(object? sender, WarpedEventArgs e) => BotWarped.Invoke(sender, new BotWarpedEventArgs(e.Player, e.OldLocation, e.NewLocation, e.IsLocalPlayer));
-    private void OnPeerConnected(object? sender, PeerConnectedEventArgs e) => PlayerConnected.Invoke(sender,new BotPlayerConnectedEventArgs(e.Peer)); 
+    private void OnWarped(object? sender, WarpedEventArgs e) => BotWarped?.Invoke(sender, new BotWarpedEventArgs(e.Player, e.OldLocation, e.NewLocation, e.IsLocalPlayer));
+    private void OnPeerConnected(object? sender, PeerConnectedEventArgs e) => PlayerConnected?.Invoke(sender,new BotPlayerConnectedEventArgs(e.Peer)); 
     
-    private void OnPeerDisconnected(object? sender, PeerDisconnectedEventArgs e) => PlayerDisconnected.Invoke(sender,new BotPlayerDisconnectedEventArgs(e.Peer));
+    private void OnPeerDisconnected(object? sender, PeerDisconnectedEventArgs e) => PlayerDisconnected?.Invoke(sender,new BotPlayerDisconnectedEventArgs(e.Peer));
     
     private void OnLargeTerrainFeatureListChanged(object? sender, LargeTerrainFeatureListChangedEventArgs e)
     {
         if (!e.IsCurrentLocation) return;
-        BotLargeTerrainFeatureChanged.Invoke(sender,new BotLargeTerrainFeatureChangedEventArgs(e.Added,e.Removed,e.Location));
+        BotLargeTerrainFeatureChanged?.Invoke(sender,new BotLargeTerrainFeatureChangedEventArgs(e.Added,e.Removed,e.Location));
     }
 
     private void OnTerrainFeatureListChanged(object? sender, TerrainFeatureListChangedEventArgs e)
     {
         if (!e.IsCurrentLocation) return;
-        BotTerrainFeatureChanged.Invoke(sender,new BotTerrainFeatureChangedEventArgs(e.Added,e.Removed,e.Location));
+        BotTerrainFeatureChanged?.Invoke(sender,new BotTerrainFeatureChangedEventArgs(e.Added,e.Removed,e.Location));
     }
 
     private void OnBuildingListChanged(object? sender, BuildingListChangedEventArgs e)
     {
         if (!e.IsCurrentLocation) return;
-        BotLocationBuildingsChanged.Invoke(sender,new BotBuildingChangedEventArgs(e.Added,e.Removed,e.Location));
+        BotLocationBuildingsChanged?.Invoke(sender,new BotBuildingChangedEventArgs(e.Added,e.Removed,e.Location));
     }
 
     private void OnFurnitureListChanged(object? sender, FurnitureListChangedEventArgs e)
     {
         if (!e.IsCurrentLocation) return;
-        BotLocationFurnitureChanged.Invoke(sender,new BotFurnitureChangedEventArgs(e.Added,e.Removed,e.Location));
+        BotLocationFurnitureChanged?.Invoke(sender,new BotFurnitureChangedEventArgs(e.Added,e.Removed,e.Location));
     }
 
     private void OnDebrisListChanged(object? sender, DebrisListChangedEventArgs e)
     {
         if (!e.IsCurrentLocation) return;
-        BotLocationDebrisChanged.Invoke(sender,new BotDebrisChangedEventArgs(e.Added,e.Removed,e.Location));
+        BotLocationDebrisChanged?.Invoke(sender,new BotDebrisChangedEventArgs(e.Added,e.Removed,e.Location));
     }
 
     private void OnNpcListChanged(object? sender, NpcListChangedEventArgs e)
     {
         if (!e.IsCurrentLocation) return;
-        BotLocationNpcChanged.Invoke(sender,new BotCharacterListChangedEventArgs(e.Added,e.Removed,e.Location));
+        BotLocationNpcChanged?.Invoke(sender,new BotCharacterListChangedEventArgs(e.Added,e.Removed,e.Location));
     }
     private void OnObjectListChanged(object? sender, ObjectListChangedEventArgs e)
     {
         if (!e.IsCurrentLocation) return;
-        BotObjectChanged.Invoke(sender,new BotObjectListChangedEventArgs(e.Added,e.Removed,e.Location));
+        BotObjectChanged?.Invoke(sender,new BotObjectListChangedEventArgs(e.Added,e.Removed,e.Location));
     }
 
     private void OnInventoryChanged(object? sender, InventoryChangedEventArgs e)
     {
         if (!e.IsLocalPlayer) return;
-        BotInventoryChanged.Invoke(sender,new BotInventoryChangedEventArgs(e.Added.ToArray(),e.Removed.ToArray(),e.QuantityChanged.ToArray()));
+        BotInventoryChanged?.Invoke(sender,new BotInventoryChangedEventArgs(e.Added.ToArray(),e.Removed.ToArray(),e.QuantityChanged.ToArray()));
     }
     
     private void OnLevelChanged(object? sender, LevelChangedEventArgs e)
     {
         if (!e.IsLocalPlayer) return;
-        BotSkillChanged.Invoke(sender,new BotSkillLevelChangedEventArgs(e.Skill,e.OldLevel,e.NewLevel));
+        BotSkillChanged?.Invoke(sender,new BotSkillLevelChangedEventArgs(e.Skill,e.OldLevel,e.NewLevel));
     }
     
     private void OnGameLaunch(object? sender, GameLaunchedEventArgs e) => Logger.Log($"Game launched setting up bot");
 
     private void OnStaticChatMessageReceived(object? sender, ChatMessageReceivedEventArgs e) =>
-        ChatMessageReceived.Invoke(sender, e);
+        ChatMessageReceived?.Invoke(sender, e);
 
     private void OnStaticOnOtherPlayerDeath(object? sender, OnOtherPlayerDeathEventArgs e) =>
-        OnOtherPlayerDeath.Invoke(sender, e);
+        OnOtherPlayerDeath?.Invoke(sender, e);
     private void OnStaticHUDMessageAdded(object? sender, HUDMessageAddedEventArgs e)
     {
         // Logger.Info($"sender: {sender}");
         // Logger.Info($"e: {e}");
-        HUDMessageAdded.Invoke(sender, e);
+        HUDMessageAdded?.Invoke(sender, e);
     }
 
-    private void OnStaticOnBotDeath(object? sender, BotOnDeathEventArgs e) => OnBotDeath.Invoke(sender, e);
-    private void OnStaticCaughtFish(object? sender, System.EventArgs e) => CaughtFish.Invoke(sender, e);
+    private void OnStaticOnBotDeath(object? sender, BotOnDeathEventArgs e) => OnBotDeath?.Invoke(sender, e);
+    private void OnStaticCaughtFish(object? sender, System.EventArgs e) => CaughtFish?.Invoke(sender, e);
         
     #endregion
 
@@ -278,7 +290,7 @@ public class GameEvents
                 if (message.transparency < 1) return;
                 // Logger.Info($"game: {__instance}");
                 // Logger.Info($"message: {message}");
-                StaticHUDMessageAdded.Invoke(__instance,
+                StaticHudMessageAdded.Invoke(__instance,
                     new HUDMessageAddedEventArgs(message.message, message.type, message.whatType,message.number, message.achievement,
                         message.noIcon, message.messageSubject));
             }

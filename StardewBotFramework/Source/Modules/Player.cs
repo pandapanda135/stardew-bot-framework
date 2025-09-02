@@ -262,32 +262,33 @@ public class PlayerInformation
     /// <summary>
     /// Get the relationship level of all available characters, will play sound of going to menu even when instantExit is true
     /// </summary>
-    /// <param name="instantExit">Will not show the game UI when getting values (will still play the sound though)</param>
-    /// <returns>Will return the character's name and the heart level that would typically be displayed as a dictionary</returns>
-    public Dictionary<string, int> RelationshipLevel(bool instantExit)
+    /// <returns>Will return the character's name and their <see cref="SocialPage.SocialEntry"/> that would typically be displayed. As a dictionary</returns>
+    public List<SocialPage.SocialEntry> RelationshipLevel()
+    {
+        GameMenu gameMenu = new GameMenu(false);
+        SocialPage? socialTabPage = gameMenu.pages[2] as SocialPage;
+        
+        List<SocialPage.SocialEntry>? levels = socialTabPage?.FindSocialCharacters();
+        
+        if (levels is null) return new();
+        
+        return levels;
+    }
+
+    public void OpenSocialPage()
     {
         MenuState = MenuStates.Relationship;
-        Dictionary<string, int> relationships = new();
         
         Game1.activeClickableMenu = new GameMenu();
-        GameMenu gameMenu = Game1.activeClickableMenu as GameMenu;
-        if (instantExit) 
-            Game1.activeClickableMenu.receiveLeftClick(gameMenu!.tabs[2].bounds.X + 5,gameMenu.tabs[2].bounds.Y + 5,false);
-        else            
-            Game1.activeClickableMenu.receiveLeftClick(gameMenu!.tabs[2].bounds.X + 5,gameMenu.tabs[2].bounds.Y + 5);
+        var gameMenu = Game1.activeClickableMenu as GameMenu;
+        if (gameMenu is null) return;
+        Game1.activeClickableMenu.receiveLeftClick(gameMenu.tabs[2].bounds.X + 5,gameMenu.tabs[2].bounds.Y + 5);
+    }
 
-        SocialPage socialTabPage = gameMenu.pages[2] as SocialPage;
-        
-        List<SocialPage.SocialEntry> levels = socialTabPage.FindSocialCharacters();
-        
-        if (instantExit) ExitMenu();
-        
-        foreach (var socialEntry in levels)
-        {
-            relationships.Add(socialEntry.Character.Name,socialEntry.HeartLevel);
-        }
-
-        return relationships;
+    public void ClosePage()
+    {
+        MenuState = MenuStates.None;
+        Game1.activeClickableMenu = null;
     }
 
     /// <summary>

@@ -12,6 +12,9 @@ using StardewValley.Menus;
 
 namespace StardewBotFramework.Source;
 
+/// <summary>
+/// This is the default bot that includes all modules.
+/// </summary>
 public class StardewClient : BotBase
 {
     public static List<ITile> debugTiles = new();
@@ -54,6 +57,7 @@ public class StardewClient : BotBase
     public BillBoardInteraction BillBoard { get; }
     public LetterViewer LetterViewer { get; }
     public FishingBar FishingBar { get; }
+    public CommunityCenterMenu JunimoNote { get; }
     #endregion
     
     public StardewClient(IModHelper helper, IManifest manifest,IMonitor monitor, IMultiplayerHelper multiplayer)
@@ -102,6 +106,7 @@ public class StardewClient : BotBase
         BillBoard = new();
         LetterViewer = new();
         FishingBar = new();
+        JunimoNote = new();
 
         #endregion
         
