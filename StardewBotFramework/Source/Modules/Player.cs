@@ -176,18 +176,17 @@ public class PlayerInformation
     /// <summary>
     /// bot's current health
     /// </summary>
-    public int Health => StardewClient.Farmer.health;
-
+    public int Health => BotBase.Farmer.health;
     public int MaxHealth => BotBase.Farmer.maxHealth;
     /// <summary>
     /// Bot's current stamina
     /// </summary>
-    public float Stamina => StardewClient.Farmer.Stamina;
+    public float Stamina => BotBase.Farmer.Stamina;
     public float MaxStamina => BotBase.Farmer.MaxStamina;
     /// <summary>
     /// Bot's current Inventory
     /// </summary>
-    public Inventory Inventory => StardewClient.Farmer.Items;
+    public Inventory Inventory => BotBase.Farmer.Items;
     public int MaxItems => BotBase.Farmer.MaxItems;
     /// <summary>
     /// Bot's Current held Item
@@ -202,7 +201,7 @@ public class PlayerInformation
     /// </summary>
     public NetList<Trinket, NetRef<Trinket>> Trinkets => BotBase.Farmer.trinketItems;
     /// <summary>
-    /// this can be used for relationship this information is cached by the game
+    /// this can be used for general character data, this information is cached by the game.
     /// </summary>
     public IDictionary<string, CharacterData> NpcData => Game1.characterData;
 
@@ -227,7 +226,7 @@ public class PlayerInformation
     /// </summary>
     public string GetFarmerName()
     {
-        return StardewClient.Farmer.Name;
+        return BotBase.Farmer.Name;
     }
     
     /// <summary>
@@ -236,24 +235,25 @@ public class PlayerInformation
     public static MenuStates MenuState = MenuStates.None;
     
     /// <summary>
-    /// Get the level of all skills.
+    /// Get the name and level of all skills.
     /// </summary>
     /// <param name="showUI">Will show the skill UI when this is called, ExitMenu will need to be called after to exit. Defaults to false</param>
     /// <returns>The index's of the skills are as follows: farming, fishing, foraging, mining, combat and luck</returns>
-    public List<int> SkillLevel(bool showUI = false)
+    public Dictionary<string,int> SkillLevel(bool showUI = false)
     {
         if (showUI)
         {
-            MenuState = PlayerInformation.MenuStates.Skill;
+            MenuState = MenuStates.Skill;
             Game1.activeClickableMenu = new GameMenu();
             if (Game1.activeClickableMenu is GameMenu gameMenu)
                 Game1.activeClickableMenu.receiveLeftClick(gameMenu.tabs[1].bounds.X + 5, gameMenu.tabs[1].bounds.Y + 5);
         }
         
-        List<int> skills = new();
+        Dictionary<string,int> skills = new();
         for (int i = 0; i < 5; i++)
         {
-            skills.Add(StardewClient.Farmer.GetSkillLevel(i));
+            
+            skills.Add(Farmer.getSkillDisplayNameFromIndex(i),BotBase.Farmer.GetSkillLevel(i));
         }
 
         return skills;
@@ -285,16 +285,10 @@ public class PlayerInformation
         Game1.activeClickableMenu.receiveLeftClick(gameMenu.tabs[2].bounds.X + 5,gameMenu.tabs[2].bounds.Y + 5);
     }
 
-    public void ClosePage()
-    {
-        MenuState = MenuStates.None;
-        Game1.activeClickableMenu = null;
-    }
-
     /// <summary>
     /// Will open the inventory menu
     /// </summary>
-    /// <returns></returns>
+    /// <returns>Bot's inventory</returns>
     public Inventory OpenInventory()
     {
         MenuState = MenuStates.Inventory;
@@ -304,7 +298,7 @@ public class PlayerInformation
 
         InventoryPage? tabPage = gameMenu.pages[0] as InventoryPage;
 
-        return StardewClient.Farmer.Items;
+        return BotBase.Farmer.Items;
     }
     
     public void ExitMenu()

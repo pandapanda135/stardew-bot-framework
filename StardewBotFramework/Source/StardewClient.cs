@@ -3,6 +3,7 @@ using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Events.GamePlayEvents;
 using StardewBotFramework.Source.Modules;
 using StardewBotFramework.Source.Modules.MainMenu;
+using StardewBotFramework.Source.Modules.Menus;
 using StardewBotFramework.Source.Modules.Pathfinding;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
 using StardewBotFramework.Source.Modules.Pathfinding.GroupTiles;
@@ -58,6 +59,7 @@ public class StardewClient : BotBase
     public LetterViewer LetterViewer { get; }
     public FishingBar FishingBar { get; }
     public CommunityCenterMenu JunimoNote { get; }
+    public CraftingMenu CraftingMenu { get; }
     #endregion
     
     public StardewClient(IModHelper helper, IManifest manifest,IMonitor monitor, IMultiplayerHelper multiplayer)
@@ -107,6 +109,7 @@ public class StardewClient : BotBase
         LetterViewer = new();
         FishingBar = new();
         JunimoNote = new();
+        CraftingMenu = new();
 
         #endregion
         

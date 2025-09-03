@@ -1,3 +1,4 @@
+using Microsoft.Xna.Framework.Input;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Events.GamePlayEvents;
 using StardewModdingAPI;
