@@ -13,7 +13,7 @@ public class CharacterCreation
     private static CharacterCustomization? _characterCustomization;
 
     public List<ClickableTextureComponent>? FarmTypes = _characterCustomization?.farmTypeButtons;
-    
+
     /// <summary>
     /// You can get character creation in the main menu using TitleMenu.subMenu as CharacterCustomization
     /// </summary>
@@ -25,6 +25,7 @@ public class CharacterCreation
 
     public void ExitCharacterCreation()
     {
+        if (_characterCustomization is null) return;
         if (_characterCustomization.source == CharacterCustomization.Source.Dresser || // find how to do this in these places
             _characterCustomization.source == CharacterCustomization.Source.Wizard ||
             _characterCustomization.source == CharacterCustomization.Source.ClothesDye)
@@ -86,7 +87,7 @@ public class CharacterCreation
     /// <param name="name">The name that the farmer will take. This will go through the normal filters</param>
     public void SetName(string name)
     {
-        StardewClient.CharacterCreatorTextBox(_characterCustomization,name,new (){"nameBox","Text"}); // _text
+        BotBase.CharacterCreatorTextBox(_characterCustomization,name,new (){"nameBox","Text"}); // _text
     }
 
     
@@ -96,7 +97,7 @@ public class CharacterCreation
     /// <param name="name">The name that the farm name will take. This will go through the normal filters</param>
     public void SetFarmName(string name)
     {
-        StardewClient.CharacterCreatorTextBox(_characterCustomization,name,new (){"farmnameBox","_text"});
+        BotBase.CharacterCreatorTextBox(_characterCustomization,name,new (){"farmnameBox","_text"});
     }
     
     /// <summary>
@@ -105,7 +106,7 @@ public class CharacterCreation
     /// <param name="name">The favourite thing of the farmer. This will go through the normal filters</param>
     public void SetFavThing(string name)
     {
-        StardewClient.CharacterCreatorTextBox(_characterCustomization,name,new (){"favThingBox","_text"});
+        BotBase.CharacterCreatorTextBox(_characterCustomization,name,new (){"favThingBox","_text"});
     }
 
     /// <summary>
@@ -116,11 +117,11 @@ public class CharacterCreation
     {
         if (male)
         {
-            StardewClient.Farmer.Gender = Gender.Male;
+            BotBase.Farmer.Gender = Gender.Male;
             return;
         }
 
-        StardewClient.Farmer.Gender = Gender.Female;
+        BotBase.Farmer.Gender = Gender.Female;
     }
     
     /// <summary>
@@ -129,7 +130,7 @@ public class CharacterCreation
     /// <param name="change">change current value by this amount</param>
     public void ChangeSkinColour(int change)
     {
-        StardewClient.Farmer.changeSkinColor(StardewClient.Farmer.skin.Value + change);
+        BotBase.Farmer.changeSkinColor(BotBase.Farmer.skin.Value + change);
     }
     
     /// <summary>
@@ -159,18 +160,31 @@ public class CharacterCreation
     } 
     
     /// <summary>
-    /// This will change the selected pet in the menu
+    /// This will change the pet Type.
     /// </summary>
     /// <param name="petType">This will change the selected pet type, these can only be "Cat" or "Dog" in vanilla however there is no check in the function for this</param>
-    /// <param name="petBreed">This will change the selected pet breed, these can only be "0" to "4" in vanilla however there is no check in the function for this</param>
-    public bool ChangePet(string petType, string petBreed)
+    public bool ChangePetType(string petType)
     {
         IDictionary<string, PetData> petTypes = BotBase.GetPetData();
 
-        if (!petTypes[petType].Breeds[int.Parse(petBreed)].CanBeChosenAtStart) return false;
+        if (petTypes[petType].Breeds.Count(breed => breed.CanBeChosenAtStart) < 1) return false;
         
         BotBase.Farmer.whichPetType = petType;
-        BotBase.Farmer.whichPetBreed = petBreed;
+        return true;
+    }
+
+    /// <summary>
+    /// This will change the pet breed, this is a subset of a pet type. You must set pet type before changing this.
+    /// </summary>
+    /// <param name="breed">This will change the selected pet breed, these can only be "0" to "4" in vanilla however there is no check in the function for this</param>
+    /// <returns></returns>
+    public bool ChangePetBreed(string breed)
+    {
+        IDictionary<string, PetData> petTypes = BotBase.GetPetData();
+
+        if (!petTypes[BotBase.Farmer.whichPetType].Breeds[int.Parse(breed)].CanBeChosenAtStart) return false;
+        
+        BotBase.Farmer.whichPetBreed = breed;
         return true;
     }
 

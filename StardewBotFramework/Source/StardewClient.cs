@@ -60,6 +60,7 @@ public class StardewClient : BotBase
     public FishingBar FishingBar { get; }
     public CommunityCenterMenu JunimoNote { get; }
     public CraftingMenu CraftingMenu { get; }
+    public BuyAnimalMenu AnimalMenu { get; }
     #endregion
     
     public StardewClient(IModHelper helper, IManifest manifest,IMonitor monitor, IMultiplayerHelper multiplayer)
@@ -110,6 +111,7 @@ public class StardewClient : BotBase
         FishingBar = new();
         JunimoNote = new();
         CraftingMenu = new();
+        AnimalMenu = new();
 
         #endregion
         

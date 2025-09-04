@@ -46,6 +46,39 @@ public abstract class BotBase
         _selectedResponse.SetValue(value);   
     }
 
+    public bool AdheresToTextBoxLimit(object parent, string text, List<string> properties)
+    {
+        if (Instance is null)
+        {
+            Logger.Error($"Instance is not set");
+            return false;
+        }
+        
+        TextBox textBox = Instance.Helper.Reflection.GetField<TextBox>(parent, properties[0], true).GetValue();
+
+        return AdheresToTextBoxLimit(text, textBox);
+    }
+
+    public bool AdheresToTextBoxLimit(string text,TextBox textBox)
+    {
+        if (textBox.limitWidth)
+        {
+            if (textBox.Font.MeasureString(text).X > (textBox.Width - 21))
+            {
+                return false;
+            }
+
+            return true;
+        }
+        
+        if (textBox.textLimit > text.Length)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     internal static void CharacterCreatorTextBox(CharacterCustomization menu,string name, List<string> properties)
     {
         if (Instance is null)
@@ -57,7 +90,7 @@ public abstract class BotBase
         _reflectedTextBox = Instance.Helper.Reflection.GetField<TextBox>(menu, properties[0], true);
         
         TextBox textBox = _reflectedTextBox.GetValue();
-
+        
         textBox.Text = name;
         
         _reflectedTextBox.SetValue(textBox);

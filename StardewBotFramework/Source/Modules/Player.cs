@@ -183,6 +183,7 @@ public class PlayerInformation
     /// </summary>
     public float Stamina => BotBase.Farmer.Stamina;
     public float MaxStamina => BotBase.Farmer.MaxStamina;
+    public int Money => BotBase.Farmer.Money;
     /// <summary>
     /// Bot's current Inventory
     /// </summary>
