@@ -1,4 +1,5 @@
-using System.Net.NetworkInformation;
+using Microsoft.Xna.Framework;
+using StardewBotFramework.Source.Utilities;
 using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Menus;
@@ -46,9 +47,10 @@ public class BuyAnimalMenu
 	{
 		if (Menu is null) return;
 
-		Location location = Menu.GetTopLeftPixelToCenterBuilding(building); // TODO: maybe use this for other building stuff?
+		Location location = Menu.GetTopLeftPixelToCenterBuilding(building);
 		Game1.viewport.Location = location;
-		Menu.receiveLeftClick(building.tileX.Value * 64, building.tileY.Value * 64);
+		Point tile = TileUtilities.TileToScreen(new Vector2(building.tileX.Value, building.tileY.Value));
+		Menu.receiveLeftClick(tile.X,tile.Y); // tile to screen
 	}
 
 	public void NameAnimal(string name)
@@ -94,7 +96,7 @@ public class BuyAnimalMenu
 
 	public bool BuildingCheck(Building building,FarmAnimal animal)
 	{
-		if (building.GetIndoors() is AnimalHouse animalHouse && animal.CanLiveIn(building))
+		if (building.GetIndoors() is AnimalHouse animalHouse && animal.CanLiveIn(building) && !animalHouse.isFull())
 		{
 			return true;
 		}

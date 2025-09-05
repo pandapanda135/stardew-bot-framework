@@ -35,6 +35,12 @@ public class ChestModule
         
         return CurrentChestInventory;
     }
+
+    public IInventory? SetChest(Chest chest)
+    {
+        CurrentChestInventory = chest.GetItemsForPlayer();
+        return CurrentChestInventory;
+    }
     
     /// <summary>
     /// Close a valid chest, this should be performed once the bot is done with a chest.

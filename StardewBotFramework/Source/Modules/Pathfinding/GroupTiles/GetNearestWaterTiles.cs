@@ -1,3 +1,4 @@
+using System.Reflection.Metadata.Ecma335;
 using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
@@ -49,7 +50,7 @@ public class GetNearestWaterTiles : AlgorithmBase
     {
         public Task<Stack<PathNode>> FindPath(PathNode startPoint, Goal goal, GameLocation location, int limit, bool canDestroy = false)
         {
-            throw new NotImplementedException();
+            return new Task<Stack<PathNode>>(() => new Stack<PathNode>());
         }
         
         public static async Task<Stack<WaterTile>> GetWater(Point startPoint,GameLocation location, int limit)

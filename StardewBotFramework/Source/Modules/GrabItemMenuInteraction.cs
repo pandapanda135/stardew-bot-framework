@@ -55,4 +55,13 @@ public class GrabItemMenuInteraction
         
         _menu.receiveLeftClick(rect.X + 5,rect.Y + 5);
     }
+
+    public void ChangeColour(int selection)
+    {
+        if (_menu is null) return;
+        if (!_menu.CanHaveColorPicker() || !_menu.colorPickerToggleButton.visible) return;
+
+        ClickableComponent cc = _menu.discreteColorPickerCC[selection];
+        _menu.receiveLeftClick(cc.bounds.X,cc.bounds.Y);
+    }
 }

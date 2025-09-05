@@ -123,6 +123,10 @@ public class StardewClient : BotBase
 
         harmony.Patch(original: AccessTools.Method(typeof(Game1), nameof(Game1.addHUDMessage)),
             postfix: new HarmonyMethod(typeof(GameEvents.HudMessagePatch), nameof(GameEvents.HudMessagePatch.addHUDMessage_postfix)));
+
+        // this is a prefix so we can check if the bot can be damaged as post would always be false
+        harmony.Patch(original: AccessTools.Method(typeof(Farmer), nameof(Farmer.takeDamage)),
+            prefix: new HarmonyMethod(typeof(GameEvents.PlayerDamagedPatch), nameof(GameEvents.PlayerDamagedPatch.takeDamage_prefix)));
     }
     
 }

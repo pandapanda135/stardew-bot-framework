@@ -7,7 +7,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Menus;
-using StardewValley.Minigames;
+using StardewValley.Monsters;
 
 namespace StardewBotFramework.Source.Events.GamePlayEvents;
 
@@ -42,6 +42,7 @@ public class GameEvents
         FishingBar.StaticCaughtFish += OnStaticCaughtFish;
         StaticChatMessageReceived += OnStaticChatMessageReceived;
         StaticOnBotDeath += OnStaticOnBotDeath;
+        StaticOnBotDamaged += StaticBotDamaged;
         StaticOnOtherPlayerDeath += OnStaticOnOtherPlayerDeath;
         StaticHudMessageAdded += OnStaticHUDMessageAdded;
     }
@@ -124,6 +125,10 @@ public class GameEvents
     /// </summary>
     public event EventHandler<BotOnDeathEventArgs>? OnBotDeath;
     /// <summary>
+    /// This is when the player takes damage using: <see cref="Farmer.takeDamage"/>
+    /// </summary>
+    public event EventHandler<BotDamagedEventArgs>? OnBotDamaged; 
+    /// <summary>
     /// When player other than the bot dies.
     /// </summary>
     public event EventHandler<OnOtherPlayerDeathEventArgs>? OnOtherPlayerDeath; // not tested probably works though
@@ -140,6 +145,7 @@ public class GameEvents
     /// </summary>
     public event EventHandler<BotMenuChangedEventArgs> MenuChanged;
     private static event EventHandler<BotOnDeathEventArgs>? StaticOnBotDeath;
+    private static event EventHandler<BotDamagedEventArgs>? StaticOnBotDamaged; 
     private static event EventHandler<OnOtherPlayerDeathEventArgs>? StaticOnOtherPlayerDeath;
     private static event EventHandler<HUDMessageAddedEventArgs>? StaticHudMessageAdded;
     private static event EventHandler<ChatMessageReceivedEventArgs>? StaticChatMessageReceived;
@@ -228,6 +234,7 @@ public class GameEvents
     }
 
     private void OnStaticOnBotDeath(object? sender, BotOnDeathEventArgs e) => OnBotDeath?.Invoke(sender, e);
+    private void StaticBotDamaged(object? sender, BotDamagedEventArgs e) => OnBotDamaged?.Invoke(sender, e);
     private void OnStaticCaughtFish(object? sender, System.EventArgs e) => CaughtFish?.Invoke(sender, e);
         
     #endregion
@@ -240,11 +247,11 @@ public class GameEvents
             {
                 if (__instance == BotBase.Farmer)
                 {
-                    StaticOnBotDeath.Invoke(new DeathPatch(), new BotOnDeathEventArgs(BotBase.CurrentLocation,BotBase.Farmer.TilePoint,__result));  
+                    StaticOnBotDeath?.Invoke(new DeathPatch(), new BotOnDeathEventArgs(BotBase.CurrentLocation,BotBase.Farmer.TilePoint,__result));  
                 }
                 else
                 {
-                    StaticOnOtherPlayerDeath.Invoke(new DeathPatch(), new OnOtherPlayerDeathEventArgs(__instance));
+                    StaticOnOtherPlayerDeath?.Invoke(new DeathPatch(), new OnOtherPlayerDeathEventArgs(__instance));
                 }
             }
             catch (Exception e)
@@ -270,7 +277,7 @@ public class GameEvents
                     if (chat[0] == BotBase.Farmer.Name)
                     {
                         Logger.Info($"chat: {chat[0]}  index: {index}  removedMessage: {removedMessage}");
-                        StaticChatMessageReceived.Invoke(new MessagePatch(), new ChatMessageReceivedEventArgs(chat[0],removedMessage,0,false));
+                        StaticChatMessageReceived?.Invoke(new MessagePatch(), new ChatMessageReceivedEventArgs(chat[0],removedMessage,0,false));
                     }
                 }
             }
@@ -290,13 +297,34 @@ public class GameEvents
                 if (message.transparency < 1) return;
                 // Logger.Info($"game: {__instance}");
                 // Logger.Info($"message: {message}");
-                StaticHudMessageAdded.Invoke(__instance,
+                StaticHudMessageAdded?.Invoke(__instance,
                     new HUDMessageAddedEventArgs(message.message, message.type, message.whatType,message.number, message.achievement,
                         message.noIcon, message.messageSubject));
             }
             catch (Exception e)
             {
                 Logger.Error($"Failed in addHUDMessage \n {e} \n This is mostly likely because it is not subscribed to anything");
+            }
+        }
+    }
+
+    public class PlayerDamagedPatch
+    {
+        public static void takeDamage_prefix(Farmer __instance,ref int damage,ref bool overrideParry,ref Monster damager)
+        {
+            try
+            {
+                if (__instance != BotBase.Farmer || !__instance.CanBeDamaged()) return;
+                // totally not stolen from the game :)
+                if (Game1.eventUp || __instance.FarmerSprite.isPassingOut() || (__instance.isInBed.Value && Game1.activeClickableMenu != null && Game1.activeClickableMenu is ReadyCheckDialog))
+                {
+                    return;
+                }
+                StaticOnBotDamaged?.Invoke(new PlayerDamagedPatch(),new BotDamagedEventArgs(damage,overrideParry,damager));
+            }
+            catch (Exception e)
+            {
+                Logger.Error($"Failed in takeDamage \n {e} \n This is mostly likely because it is not subscribed to anything");
             }
         }
     }

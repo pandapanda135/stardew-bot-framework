@@ -57,7 +57,8 @@ public class ShippingBinInteraction : GrabItemMenuInteraction
 
     public void OpenBin(ShippingBin shippingBin)
     {
-        shippingBin.doAction(new Vector2(shippingBin.tileX.Value, shippingBin.tileY.Value), BotBase.Farmer); // TODO: this does not work as need to hold down right click
+        // TODO: this does not work as need to use non-old MouseState
+        shippingBin.doAction(new Vector2(shippingBin.tileX.Value, shippingBin.tileY.Value), BotBase.Farmer);
     }
 
     /// <summary>

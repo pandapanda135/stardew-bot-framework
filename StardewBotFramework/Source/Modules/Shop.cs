@@ -20,7 +20,7 @@ namespace StardewBotFramework.Source.Modules;
 
 public class Shop
 {
-    private ShopMenu? _currentShop;
+    public ShopMenu? _currentShop;
 
     /// <summary>
     /// The amount of tabs in this shop. If this returns null then that means _currentShop is not set
@@ -162,9 +162,9 @@ public class Shop
     /// Returns all items as their <see cref="ISalable"/> class 
     /// </summary>
     /// <returns>A list of all items for sale however is a shop has not been opened yet, it will return null</returns>
-    public List<ISalable>? ListAllItems()
+    public List<ISalable> ListAllItems()
     {
-        if (_currentShop is null || _currentShop is not ShopMenu) return null;
+        if (_currentShop is null) return new();
         
         return _currentShop.forSale;
     }
@@ -224,11 +224,10 @@ public class Shop
         int itemSalePrice = _currentShop.inventory.actualInventory[index].GetSalableInstance().sellToStorePrice();
         int itemStackSize = _currentShop.inventory.actualInventory[index].Stack;
         
-        _currentShop.receiveLeftClick(inventory[index].bounds.X + 3,inventory[index].bounds.Y + 3); //TODO: make work
+        _currentShop.receiveLeftClick(inventory[index].bounds.X,inventory[index].bounds.Y);
         
         return itemSalePrice * itemStackSize;
     }
-
     
     /// <summary>
     /// Will try to see back item in the provided index of the bot's inventory

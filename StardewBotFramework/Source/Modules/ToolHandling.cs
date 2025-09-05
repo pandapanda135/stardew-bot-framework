@@ -472,7 +472,7 @@ public class ToolHandling
     /// Remove object at tile, current tool needs to be changed before this is called.
     /// </summary>
     /// <param name="tile">The tile of the object you want to destroy</param>
-    public async Task RemoveObject(Point tile) //TODO: can have weird pathing as it does not account for updated collision map
+    public async Task RemoveObject(Point tile) //TODO: can have weird pathing as it does not account for updated collision map. I think I removed due to crashing or something?
     {
         AlgorithmBase.IPathing pathing = new AStar.Pathing();
         // pathing.BuildCollisionMap(BotBase.CurrentLocation);

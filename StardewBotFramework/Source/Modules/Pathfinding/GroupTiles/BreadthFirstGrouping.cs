@@ -3,7 +3,6 @@ using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
 using StardewValley;
 using StardewValley.TerrainFeatures;
-using StardewValley.Tools;
 
 namespace StardewBotFramework.Source.Modules.Pathfinding.GroupTiles;
 
@@ -18,7 +17,7 @@ public class BreadthFirstGrouping : AlgorithmBase
     {
         public Task<Stack<PathNode>> FindPath(PathNode startPoint, Goal goal, GameLocation location, int limit, bool canDestroy = false)
         {
-            throw new NotImplementedException();
+            return new Task<Stack<PathNode>>(() => new());
         }
 
         internal async Task<Stack<Point>> GetPropertyGroup(Point startPoint, string property, GameLocation location, int limit)

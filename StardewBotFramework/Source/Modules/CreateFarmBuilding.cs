@@ -1,10 +1,13 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using StardewBotFramework.Debug;
+using StardewBotFramework.Source.Utilities;
 using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.GameData.Buildings;
 using StardewValley.Menus;
+using xTile.Dimensions;
+using Object = StardewValley.Object;
+using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace StardewBotFramework.Source.Modules;
 
@@ -86,7 +89,6 @@ public class CreateFarmBuilding
         if (_carpenterMenu is null) return;
         Rectangle bounds = _carpenterMenu.backButton.bounds;
         _carpenterMenu.receiveLeftClick(bounds.X + 5,bounds.Y + 5);
-        Console.WriteLine($"moving left");
     }
     
     public void MoveBluePrintCarouselRight()
@@ -94,7 +96,6 @@ public class CreateFarmBuilding
         if (_carpenterMenu is null) return;
         Rectangle bounds = _carpenterMenu.forwardButton.bounds;
         _carpenterMenu.receiveLeftClick(bounds.X + 1,bounds.Y + 1);
-        Console.WriteLine($"moving right");
     }
     
     /// <summary>
@@ -125,14 +126,17 @@ public class CreateFarmBuilding
     /// <summary>
     /// This can be used for demolishing, painting and upgrading buildings 
     /// </summary>
-    /// <param name="tile">Should try to be at the middle point of the building</param>
-    public void SelectBuilding(Point tile)
+    /// <param name="building">Building to select</param>
+    public void SelectBuilding(Building building)
     {
         if (_carpenterMenu is null) return;
-        Game1.viewport.X = tile.X * Game1.tileSize;
-        Game1.viewport.Y = tile.Y * Game1.tileSize;
-        Game1.oldMouseState = new MouseState((tile.X * Game1.tileSize) - Game1.viewport.X, (tile.Y * Game1.tileSize) - Game1.viewport.Y, 0, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
-        _carpenterMenu.receiveLeftClick(tile.X * 64, tile.Y * 64);
+        var menu = new PurchaseAnimalsMenu(new List<Object>(),_carpenterMenu.TargetLocation);
+        Location location = menu.GetTopLeftPixelToCenterBuilding(building);
+        Game1.viewport.Location = location;
+        Point tile = new Point(building.tileX.Value, building.tileY.Value);
+        Point screenTile = TileUtilities.TileToScreen(new Vector2(tile.X, tile.Y));
+        Game1.oldMouseState = new MouseState(screenTile.X, screenTile.Y, 0, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
+        _carpenterMenu.receiveLeftClick(screenTile.X,screenTile.Y);
     }
 
     /// <summary>
