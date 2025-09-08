@@ -18,17 +18,17 @@ public class CharacterController
 	/// </summary>
 	public static event EventHandler? FailedPathFinding;
 	
-	private static bool _movingCharacter = false;
-	private static bool _isDestroying = false;
+	private static bool _movingCharacter;
+	private static bool _isDestroying;
 
 	private static Stack<PathNode> _endPath = new();
 	private static Character _character => BotBase.Farmer;
-	private static GameLocation? _currentLocation;
-	private static GameTime _time = new();
+	private static GameLocation _currentLocation = null!;
+	private static GameTime Time => Game1.currentGameTime;
 	private static int _nextIndex;
 	private static int _neighbourIndex;
-	private static PathNode _currentNode;
-	private static PathNode _nextNode;
+	private static PathNode _currentNode = null!;
+	private static PathNode _nextNode = null!;
 	
 	private static readonly sbyte[,] Directions = new sbyte[4,2]
 	{
@@ -56,39 +56,36 @@ public class CharacterController
 		} // stop issue with moving to the left when go through warp
 
 		Vector2 position = BotBase.Farmer.Position;
-		MoveCharacter(_time);
+		MoveCharacter(Time);
 		if (position == BotBase.Farmer.Position)
 		{
-			_pausedTimer += _time.ElapsedGameTime.Milliseconds;
+			_pausedTimer += Time.ElapsedGameTime.Milliseconds;
 		}
 		else
 		{
 			_pausedTimer = 0;
 		}
-		if (_pausedTimer >= MaxPauseTime)
-		{
-			Logger.Error($"Paused for too long");
-			_endPath.Clear();
-			FailedPathFinding.Invoke(new CharacterController(),EventArgs.Empty);
-		}
+
+		if (_pausedTimer < MaxPauseTime) return;
+		
+		Logger.Error($"Paused for too long");
+		ForceStopMoving();
+		FailedPathFinding?.Invoke(new CharacterController(),EventArgs.Empty);
 	}
 
-	public static void StartMoveCharacter(Stack<PathNode> endPointPath,GameTime time)
+	public static void StartMoveCharacter(Stack<PathNode> endPointPath)
 	{
 		_movingCharacter = true;
 		_endPath = endPointPath;
 		_currentLocation = BotBase.CurrentLocation;
-		_time = time;
 		
 		if (IsMoving()) return;
 		
-		MoveCharacter(time);
+		MoveCharacter(Time);
 	}
 	
 	private static void MoveCharacter(GameTime time) //TODO: figure out why movePosition does not change character's animation.
 	{
-		if (_currentLocation is null) return;
-
 		if (BotBase.Farmer.UsingTool) return; // check if animation running
 		
 		if (_isDestroying) // check if destroy
@@ -135,9 +132,9 @@ public class CharacterController
 			{
 				if (!npc.Equals(_character) && npc.GetBoundingBox().Intersects(_character.GetBoundingBox()) && npc.isMoving())
 				{
-					Logger.Error($"Ran into a character");
+					Logger.Error($"Ran into a character"); //TODO: re-calulate path (Could get into a loop of being in character until the npc moves. Maybe check next node for character)
 				}
-			}	
+			}
 		}
 		
 		if (bbox.Left < targetTile.Left && bbox.Right < targetTile.Right)
@@ -155,15 +152,10 @@ public class CharacterController
 			_character.SetMovingDown(true);
 			_character.FacingDirection = 2;
 		}
-		else if (bbox.Bottom >= targetTile.Bottom)
+		else if (bbox.Bottom >= targetTile.Bottom - 2)
 		{
 			_character.SetMovingUp(true);
 			_character.FacingDirection = 0;
-		}
-		else
-		{
-			_character.SetMovingUp(true); // TODO: This is jank and idk why it works but it seems to fix pausing randomly
-			Logger.Error($"Non of the else ifs are true: {bbox}   {targetTile}");
 		}
 		
 		foreach (var pathNode in _endPath)
@@ -183,10 +175,6 @@ public class CharacterController
 					{
 						fence.toggleGate(true);
 					}
-					// else if (fence is not null && !fence.isPassable()) // if is normal fence not gate
-					// {
-					// 	continue;
-					// }
 				}
 
 				if (objectInNextTile is not null && !objectInNextTile.isPassable())
@@ -249,7 +237,7 @@ public class CharacterController
 		if (Game1.eventUp)
 		{
 			Event currentEvent = Game1.CurrentEvent;
-			if (!((!((currentEvent != null) ? new bool?(currentEvent.isFestival) : null)) ?? true))
+			if (!(!(currentEvent != null ? new bool?(currentEvent.isFestival) : null) ?? true))
 			{
 				Game1.CurrentEvent.TryStartEndFestivalDialogue(character as Farmer);
 			}
@@ -259,6 +247,7 @@ public class CharacterController
 	
 	public static bool isPlayerPresent()
 	{
+		
 		return _currentLocation.farmers.Any();
 	}
 	public static bool IsMoving() => _movingCharacter;

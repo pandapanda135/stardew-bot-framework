@@ -115,8 +115,15 @@ public class StardewClient : BotBase
 
         #endregion
         
-        harmony.Patch(original: AccessTools.Method(typeof(Farmer), nameof(Farmer.LoseItemsOnDeath)),
-            postfix: new HarmonyMethod(typeof(GameEvents.DeathPatch), nameof(GameEvents.DeathPatch.LoseItemsOnDeath_Postfix)));
+        // probably don't need this anymore
+        // harmony.Patch(original: AccessTools.Method(typeof(Farmer), nameof(Farmer.LoseItemsOnDeath)),
+        //     postfix: new HarmonyMethod(typeof(GameEvents.DeathPatch), nameof(GameEvents.DeathPatch.LoseItemsOnDeath_Postfix)));
+        
+        harmony.Patch(original: AccessTools.Method(typeof(Event.DefaultCommands), nameof(Event.DefaultCommands.MineDeath)),
+            postfix: new HarmonyMethod(typeof(GameEvents.DeathPatch), nameof(GameEvents.DeathPatch.MineDeath_Postfix)));
+        
+        harmony.Patch(original: AccessTools.Method(typeof(Game1), nameof(Game1.PassOutNewDay)),
+            postfix: new HarmonyMethod(typeof(GameEvents.DeathPatch), nameof(GameEvents.DeathPatch.PassOutNewDay_PostFix)));
 
         harmony.Patch(original: AccessTools.Method(typeof(ChatBox), nameof(ChatBox.receiveChatMessage)),
             postfix: new HarmonyMethod(typeof(GameEvents.MessagePatch), nameof(GameEvents.MessagePatch.receiveChatMessage_Postfix)));
@@ -124,7 +131,7 @@ public class StardewClient : BotBase
         harmony.Patch(original: AccessTools.Method(typeof(Game1), nameof(Game1.addHUDMessage)),
             postfix: new HarmonyMethod(typeof(GameEvents.HudMessagePatch), nameof(GameEvents.HudMessagePatch.addHUDMessage_postfix)));
 
-        // this is a prefix so we can check if the bot can be damaged as post would always be false
+        // this is a prefix so we can check if the bot can be damaged again as a postfix would always be false
         harmony.Patch(original: AccessTools.Method(typeof(Farmer), nameof(Farmer.takeDamage)),
             prefix: new HarmonyMethod(typeof(GameEvents.PlayerDamagedPatch), nameof(GameEvents.PlayerDamagedPatch.takeDamage_prefix)));
     }

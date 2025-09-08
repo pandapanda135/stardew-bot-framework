@@ -40,8 +40,8 @@ public class CharacterCreation
     
     public void SkipIntro()
     {
-        if ((_characterCustomization.source == CharacterCustomization.Source.NewGame ||
-             _characterCustomization.source == CharacterCustomization.Source.HostNewFarm))
+        if ((_characterCustomization?.source == CharacterCustomization.Source.NewGame ||
+             _characterCustomization?.source == CharacterCustomization.Source.HostNewFarm))
         {
             Rectangle buttonBounds = _characterCustomization.skipIntroButton.bounds;
             _characterCustomization.receiveLeftClick(_characterCustomization.skipIntroButton.bounds.X,_characterCustomization.skipIntroButton.bounds.Y);
@@ -56,14 +56,15 @@ public class CharacterCreation
 
     public void StartGame()
     {
+        if (_characterCustomization is null) return;
         Rectangle buttonBounds = _characterCustomization.okButton.bounds; 
         _characterCustomization.receiveLeftClick(buttonBounds.X,buttonBounds.Y);
     }
 
     public void RandomiseCharacter()
     {
-        if (_characterCustomization.source == CharacterCustomization.Source.DyePots ||
-            _characterCustomization.source == CharacterCustomization.Source.ClothesDye)
+        if (_characterCustomization?.source == CharacterCustomization.Source.DyePots ||
+            _characterCustomization?.source == CharacterCustomization.Source.ClothesDye)
         {
             Logger.Warning($"Tried to call RandomiseCharacter when randomising character is not available. This happens when you call it in DyePots or ClothesDye");
         }
@@ -272,7 +273,7 @@ public class CharacterCreation
     public void ChangeShirt(int change)
     {
         // increase is positive will wrap around if negative
-        Game1.player.rotateShirt(change, _characterCustomization.GetValidShirtIds());
+        Game1.player.rotateShirt(change, _characterCustomization?.GetValidShirtIds());
         Game1.playSound("coin");
     }
     
@@ -282,7 +283,7 @@ public class CharacterCreation
     /// <param name="change">change current value by this amount</param>
     public void ChangePants(int change)
     {
-        Game1.player.rotatePantStyle(change, _characterCustomization.GetValidPantsIds());
+        Game1.player.rotatePantStyle(change, _characterCustomization?.GetValidPantsIds());
         Game1.playSound("coin");
     }
     

@@ -260,6 +260,35 @@ public class GameEvents
                 throw;
             }
         }
+
+        public static void MineDeath_Postfix()
+        {
+            try
+            {
+                if (!Game1.dialogueUp)
+                {
+                    StaticOnBotDeath?.Invoke(new DeathPatch(),new BotOnDeathEventArgs(BotBase.CurrentLocation,BotBase.Farmer.TilePoint,-1));
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e.ToString());
+                throw;
+            }
+        }
+
+        public static void PassOutNewDay_PostFix()
+        {
+            try
+            {
+                StaticOnBotDeath?.Invoke(new DeathPatch(), new BotOnDeathEventArgs(BotBase.CurrentLocation, BotBase.Farmer.TilePoint, -1));
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e.ToString());
+                throw;
+            }
+        }
     }
 
     public class MessagePatch

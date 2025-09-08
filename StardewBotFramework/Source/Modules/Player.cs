@@ -142,7 +142,7 @@ public class Player
                 continue;
             }
 
-            CharacterController.StartMoveCharacter(path, Game1.currentGameTime);
+            CharacterController.StartMoveCharacter(path);
 
             while (CharacterController.IsMoving()) continue; // this is not async
         }

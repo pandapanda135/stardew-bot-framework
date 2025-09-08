@@ -257,7 +257,7 @@ public class ToolHandling
                     continue;
                 }
                 
-                CharacterController.StartMoveCharacter(path,Game1.currentGameTime);
+                CharacterController.StartMoveCharacter(path);
 
                 while (CharacterController.IsMoving()) continue; // this is not async
                 
@@ -322,7 +322,7 @@ public class ToolHandling
                 break;
             }
             
-            CharacterController.StartMoveCharacter(path,Game1.currentGameTime);
+            CharacterController.StartMoveCharacter(path);
 
             while (CharacterController.IsMoving()) continue; // this is not async
             
@@ -441,7 +441,7 @@ public class ToolHandling
                     continue;
                 }
                 
-                CharacterController.StartMoveCharacter(path,Game1.currentGameTime);
+                CharacterController.StartMoveCharacter(path);
 
                 while (CharacterController.IsMoving()) continue; // this is not async
                 
@@ -495,7 +495,7 @@ public class ToolHandling
                 GetObjectType(tile);
             }
 
-            CharacterController.StartMoveCharacter(path,Game1.currentGameTime);
+            CharacterController.StartMoveCharacter(path);
 
             while (CharacterController.IsMoving()) continue; // this is not async
 
