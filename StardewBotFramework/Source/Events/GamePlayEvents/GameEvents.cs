@@ -265,10 +265,7 @@ public class GameEvents
         {
             try
             {
-                if (!Game1.dialogueUp)
-                {
-                    StaticOnBotDeath?.Invoke(new DeathPatch(),new BotOnDeathEventArgs(BotBase.CurrentLocation,BotBase.Farmer.TilePoint,-1));
-                }
+                StaticOnBotDeath?.Invoke(new DeathPatch(),new BotOnDeathEventArgs(BotBase.CurrentLocation,BotBase.Farmer.TilePoint,-1));
             }
             catch (Exception e)
             {

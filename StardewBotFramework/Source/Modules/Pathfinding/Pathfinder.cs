@@ -18,12 +18,13 @@ public class Pathfinder
     /// </summary>
     /// <param name="goal"><see cref="Goal"/></param>
     /// <param name="canDestroy">Will destroy objects to get to the goal</param>
-    /// <param name="dynamic">If that goal will change position this in the future will be used for npcs.</param>
-    public async Task Goto(Goal goal, bool dynamic, bool canDestroy = false)
+    /// <param name="dynamic">If that goal will change position, this in the future will be used for npcs.</param>
+    /// <param name="buildCollision">Build collision map.</param>
+    public async Task Goto(Goal goal, bool dynamic, bool canDestroy = false, bool buildCollision = true)
     {
         AlgorithmBase.IPathing pathing = new AStar.Pathing();
         
-        pathing.BuildCollisionMap(Game1.currentLocation);
+        if (buildCollision) pathing.BuildCollisionMap(Game1.currentLocation);
         
         PathNode start = new PathNode(Game1.player.TilePoint.X, Game1.player.TilePoint.Y, null);
         
@@ -40,10 +41,11 @@ public class Pathfinder
     /// <param name="goal">The end point you want to path-find to</param>
     /// <param name="canDestroy">Will destroy objects to get to the goal</param>
     /// <param name="distance">the amount of times the pathfinder will run, this should be though about as each tile will increase this by one</param>
+    /// <param name="buildCollision">Build collision map.</param>
     /// <returns>A <see cref="Stack{T}"/> of <see cref="PathNode"/>, the end point will be first in dequeue and the start will be last</returns>
-    public async Task<Stack<PathNode>> GetPathTo(Goal goal, int distance,bool canDestroy = false)
+    public async Task<Stack<PathNode>> GetPathTo(Goal goal, int distance,bool canDestroy = false, bool buildCollision = true)
     {
-        Pathing.BuildCollisionMap(Game1.currentLocation);
+        if (buildCollision) Pathing.BuildCollisionMap(Game1.currentLocation);
 
         PathNode start = new PathNode(Game1.player.TilePoint.X, Game1.player.TilePoint.Y, null);
 
@@ -58,5 +60,12 @@ public class Pathfinder
     public void BuildCollisionMap()
     {
         Pathing.BuildCollisionMap(BotBase.CurrentLocation);
+    }
+
+    public void BuildCollisionMapInRadius(int startTile, int radius)
+    {
+        Pathing.BuildCollisionMap(BotBase.CurrentLocation,
+            startTile + radius, startTile + radius,
+            startTile - radius, startTile - radius);
     }
 }

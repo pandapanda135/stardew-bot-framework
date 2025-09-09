@@ -9,10 +9,6 @@ public class DestroyObject
 	{
 		if (!BotBase.Farmer.CanMove) { return;}
 		while (BotBase.Farmer.UsingTool) { Logger.Info($"running destroy while"); BotBase.Farmer.EndUsingTool();}
-		// if (BotBase.Farmer.UsingTool)
-		// {
-		// 	return;
-		// }
 		
 		Logger.Info($"begin using tool.");
 		BotBase.Farmer.BeginUsingTool(); // Object.performToolAction

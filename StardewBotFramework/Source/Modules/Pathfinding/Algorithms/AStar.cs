@@ -1,13 +1,9 @@
-using System.Runtime.Serialization;
 using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
-using StardewBotFramework.Source.Modules.Pathfinding.GroupTiles;
 using StardewBotFramework.Source.ObjectDestruction;
-using StardewBotFramework.Source.ObjectToolSwaps;
 using StardewValley;
 using StardewValley.Network;
-using StardewValley.Projectiles;
 using Object = StardewValley.Object;
 
 namespace StardewBotFramework.Source.Modules.Pathfinding.Algorithms;
@@ -37,18 +33,15 @@ public class AStar : AlgorithmBase
             ClearVariables();
             
             PathNode startNode = new PathNode(startPoint.X, startPoint.Y, null);
-            
-            IPathing.PriorityFrontier = new();
+            int increase = 0;
+
             IPathing.PriorityFrontier.Enqueue(startNode, 0);
             IPathing.ClosedList.Add(startNode);
             
-            int increase = 0;
-            
-            OverlaidDictionary locationObjectsDict = location.objects;
             SerializableDictionary<Vector2, Object> locationObjects = new();
             if (canDestroyObjects)
             {
-                foreach (var locationObject in locationObjectsDict)
+                foreach (var locationObject in location.Objects)
                 {
                     foreach (var kvp in locationObject)
                     {
@@ -64,7 +57,7 @@ public class AStar : AlgorithmBase
             // check if goal is blocked before pathfinding
             if (IPathing.collisionMap.IsBlocked(goal.X, goal.Y))
             {
-                if (goal is Goal.GoalNearby || goal is Goal.GetToTile)
+                if (goal is Goal.GoalNearby or Goal.GetToTile) // should probably check radius
                 {
                 }
                 else

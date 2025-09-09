@@ -1,5 +1,4 @@
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 using StardewBotFramework.Debug;
 using StardewModdingAPI;
 using StardewValley;
@@ -11,16 +10,11 @@ public class DialogueManager
 {
     public Stack<Dialogue>? CurrentDialogueStack;
 
-    private Dialogue? _dialogue;
     /// <summary>
     /// The current dialogue, this should not need to be set.
     /// </summary>
-    public Dialogue? CurrentDialogue
-    {
-        get => CurrentDialogueBox?.characterDialogue;
-        set => _dialogue = value;
-    }
-
+    public Dialogue? CurrentDialogue => CurrentDialogueBox?.characterDialogue;
+    
     public DialogueBox? CurrentDialogueBox = null;
 
     public NPC CurrentNpc;
@@ -59,7 +53,7 @@ public class DialogueManager
     {
         if (CheckForCharacterAtTile(tileLocation))
         {
-            Dictionary<string, List<string>> Dialogue = new();
+            Dictionary<string, List<string>> dialogues = new();
             
             NPC? character = Game1.GetCharacterWhere<NPC>(npc => npc.TilePoint == tileLocation, includeEventActors: false);
 
@@ -71,16 +65,16 @@ public class DialogueManager
                 foreach (var dialogueLine in dialogue.dialogues)
                 {
                     Logger.Info($"speaker: {dialogue.speaker.Name}  string: {dialogueLine.Text}"); // prints all the text possible by the speaker at that moment
-                    if (Dialogue.ContainsKey(dialogue.speaker.Name))
+                    if (dialogues.ContainsKey(dialogue.speaker.Name))
                     {
-                        Dialogue[dialogue.speaker.Name].Add(dialogueLine.Text);
+                        dialogues[dialogue.speaker.Name].Add(dialogueLine.Text);
                         continue;
                     }
-                    Dialogue.Add(dialogue.speaker.Name,new (){dialogueLine.Text});
+                    dialogues.Add(dialogue.speaker.Name,new (){dialogueLine.Text});
                 }
             }
 
-            return Dialogue;
+            return dialogues;
         }
 
         return null;
@@ -90,9 +84,7 @@ public class DialogueManager
     {
         NPC? character = Game1.GetCharacterWhere<NPC>(npc => npc.TilePoint == tilePoint, includeEventActors: false);
 
-        if (character is null) return null;
-        
-        return character.CurrentDialogue; // get Game1.npcDialogues
+        return character.CurrentDialogue ?? null;
     }
     
     /// <summary>
@@ -100,6 +92,7 @@ public class DialogueManager
     /// </summary>
     /// <param name="character">an <see cref="NPC"/></param>
     /// <param name="dialogues">A Stack of all possible dialogues from this character</param>
+    /// <param name="loadedDialogue">The currently loaded dialogue from the character</param>
     /// <returns>will return true if interacted with else will return false as cannot interact with the character.</returns>
     public bool InteractWithCharacter(NPC character,out Stack<Dialogue> dialogues,out Dialogue loadedDialogue)
     {
@@ -108,7 +101,6 @@ public class DialogueManager
         CurrentDialogueStack = character.CurrentDialogue;
         
         loadedDialogue = CurrentDialogueStack.Pop();
-        CurrentDialogue = loadedDialogue;
         
         CurrentNpc = character;
         return checkAction;
@@ -119,13 +111,13 @@ public class DialogueManager
     /// </summary>
     /// <param name="characterName">Character's name</param>
     /// <param name="dialogues">A Stack of all possible dialogues from this character</param>
+    /// <param name="loadedDialogue">The currently loaded dialogue from the character</param>
     /// <returns>will return true if interacted with else will return false as cannot interact with the character or will return null if character with name does not exist.</returns>
     public bool? InteractWithCharacter(string characterName, out Stack<Dialogue>? dialogues,out Dialogue loadedDialogue)
     {
-        NPC character = Game1.getCharacterFromName(characterName, false, false);
+        NPC character = Game1.getCharacterFromName(characterName, false);
         bool checkAction = InteractWithCharacter(character, out var stack,out loadedDialogue);
         loadedDialogue = character.TryGetDialogue(character.LoadedDialogueKey);
-        CurrentDialogue = loadedDialogue;
 
         dialogues = stack;
         return checkAction;
@@ -136,46 +128,31 @@ public class DialogueManager
     /// </summary>
     /// <param name="tileLocation">Tile character is at</param>
     /// <param name="dialogues">A Stack of all possible dialogues from this character</param>
+    /// <param name="loadedDialogue">The currently loaded dialogue from the character</param>
     /// <returns>will return true if interacted with else will either return false as cannot interact with the character or will return null if there is no character there.</returns>
     public bool? InteractWithCharacter(Point tileLocation,out Stack<Dialogue>? dialogues,out Dialogue loadedDialogue)
     {
         NPC? character = Game1.GetCharacterWhere<NPC>(npc => npc.TilePoint == tileLocation, includeEventActors: false);
         bool checkAction = InteractWithCharacter(character, out var stack,out loadedDialogue);
-        CurrentDialogue = loadedDialogue;
 
         dialogues = stack;
         return checkAction;
     }
 
-    public void SetCurrentDialogue(Dialogue dialogue)
-    {
-        CurrentDialogue = dialogue;
-    }
-    
     /// <summary>
     /// Advance current dialogue, this is done by simulating a left click, this can cause skipping the dialogue box instead of advancing it properly.
     /// </summary>
-    /// <returns>Will return true if Game1.activeClickableMenu is <see cref="DialogueBox"/> else false</returns>
+    /// <returns>Will return false if there is no current string or <see cref="Game1.activeClickableMenu"/> is not <see cref="DialogueBox"/> else false</returns>
     public bool AdvanceDialogBox(out string dialogueLine,int x = 0, int y = 0, bool playSound = true)
     {
         dialogueLine = "";
 
         if (CurrentDialogueBox is null) return false;
-        if (Game1.activeClickableMenu is DialogueBox)
-        {
-            Game1.activeClickableMenu.receiveLeftClick(x, y, playSound);
-            if (CurrentDialogueBox.characterDialogue is not null)
-            {
-                Logger.Error($"CurrentDialogue is null in advance dialogue");
-                dialogueLine = !CurrentDialogueBox.characterDialogue.isOnFinalDialogue() ? CurrentNpc.Dialogue[CurrentNpc.LoadedDialogueKey] : "";
-                return true;
-            }
-
-            dialogueLine = CurrentDialogueBox.getCurrentString();
-            return true;
-        }
+        if (Game1.activeClickableMenu is not DialogueBox) return false;
         
-        return false;
+        Game1.activeClickableMenu.receiveLeftClick(x, y, playSound);
+        dialogueLine = CurrentDialogueBox.getCurrentString();
+        return dialogueLine != "";
     }
     
     /// <summary>
@@ -186,17 +163,17 @@ public class DialogueManager
     {
         if (Game1.activeClickableMenu is not DialogueBox) return;
 
-        Response[] responses = PossibleResponses()!;
+        Response[] responses = PossibleResponses();
         for (int i = 0; i < responses.Length; i++)
         {
-            if (responses[i] == response)
-            {
-                Logger.Info($"setting response to: {i}");
-                BotBase.ChangeSelectedResponse(i);
-                break;
-            }
+            if (responses[i] != response) continue;
+            
+            Logger.Info($"setting response to: {i}");
+            BotBase.ChangeSelectedResponse(i);
+            break;
         }
 
+        // I think this is related to event stuff kinda forgot.
         if (CurrentDialogue is null)
         {
             if (CurrentDialogueBox is null)
@@ -224,7 +201,7 @@ public class DialogueManager
             return;
         }
         
-        Game1.activeClickableMenu.receiveLeftClick(0, 0, true);
+        Game1.activeClickableMenu.receiveLeftClick(0, 0);
         CurrentDialogue.chooseResponse(response);
     }
     
@@ -234,29 +211,30 @@ public class DialogueManager
     /// <returns><see cref="Array"/> of <see cref="Response"/>, if this dialogue is not a question it will return null</returns>
     public List<NPCDialogueResponse>? PossibleNpcDialogueResponses()
     {
+        if (CurrentDialogue is null) return new();
         if (!CurrentDialogue.isCurrentDialogueAQuestion()) return null; // here
 
         return CurrentDialogue.getNPCResponseOptions();
     }
 
+    /// <summary>
+    /// Get all possible <see cref="Response"/>, this is recommended over NpcDialogues.
+    /// </summary>
     public Response[] PossibleResponses()
     {
         if (CurrentDialogueBox is null) return Array.Empty<Response>();
-        // Logger.Error($"is question: {CurrentDialogueBox.isQuestion}");
-        // if (!CurrentDialogueBox.isQuestion) return null;
-
         return CurrentDialogueBox.responses;
     }
 
-    internal static void ChooseResponse(int option,DialogueBox dialogueBox,Response response)
+    internal static void ChooseResponse(int option,DialogueBox? dialogueBox,Response response)
     {
         if (Game1.activeClickableMenu is not DialogueBox) return;
 
-        for (int i = 0; i < dialogueBox.responses.Length; i++)
+        for (int i = 0; i < dialogueBox?.responses.Length; i++)
         {
             if (dialogueBox.responses[i] == response)
             {
-                StardewClient.ChangeSelectedResponse(option);
+                BotBase.ChangeSelectedResponse(option);
 
                 dialogueBox = (Game1.activeClickableMenu as DialogueBox);
                 // if (dialogueBox.allClickableComponents == null)
@@ -273,7 +251,7 @@ public class DialogueManager
 
                 // dialogue.chooseResponse(response);
                 
-                dialogueBox.receiveLeftClick(460,860); // wont work as is not done transitioning to button's appearing
+                dialogueBox?.receiveLeftClick(460,860); // wont work as is not done transitioning to button's appearing
             }
         }
         

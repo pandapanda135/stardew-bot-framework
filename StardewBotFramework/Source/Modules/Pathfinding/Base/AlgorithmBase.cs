@@ -178,12 +178,11 @@ public class AlgorithmBase
         /// <param name="minX">Minimum X of the current location, this should never be below 0</param>
         /// <param name="minY">Minimum Y of the current location, this should never be below 0</param>
         /// <returns>A <see cref="CollisionMap"/> however this is only useful if you want to make changes otherwise you should use IPathing.collisionMap</returns>
-        CollisionMap BuildCollisionMap(GameLocation location,int maxX = 0, int maxY = 0, int minX = 0,
+        CollisionMap BuildCollisionMap(GameLocation location,int maxX = -1, int maxY = -1, int minX = 0,
             int minY = 0)
         {
-            // remove one as to not go around map
-            maxX = location.Map.DisplayWidth / Game1.tileSize;
-            maxY = location.Map.DisplayHeight / Game1.tileSize; 
+            if (maxX == -1) maxX = location.Map.DisplayWidth / Game1.tileSize;
+            if (maxY == -1) maxY = location.Map.DisplayHeight / Game1.tileSize; 
 
             Logger.Error($"size of map {maxX},{maxY}");
             var map = new CollisionMap();
@@ -192,9 +191,7 @@ public class AlgorithmBase
             {
                 for (int y = minY; y <= maxY; y++)
                 {
-                    Rectangle rect = new Rectangle(x * Game1.tileSize + 1, y * Game1.tileSize + 1, 62, 62);
-                    if (!CollisionMap.IsCurrentlyBlocked(x,y))
-                        continue;
+                    if (!CollisionMap.IsCurrentlyBlocked(x,y)) continue;
                     map.BlockedTiles.Add((x,y));
                 }
             }

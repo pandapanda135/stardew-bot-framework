@@ -1,3 +1,4 @@
+using HarmonyLib;
 using Microsoft.Xna.Framework.Input;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Events.GamePlayEvents;
@@ -22,11 +23,13 @@ public abstract class BotBase
     internal IModHelper Helper => _helper;
     internal IMonitor Monitor => _monitor;
     internal IMultiplayerHelper Multiplayer => _multiplayer;
+
+    internal Harmony? Harmony;
     
     private static IReflectedField<int>? _selectedResponse;
     private static IReflectedField<TextBox>? _reflectedTextBox;
     private static IReflectedField<NetMutexQueue<Guid>> _reflectedObjectDestroy;
-    public GameEvents GameEvents;
+    public GameEvents GameEvents = null!;
     
     /// <summary>
     /// Change the selectedResponse value in <see cref="DialogueBox"/>, this will change the "Response" to a question dialogue.
@@ -44,6 +47,18 @@ public abstract class BotBase
         _selectedResponse = Instance.Helper.Reflection.GetField<int>(Game1.activeClickableMenu, "selectedResponse", true);
         
         _selectedResponse.SetValue(value);   
+    }
+
+    internal static List<Item> GetItemListItems()
+    {
+        if (Instance is null)
+        {
+            Logger.Error($"Instance is null");
+            return new();
+        }
+        
+        List<Item>? items = Instance?.Helper.Reflection.GetField<List<Item>>(Game1.activeClickableMenu, "itemsToList").GetValue();
+        return items ?? new List<Item>();
     }
 
     public bool AdheresToTextBoxLimit(object parent, string text, List<string> properties)

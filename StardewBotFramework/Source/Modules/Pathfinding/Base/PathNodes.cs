@@ -1,7 +1,5 @@
 using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
-using StardewValley;
-using Vector2 = Microsoft.Xna.Framework.Vector2;
 
 namespace StardewBotFramework.Source.Modules.Pathfinding.Base;
 
@@ -35,12 +33,6 @@ public class PathNode : IComparable<PathNode>
         Parent = parent;
         Cost = 10 + GetCost(); // cost == -1 ? Random.Shared.Next(0, 6) : cost
         Destroy = destroy;
-    }
-    
-    [Obsolete("Use IPathing.collisionMap")]
-    public static bool IsNotPassable(int x, int y)
-    {
-        return Game1.currentLocation.isCollidingPosition(new Rectangle(x * Game1.tileSize + 1, y * Game1.tileSize + 1, 62, 62), Game1.viewport, isFarmer: true, -1, glider: false, Game1.player);
     }
 
     private int GetCost()

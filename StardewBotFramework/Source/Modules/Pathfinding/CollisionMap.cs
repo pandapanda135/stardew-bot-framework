@@ -29,7 +29,7 @@ public class CollisionMap
     public bool IsBlocked(int x, int y) => BlockedTiles.Contains((x, y));
     
     /// <summary>
-    /// Query if the tile has collisions, it will not get this from the collision map but from the game.
+    /// Query if the tile has collisions, it will not get this from the collision map but from the game. Use IsBlocked for the collision map.
     /// </summary>
     /// <returns>if true is not passable else Passable</returns>
     public static bool IsCurrentlyBlocked(int x,int y)
@@ -37,8 +37,8 @@ public class CollisionMap
         Object? obj = BotBase.CurrentLocation.getObjectAtTile(x, y);
         if (obj is Fence fence && fence.isGate.Value) return false;
         
-        return Game1.currentLocation.isCollidingPosition(
-            new Rectangle(x * Game1.tileSize + 1, y * Game1.tileSize + 1, 62, 62), Game1.viewport, isFarmer: true, -1,
-            glider: false, Game1.player);
+        return Game1.currentLocation.isCollidingPosition(new Rectangle(x * Game1.tileSize + 1, y * Game1.tileSize + 1, 
+		        62, 62), Game1.viewport, isFarmer: true, -1, glider: false, BotBase.Farmer,
+	        true,false,false,true);
     }
 }

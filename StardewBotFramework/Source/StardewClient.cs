@@ -26,7 +26,7 @@ public class StardewClient : BotBase
     // private readonly IManifest _manifest;
     // private readonly IMonitor _monitor;
     // private readonly IMultiplayerHelper _multiplayer;
-
+    
     #region Modules
 
     public InventoryManagement Inventory { get; }
@@ -61,6 +61,7 @@ public class StardewClient : BotBase
     public CommunityCenterMenu JunimoNote { get; }
     public CraftingMenu CraftingMenu { get; }
     public BuyAnimalMenu AnimalMenu { get; }
+    public ItemListMenuInteraction ItemListMenu { get; }
     #endregion
     
     public StardewClient(IModHelper helper, IManifest manifest,IMonitor monitor, IMultiplayerHelper multiplayer)
@@ -76,7 +77,7 @@ public class StardewClient : BotBase
         
         Logger.SetMonitor(_monitor); // this is here because I prefer it :)
 
-        Harmony harmony = new(manifest.UniqueID);
+        Harmony = new(manifest.UniqueID);
 
         #region repetitive
 
@@ -112,6 +113,7 @@ public class StardewClient : BotBase
         JunimoNote = new();
         CraftingMenu = new();
         AnimalMenu = new();
+        ItemListMenu = new();
 
         #endregion
         
@@ -119,20 +121,20 @@ public class StardewClient : BotBase
         // harmony.Patch(original: AccessTools.Method(typeof(Farmer), nameof(Farmer.LoseItemsOnDeath)),
         //     postfix: new HarmonyMethod(typeof(GameEvents.DeathPatch), nameof(GameEvents.DeathPatch.LoseItemsOnDeath_Postfix)));
         
-        harmony.Patch(original: AccessTools.Method(typeof(Event.DefaultCommands), nameof(Event.DefaultCommands.MineDeath)),
+        Harmony.Patch(original: AccessTools.Method(typeof(Event.DefaultCommands), nameof(Event.DefaultCommands.MineDeath)),
             postfix: new HarmonyMethod(typeof(GameEvents.DeathPatch), nameof(GameEvents.DeathPatch.MineDeath_Postfix)));
         
-        harmony.Patch(original: AccessTools.Method(typeof(Game1), nameof(Game1.PassOutNewDay)),
+        Harmony.Patch(original: AccessTools.Method(typeof(Game1), nameof(Game1.PassOutNewDay)),
             postfix: new HarmonyMethod(typeof(GameEvents.DeathPatch), nameof(GameEvents.DeathPatch.PassOutNewDay_PostFix)));
 
-        harmony.Patch(original: AccessTools.Method(typeof(ChatBox), nameof(ChatBox.receiveChatMessage)),
+        Harmony.Patch(original: AccessTools.Method(typeof(ChatBox), nameof(ChatBox.receiveChatMessage)),
             postfix: new HarmonyMethod(typeof(GameEvents.MessagePatch), nameof(GameEvents.MessagePatch.receiveChatMessage_Postfix)));
 
-        harmony.Patch(original: AccessTools.Method(typeof(Game1), nameof(Game1.addHUDMessage)),
+        Harmony.Patch(original: AccessTools.Method(typeof(Game1), nameof(Game1.addHUDMessage)),
             postfix: new HarmonyMethod(typeof(GameEvents.HudMessagePatch), nameof(GameEvents.HudMessagePatch.addHUDMessage_postfix)));
 
         // this is a prefix so we can check if the bot can be damaged again as a postfix would always be false
-        harmony.Patch(original: AccessTools.Method(typeof(Farmer), nameof(Farmer.takeDamage)),
+        Harmony.Patch(original: AccessTools.Method(typeof(Farmer), nameof(Farmer.takeDamage)),
             prefix: new HarmonyMethod(typeof(GameEvents.PlayerDamagedPatch), nameof(GameEvents.PlayerDamagedPatch.takeDamage_prefix)));
     }
     
