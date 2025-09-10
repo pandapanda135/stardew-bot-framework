@@ -136,6 +136,9 @@ public class StardewClient : BotBase
         // this is a prefix so we can check if the bot can be damaged again as a postfix would always be false
         Harmony.Patch(original: AccessTools.Method(typeof(Farmer), nameof(Farmer.takeDamage)),
             prefix: new HarmonyMethod(typeof(GameEvents.PlayerDamagedPatch), nameof(GameEvents.PlayerDamagedPatch.takeDamage_prefix)));
+        
+        Harmony.Patch(original: AccessTools.Method(typeof(Game1), nameof(Game1.eventFinished)),
+            postfix: new HarmonyMethod(typeof(GameEvents.EventFinishedPatch), nameof(GameEvents.EventFinishedPatch.eventFinished_postfix)));
     }
     
 }

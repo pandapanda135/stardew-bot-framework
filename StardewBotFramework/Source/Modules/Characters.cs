@@ -47,4 +47,9 @@ public class Characters
     {
         return Utility.getNumberOfCharactersInRadius(BotBase.CurrentLocation, position, radius);
     }
+
+    public bool InteractWithCharacter(NPC character)
+    {
+        return character.checkAction(BotBase.Farmer, BotBase.CurrentLocation);
+    }
 }

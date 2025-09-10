@@ -97,6 +97,8 @@ public class Goal
 
         public GoalDynamic(Character _character, int range)
         {
+            X = _character.TilePoint.X;
+            Y = _character.TilePoint.Y;
             character = _character;
             Radius = range;
         }

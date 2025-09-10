@@ -45,6 +45,7 @@ public class GameEvents
         StaticOnBotDamaged += StaticBotDamaged;
         StaticOnOtherPlayerDeath += OnStaticOnOtherPlayerDeath;
         StaticHudMessageAdded += OnStaticHUDMessageAdded;
+        StaticEventFinished += OnStaticEventFinished;
     }
 
     private static IModHelper? _helper;
@@ -141,6 +142,10 @@ public class GameEvents
     /// </summary>
     public event EventHandler<HUDMessageAddedEventArgs>? HUDMessageAdded;
     /// <summary>
+    /// When an event ends according to <see cref="Game1.eventFinished"/>
+    /// </summary>
+    public event EventHandler<EventEndedEventArgs> EventFinished;
+    /// <summary>
     /// When <see cref="Game1.activeClickableMenu"/> Changes
     /// </summary>
     public event EventHandler<BotMenuChangedEventArgs> MenuChanged;
@@ -149,6 +154,7 @@ public class GameEvents
     private static event EventHandler<OnOtherPlayerDeathEventArgs>? StaticOnOtherPlayerDeath;
     private static event EventHandler<HUDMessageAddedEventArgs>? StaticHudMessageAdded;
     private static event EventHandler<ChatMessageReceivedEventArgs>? StaticChatMessageReceived;
+    private static event EventHandler<EventEndedEventArgs>? StaticEventFinished; 
     #endregion
 
     #region Methods
@@ -236,6 +242,7 @@ public class GameEvents
     private void OnStaticOnBotDeath(object? sender, BotOnDeathEventArgs e) => OnBotDeath?.Invoke(sender, e);
     private void StaticBotDamaged(object? sender, BotDamagedEventArgs e) => OnBotDamaged?.Invoke(sender, e);
     private void OnStaticCaughtFish(object? sender, System.EventArgs e) => CaughtFish?.Invoke(sender, e);
+    private void OnStaticEventFinished(object? sender, EventEndedEventArgs e) => EventFinished.Invoke(sender, e);
         
     #endregion
 
@@ -351,6 +358,21 @@ public class GameEvents
             catch (Exception e)
             {
                 Logger.Error($"Failed in takeDamage \n {e} \n This is mostly likely because it is not subscribed to anything");
+            }
+        }
+    }
+
+    public class EventFinishedPatch
+    {
+        public static void eventFinished_postfix()
+        {
+            try
+            {
+                StaticEventFinished?.Invoke(new EventFinishedPatch(), new(Game1.CurrentEvent));
+            }
+            catch (Exception e)
+            {
+                Logger.Error($"Failed in eventFinished event \n {e} \n This is mostly likely because it is not subscribed to anything");
             }
         }
     }

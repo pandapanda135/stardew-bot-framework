@@ -57,7 +57,7 @@ public class AStar : AlgorithmBase
             // check if goal is blocked before pathfinding
             if (IPathing.collisionMap.IsBlocked(goal.X, goal.Y))
             {
-                if (goal is Goal.GoalNearby or Goal.GetToTile) // should probably check radius
+                if (goal is Goal.GoalNearby or Goal.GetToTile or Goal.GoalDynamic) // should probably check radius
                 {
                 }
                 else

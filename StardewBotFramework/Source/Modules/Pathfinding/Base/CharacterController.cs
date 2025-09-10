@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using StardewBotFramework.Source.Modules.Pathfinding.Algorithms;
 using StardewBotFramework.Source.ObjectToolSwaps;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -27,6 +28,8 @@ public class CharacterController
 	private static GameTime Time => Game1.currentGameTime;
 	private static int _nextIndex;
 	private static int _neighbourIndex;
+	private static Character? _dynamicCharacter;
+	private static Vector2 _startingCharacterPos;
 	private static PathNode _currentNode = null!;
 	private static PathNode _nextNode = null!;
 	
@@ -73,13 +76,19 @@ public class CharacterController
 		FailedPathFinding?.Invoke(new CharacterController(),EventArgs.Empty);
 	}
 
-	public static void StartMoveCharacter(Stack<PathNode> endPointPath)
+	public static void StartMoveCharacter(Stack<PathNode> endPointPath, Character? character = null)
 	{
+		Logger.Info($"start move character");
+		if (IsMoving()) return;
+	
 		_movingCharacter = true;
 		_endPath = endPointPath;
 		_currentLocation = BotBase.CurrentLocation;
-		
-		if (IsMoving()) return;
+		_dynamicCharacter = character;
+
+		Logger.Info($"end path: {_endPath.Count}    end point: {endPointPath.Count}");
+		if (character is not null) _startingCharacterPos = character.Position;
+		Logger.Info($"end path: {_endPath.Count}    end point: {endPointPath.Count}");
 		
 		MoveCharacter(Time);
 	}
@@ -93,6 +102,26 @@ public class CharacterController
 			_isDestroying = false;
 			_endPath.ToArray()[_nextIndex].Destroy = false;
 			_endPath.ToArray()[_neighbourIndex].Destroy = false;
+		}
+
+		if (_dynamicCharacter is not null && !_currentLocation.characters.Contains((NPC)_dynamicCharacter))
+		{
+			FailedPathFinding?.Invoke(new CharacterController(),EventArgs.Empty);
+			ForceStopMoving();
+			return;
+		}
+		// recalculate path is character moves away from current path
+		if (_dynamicCharacter is not null && _dynamicCharacter.Position != _startingCharacterPos)
+		{
+			AlgorithmBase.IPathing pathing = new AStar.Pathing();
+			PathNode start = new PathNode(_character.TilePoint.X, _character.TilePoint.Y, null);
+			Task.Run(async () =>
+			{
+				var path = await pathing.FindPath(start, new Goal.GoalDynamic(_dynamicCharacter, 1),
+					_currentLocation, 10000);
+				if (path.Count > 0) _endPath = path;
+				_startingCharacterPos = _dynamicCharacter.Position;
+			});
 		}
 		
 		PathNode node = _endPath.Peek();
@@ -257,6 +286,7 @@ public class CharacterController
 		_endPath = new Stack<PathNode>();
 		_currentNode = new PathNode(-1, -1, null);
 		_nextNode = _currentNode;
+		_movingCharacter = false;
 	}
 	
 	private static bool SwapItem(Point tile)
