@@ -51,7 +51,7 @@ public abstract class IShopMenu
     /// <returns>Will return false if there is no shop at the location else will return true</returns>
     public bool OpenShopUi(int x,int y)
     {
-        StardewClient.CurrentLocation.checkAction(new Location(x,y),Game1.viewport,StardewClient.Farmer);
+        BotBase.CurrentLocation.checkAction(new Location(x,y),Game1.viewport,BotBase.Farmer);
         if (Game1.activeClickableMenu is not ShopMenu)
         {
             Logger.Warning($"There is no shop at {x},{y}");

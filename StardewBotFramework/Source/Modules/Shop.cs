@@ -91,7 +91,7 @@ public class Shop
     /// <param name="quantity">Amount of item to buy.</param>
     public void BuyItem(int index, int quantity)
     {
-        if (_currentShop is null || _currentShop is not ShopMenu) return;
+        if (_currentShop is null) return;
         
         if (index < 4)
         {
@@ -112,7 +112,7 @@ public class Shop
         // use down arrow
         for (int i = index; i >= 4; i--)
         {
-            _currentShop.receiveLeftClick(_currentShop.downArrow.bounds.X, _currentShop.downArrow.bounds.Y, true);   
+            _currentShop.receiveLeftClick(_currentShop.downArrow.bounds.X, _currentShop.downArrow.bounds.Y);   
         }
         
         // buy amount
@@ -120,7 +120,7 @@ public class Shop
         for (int i = 0; i < quantity; i++)
         {
             Logger.Info($"buying click {i}");
-            _currentShop.receiveLeftClick(_currentShop.forSaleButtons[maxIndex].bounds.X, _currentShop.forSaleButtons[maxIndex].bounds.Y, true);    
+            _currentShop.receiveLeftClick(_currentShop.forSaleButtons[maxIndex].bounds.X, _currentShop.forSaleButtons[maxIndex].bounds.Y);    
         }
         
         for (int i = 0; i < _currentShop.inventory.actualInventory.Count; i++)
@@ -135,7 +135,7 @@ public class Shop
         for (int i = index; i >= 4; i--)
         {
             Logger.Info($"using down arrow  i: {i}");
-            _currentShop.receiveLeftClick(_currentShop.upArrow.bounds.X, _currentShop.upArrow.bounds.Y, true);   
+            _currentShop.receiveLeftClick(_currentShop.upArrow.bounds.X, _currentShop.upArrow.bounds.Y);   
         }
     }
 
@@ -146,7 +146,7 @@ public class Shop
     /// <param name="quantity">Amount of item to buy.</param>
     public void BuyItem(Item item, int quantity)
     {
-        if (_currentShop is null || _currentShop is not ShopMenu) return;
+        if (_currentShop is null) return;
         
         for (int i = 0; i < _currentShop.forSale.Count; i++)
         {
@@ -177,7 +177,7 @@ public class Shop
     /// <returns>The stock info for each item in the shop as a dictionary. If a shop is not open everything will return the lowest possible value</returns>
     public Dictionary<ISalable,ItemStockInformation> ForSaleStats(out List<ISalable> items, out int currency)
     {
-        if (_currentShop is null || _currentShop is not ShopMenu)
+        if (_currentShop is null)
         {
             currency = -1;
             items = new List<ISalable>();
@@ -195,7 +195,7 @@ public class Shop
     /// <param name="newTab">index of new tab.</param>
     public void ChangeTab(int newTab)
     {
-        if (_currentShop is null || _currentShop is not ShopMenu) return;
+        if (_currentShop is null) return;
         
         if (_currentShop.tabButtons.Count == 0) return;
         
@@ -209,7 +209,7 @@ public class Shop
     /// <returns>The amount the item has sold for. However, if this returns -1 it means there has been an issue with selling item</returns>
     public int SellBackItem(int index) // Item item
     {
-        if (_currentShop is null || _currentShop is not ShopMenu) return -1;
+        if (_currentShop is null) return -1;
         
         if (_currentShop is null) return -1;
 

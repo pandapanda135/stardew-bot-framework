@@ -88,7 +88,7 @@ public class BreadthFirstGrouping : AlgorithmBase
                 
                 _closedList.Push(current);
                 
-                Queue<Point> neighbours = IPathing.Graph.GroupNeighbours(current,7);
+                Queue<Point> neighbours = IPathing.Graph.GroupNeighbours(current,8);
                 foreach (var node in neighbours.Where(node => !_closedList.Contains(node)))
                 {
                     Logger.Info($"in foreach this is node: {node.X},{node.Y}");

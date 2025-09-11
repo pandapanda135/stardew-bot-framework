@@ -1,3 +1,5 @@
+using StardewValley;
+
 namespace StardewBotFramework.Source.Modules.Pathfinding.Base;
 
 public interface IGraph
@@ -16,6 +18,9 @@ public interface IGraph
         {1,1}, // south-east
     };
     
+    /// <summary>
+    /// This is so the index is the same as <see cref="Farmer.FacingDirection"/>
+    /// </summary>
     protected static readonly sbyte[,] GroupDirections = new sbyte[,]
     {
         { 0, -1 }, // north

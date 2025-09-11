@@ -38,11 +38,11 @@ public class Goal
     {
         if (cardinal)
         {
-            return Graph.IsInNeighbours(VectorLocation, node.VectorLocation, out var direction, 3);
+            return Graph.IsInNeighbours(VectorLocation, node.VectorLocation, out var direction, 4);
         }
         else
         {
-            return Graph.IsInNeighbours(VectorLocation, node.VectorLocation, out var direction, 7);
+            return Graph.IsInNeighbours(VectorLocation, node.VectorLocation, out var direction, 8);
         }
     }
     

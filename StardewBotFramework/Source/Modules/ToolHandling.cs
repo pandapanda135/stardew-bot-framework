@@ -60,7 +60,7 @@ public class ToolHandling
         Logger.Info($"using tool at direction: {direction}");
         ChangeFacingDirection(direction);
         Graph graph = new Graph();
-        Queue<Point> points = graph.GroupNeighbours(BotBase.Farmer.TilePoint, 3);
+        Queue<Point> points = graph.GroupNeighbours(BotBase.Farmer.TilePoint, 4);
         
         Logger.Info($"current point: {points.ToList()[direction]}");
         switch (direction) // N,E,S,W
@@ -237,7 +237,7 @@ public class ToolHandling
                 continue;
             }
             
-            if (Graph.IsInNeighbours(BotBase.Farmer.TilePoint, plantTile.Position, out var direction, 3))
+            if (Graph.IsInNeighbours(BotBase.Farmer.TilePoint, plantTile.Position, out var direction, 4))
             {
                 Logger.Info($"using neighbour if");
                 if (direction == -1) continue;
@@ -267,7 +267,7 @@ public class ToolHandling
                     continue;
                 }
 
-                if (!Graph.IsInNeighbours(BotBase.Farmer.TilePoint, plantTile.Position, out var pathDirection, 3))
+                if (!Graph.IsInNeighbours(BotBase.Farmer.TilePoint, plantTile.Position, out var pathDirection, 4))
                 {
                     Logger.Error($"Tile was not in neighbours: {plantTile.Position}");
                     group.Add(plantTile);
@@ -304,7 +304,7 @@ public class ToolHandling
             WaterTile? waterTile = GetNearestWaterTiles.Pathing.GetNeighbourWaterTile(tile, BotBase.CurrentLocation);
             if (waterTile is null) continue;
             
-            if (Graph.IsInNeighbours(BotBase.Farmer.TilePoint, waterTile.Position, out var direction, 3))
+            if (Graph.IsInNeighbours(BotBase.Farmer.TilePoint, waterTile.Position, out var direction, 4))
             {
                 if (direction == -1) continue;
                 ChangeFacingDirection(direction);
@@ -326,7 +326,7 @@ public class ToolHandling
 
             while (CharacterController.IsMoving()) continue; // this is not async
             
-            if (!Graph.IsInNeighbours(BotBase.Farmer.TilePoint, waterTile.Position, out var pathDirection, 3)) continue;
+            if (!Graph.IsInNeighbours(BotBase.Farmer.TilePoint, waterTile.Position, out var pathDirection, 4)) continue;
             ChangeFacingDirection(pathDirection);
             Logger.Error($"using bottom of useTool else");
             UseTool(pathDirection,false);
@@ -418,7 +418,7 @@ public class ToolHandling
                 continue;
             }
             
-            if (Graph.IsInNeighbours(BotBase.Farmer.TilePoint, groundTile.Position, out var direction, 3))
+            if (Graph.IsInNeighbours(BotBase.Farmer.TilePoint, groundTile.Position, out var direction, 4))
             {
                 if (direction == -1)
                 {
@@ -451,7 +451,7 @@ public class ToolHandling
                     continue;
                 }
 
-                if (!Graph.IsInNeighbours(BotBase.Farmer.TilePoint, groundTile.Position, out var pathDirection, 3))
+                if (!Graph.IsInNeighbours(BotBase.Farmer.TilePoint, groundTile.Position, out var pathDirection, 4))
                 {
                     Logger.Error($"Tile was not in neighbours: {groundTile}");
                     tiles.Add(groundTile);
@@ -480,7 +480,7 @@ public class ToolHandling
         Logger.Info($"starting removeObject public");
         PathNode start = new PathNode(BotBase.Farmer.TilePoint.X, BotBase.Farmer.TilePoint.Y, null);
 
-        if (Graph.IsInNeighbours(BotBase.Farmer.TilePoint, tile, out var direction, 3))
+        if (Graph.IsInNeighbours(BotBase.Farmer.TilePoint, tile, out var direction, 4))
         {
             Logger.Info($"object is a neighbour");
             ChangeFacingDirection(direction);
@@ -504,7 +504,7 @@ public class ToolHandling
                 GetObjectType(tile);
             }
 
-            if (!Graph.IsInNeighbours(BotBase.Farmer.TilePoint, tile, out var pathDirection, 3))
+            if (!Graph.IsInNeighbours(BotBase.Farmer.TilePoint, tile, out var pathDirection, 4))
             {
                 Logger.Error($"Tile was not in neighbours: {tile}");
                 return;

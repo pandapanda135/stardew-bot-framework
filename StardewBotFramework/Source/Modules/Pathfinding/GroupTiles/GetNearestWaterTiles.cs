@@ -129,7 +129,7 @@ public class GetNearestWaterTiles : AlgorithmBase
                 
                 ClosedList.Push(current);
                 
-                Queue<Point> neighbours = IPathing.Graph.GroupNeighbours(current,7);
+                Queue<Point> neighbours = IPathing.Graph.GroupNeighbours(current,8);
                 foreach (var node in neighbours.Where(node => !ClosedList.Contains(node)))
                 {
                     // Logger.Info($"in foreach this is node: {node.X},{node.Y}");
@@ -151,7 +151,7 @@ public class GetNearestWaterTiles : AlgorithmBase
             Group newGroup = new();
             foreach (var tile in group.GetTiles())
             {
-                foreach (var groupNeighbour in IPathing.Graph.GroupNeighbours(tile.Position,3))
+                foreach (var groupNeighbour in IPathing.Graph.GroupNeighbours(tile.Position,4))
                 {
                     try
                     {
@@ -178,7 +178,7 @@ public class GetNearestWaterTiles : AlgorithmBase
         {
             var waterTiles = location.waterTiles.waterTiles;
 
-            Queue<Point> tiles = IPathing.Graph.GroupNeighbours(tile.Position, 3);
+            Queue<Point> tiles = IPathing.Graph.GroupNeighbours(tile.Position, 4);
 
             foreach (var point in tiles)
             {

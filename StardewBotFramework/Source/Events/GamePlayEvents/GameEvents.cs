@@ -1,3 +1,4 @@
+using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Events.EventArgs;
 using StardewBotFramework.Source.Events.World_Events;
@@ -268,11 +269,15 @@ public class GameEvents
             }
         }
 
-        public static void MineDeath_Postfix()
+        private static Point _previousDeathTile;
+        public static void MineDeath_Postfix(ref Event @event, ref string[] args, EventContext context)
         {
             try
             {
-                StaticOnBotDeath?.Invoke(new DeathPatch(),new BotOnDeathEventArgs(BotBase.CurrentLocation,BotBase.Farmer.TilePoint,-1));
+                if (context.Event.farmer != BotBase.Farmer) return;
+                if (_previousDeathTile == BotBase.Farmer.TilePoint) return; // stops from spamming context as cutscene likes to spam
+                _previousDeathTile = BotBase.Farmer.TilePoint;
+                StaticOnBotDeath?.Invoke(new DeathPatch(),new BotOnDeathEventArgs(BotBase.CurrentLocation,BotBase.Farmer.TilePoint, -1));
             }
             catch (Exception e)
             {
@@ -364,11 +369,12 @@ public class GameEvents
 
     public class EventFinishedPatch
     {
-        public static void eventFinished_postfix()
+        public static void eventFinished_prefix()
         {
             try
             {
-                StaticEventFinished?.Invoke(new EventFinishedPatch(), new(Game1.CurrentEvent));
+                Logger.Info($"game 1 event: {Game1.CurrentEvent}   location event: {BotBase.CurrentLocation.currentEvent}");
+                StaticEventFinished?.Invoke(new EventFinishedPatch(), new(BotBase.CurrentLocation.currentEvent));
             }
             catch (Exception e)
             {

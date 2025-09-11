@@ -13,11 +13,11 @@ namespace StardewBotFramework.Source;
 
 public abstract class BotBase
 {
-    protected static BotBase? Instance { get; set; }
-    protected IModHelper _helper;
-    protected IManifest _manifest;
-    protected IMonitor _monitor;
-    protected IMultiplayerHelper _multiplayer;
+    protected static BotBase Instance = null!;
+    protected IModHelper _helper = null!;
+    protected IManifest _manifest = null!;
+    protected IMonitor _monitor = null!;
+    protected IMultiplayerHelper _multiplayer = null!;
     internal static Farmer Farmer => Game1.player;
     internal static GameLocation CurrentLocation => Game1.currentLocation;
     internal IModHelper Helper => _helper;
@@ -30,6 +30,8 @@ public abstract class BotBase
     private static IReflectedField<TextBox>? _reflectedTextBox;
     private static IReflectedField<NetMutexQueue<Guid>> _reflectedObjectDestroy;
     public GameEvents GameEvents = null!;
+    public Farmer _farmer => Farmer;
+    public GameLocation _currentLocation => CurrentLocation;
     
     /// <summary>
     /// Change the selectedResponse value in <see cref="DialogueBox"/>, this will change the "Response" to a question dialogue.

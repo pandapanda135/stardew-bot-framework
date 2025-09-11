@@ -7,7 +7,7 @@ public class ItemListMenuInteraction
 {
 	public ItemListMenu Menu = null!;
 	public int ItemPerPage => Menu.itemsPerCategoryPage;
-	// public int CurrentPage => BotBase.Instance?.Helper.Reflection.GetField<int>(Menu, "currentTab").GetValue() ?? -1;
+	// public int CurrentPage => BotBase.?.Helper.Reflection.GetField<int>(Menu, "currentTab").GetValue() ?? -1;
 
 	public void SetMenu(ItemListMenu menu)
 	{

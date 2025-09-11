@@ -138,7 +138,7 @@ public class StardewClient : BotBase
             prefix: new HarmonyMethod(typeof(GameEvents.PlayerDamagedPatch), nameof(GameEvents.PlayerDamagedPatch.takeDamage_prefix)));
         
         Harmony.Patch(original: AccessTools.Method(typeof(Game1), nameof(Game1.eventFinished)),
-            postfix: new HarmonyMethod(typeof(GameEvents.EventFinishedPatch), nameof(GameEvents.EventFinishedPatch.eventFinished_postfix)));
+            prefix: new HarmonyMethod(typeof(GameEvents.EventFinishedPatch), nameof(GameEvents.EventFinishedPatch.eventFinished_prefix)));
     }
     
 }
