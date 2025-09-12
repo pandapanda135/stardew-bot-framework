@@ -34,16 +34,10 @@ public class Goal
         return false;
     }
 
-    public bool IsInEndRadius(PathNode node,int radius,bool cardinal = false)
+    public bool IsInEndRadius(PathNode node,int radius,bool cardinal = false) // TODO: this isn't implemented?
     {
-        if (cardinal)
-        {
-            return Graph.IsInNeighbours(VectorLocation, node.VectorLocation, out var direction, 4);
-        }
-        else
-        {
-            return Graph.IsInNeighbours(VectorLocation, node.VectorLocation, out var direction, 8);
-        }
+        int directions = cardinal ? 4 : 8;
+        return Graph.IsInNeighbours(VectorLocation, node.VectorLocation, out _, directions);
     }
     
     /// <summary>

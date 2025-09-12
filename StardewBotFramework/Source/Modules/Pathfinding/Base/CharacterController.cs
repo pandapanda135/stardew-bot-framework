@@ -4,6 +4,8 @@ using StardewBotFramework.Source.ObjectToolSwaps;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Locations;
+using StardewValley.Monsters;
+using StardewValley.Tools;
 using Logger = StardewBotFramework.Debug.Logger;
 using Object = StardewValley.Object;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
@@ -29,9 +31,11 @@ public class CharacterController
 	private static int _nextIndex;
 	private static int _neighbourIndex;
 	private static Character? _dynamicCharacter;
-	private static Vector2 _startingCharacterPos;
+	private static Point _startingCharacterTile;
 	private static PathNode _currentNode = null!;
 	private static PathNode _nextNode = null!;
+
+	private static bool _attacking;
 	
 	private static readonly sbyte[,] Directions = new sbyte[4,2]
 	{
@@ -49,8 +53,12 @@ public class CharacterController
 	public static void Update(object? sender, UpdateTickingEventArgs e)
 	{
 		if (_endPath.Count < 1) _movingCharacter = false;
-		
-		if (!_movingCharacter) return;
+
+		var monster = _dynamicCharacter as Monster;
+		if ((!_movingCharacter && !_attacking) || (_attacking && monster is not null && monster.Health < 1))
+		{
+			return;
+		}
 
 		if (!BotBase.CurrentLocation.Equals(_currentLocation))
 		{
@@ -76,23 +84,27 @@ public class CharacterController
 		FailedPathFinding?.Invoke(new CharacterController(),EventArgs.Empty);
 	}
 
-	public static void StartMoveCharacter(Stack<PathNode> endPointPath, Character? character = null)
+	public static void StartMoveCharacter(Stack<PathNode> endPointPath, Character? character = null,bool attacking = false)
 	{
 		Logger.Info($"start move character");
 		if (IsMoving()) return;
 	
+		// stop pathfinder getting stuck as _movingCharacter wouldn't get set to false again
+		if (!endPointPath.Any()) return;
+		
 		_movingCharacter = true;
 		_endPath = endPointPath;
 		_currentLocation = BotBase.CurrentLocation;
 		_dynamicCharacter = character;
+		_attacking = attacking;
 
-		Logger.Info($"end path: {_endPath.Count}    end point: {endPointPath.Count}");
-		if (character is not null) _startingCharacterPos = character.Position;
-		Logger.Info($"end path: {_endPath.Count}    end point: {endPointPath.Count}");
-		
+		if (character is not null) _startingCharacterTile = character.TilePoint;
+
 		MoveCharacter(Time);
 	}
-	
+
+	private static readonly int[] CorrectFacingDirections = new[] { 0, 1, 2, 3, 0, 0, 2, 2 };
+
 	private static void MoveCharacter(GameTime time) //TODO: figure out why movePosition does not change character's animation.
 	{
 		if (BotBase.Farmer.UsingTool) return; // check if animation running
@@ -104,23 +116,41 @@ public class CharacterController
 			_endPath.ToArray()[_neighbourIndex].Destroy = false;
 		}
 
-		if (_dynamicCharacter is not null && !_currentLocation.characters.Contains((NPC)_dynamicCharacter))
+		if (_dynamicCharacter is not null && !_currentLocation.characters.Contains(_dynamicCharacter))
 		{
-			FailedPathFinding?.Invoke(new CharacterController(),EventArgs.Empty);
+			if (!_attacking) // if bot is attacking will also be removed if dies
+			{
+				FailedPathFinding?.Invoke(new CharacterController(),EventArgs.Empty);
+			}
 			ForceStopMoving();
 			return;
 		}
-		// recalculate path is character moves away from current path
-		if (_dynamicCharacter is not null && _dynamicCharacter.Position != _startingCharacterPos)
+		
+		if (_dynamicCharacter is not null && _attacking &&
+		    (Graph.IsInNeighbours(_character.TilePoint, _dynamicCharacter.TilePoint, out var direction)
+		     || _dynamicCharacter.TilePoint == _character.TilePoint))
 		{
+			Logger.Info($"attacking in character controller");
+			BotBase.Farmer.FacingDirection = CorrectFacingDirections[direction];
+			SwapItemHandler.SwapItem(typeof(MeleeWeapon),"Weapon");
+			BotBase.Farmer.BeginUsingTool();
+			return;
+		}
+		
+		// recalculate path is character moves away from current path
+		if (_dynamicCharacter is not null && _dynamicCharacter.TilePoint != _startingCharacterTile)
+		{
+			if (_currentLocation.isCollidingPosition(_dynamicCharacter.GetBoundingBox(),Game1.viewport,_dynamicCharacter)) return; // stop issues with pathing if in wall or other occupied tile
+			_startingCharacterTile = _dynamicCharacter.TilePoint;
 			AlgorithmBase.IPathing pathing = new AStar.Pathing();
+			// pathing.BuildCollisionMap(_currentLocation, _character.TilePoint.X + 10, _character.TilePoint.Y + 10
+			// 	,_character.TilePoint.X - 10, _character.TilePoint.Y - 10);
 			PathNode start = new PathNode(_character.TilePoint.X, _character.TilePoint.Y, null);
 			Task.Run(async () =>
 			{
 				var path = await pathing.FindPath(start, new Goal.GoalDynamic(_dynamicCharacter, 1),
 					_currentLocation, 10000);
 				if (path.Count > 0) _endPath = path;
-				_startingCharacterPos = _dynamicCharacter.Position;
 			});
 		}
 		
@@ -249,7 +279,7 @@ public class CharacterController
 					Logger.Info($"trying to use tool");
 					_isDestroying = true;
 					SwapItem(node.VectorLocation);
-					Game1.player.BeginUsingTool();
+					BotBase.Farmer.BeginUsingTool();
 					_character.MovePosition(time, Game1.viewport, _currentLocation);
 					HandleWarp(Game1.player);
 					return;

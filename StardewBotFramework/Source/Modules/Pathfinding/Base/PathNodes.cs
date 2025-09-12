@@ -37,6 +37,7 @@ public class PathNode : IComparable<PathNode>
 
     private int GetCost()
     {
+        if (BotBase.CurrentLocation != null) return 0;
         string type = BotBase.CurrentLocation.doesTileHaveProperty(X, Y, "Type", "Back");
         switch (type?.ToLower()) // we take these values from the game, it probably knows best.
         {
@@ -55,10 +56,10 @@ public class PathNode : IComparable<PathNode>
 
     public int CompareTo(PathNode? other)
     {
+        if (other is null) return -1;
+
         if (other.VectorLocation == VectorLocation && other.Parent.Equals(Parent)) return 0;
-
-        if (other is not PathNode) return -1;
-
+        
         return 1;
     }
 

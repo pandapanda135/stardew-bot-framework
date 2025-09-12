@@ -62,6 +62,8 @@ public class StardewClient : BotBase
     public CraftingMenu CraftingMenu { get; }
     public BuyAnimalMenu AnimalMenu { get; }
     public ItemListMenuInteraction ItemListMenu { get; }
+    public ElevatorMenu ElevatorMenu { get; }
+
     #endregion
     
     public StardewClient(IModHelper helper, IManifest manifest,IMonitor monitor, IMultiplayerHelper multiplayer)
@@ -114,6 +116,7 @@ public class StardewClient : BotBase
         CraftingMenu = new();
         AnimalMenu = new();
         ItemListMenu = new();
+        ElevatorMenu = new();
 
         #endregion
         

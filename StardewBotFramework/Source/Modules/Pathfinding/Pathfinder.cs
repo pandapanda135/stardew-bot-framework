@@ -1,8 +1,7 @@
 using StardewBotFramework.Source.Modules.Pathfinding.Algorithms;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
-using StardewBotFramework.Debug;
 using StardewValley;
-using StardewValley.Pathfinding;
+using StardewValley.Monsters;
 using PathNode = StardewBotFramework.Source.Modules.Pathfinding.Base.PathNode;
 
 namespace StardewBotFramework.Source.Modules.Pathfinding;
@@ -34,6 +33,28 @@ public class Pathfinder
         CharacterController.StartMoveCharacter(path,npc);
 
         while (CharacterController.IsMoving()) {} // slightly jank way to get around MovingCharacter not being async
+    }
+
+    /// <summary>
+    /// Attack the monster sent with <see cref="Goal.GoalDynamic"/>.
+    /// </summary>
+    /// <param name="goal">Should be <see cref="Goal.GoalDynamic"/> with a monster being provided</param>
+    /// <param name="canDestroy">can destroy if needed</param>
+    /// <param name="buildCollision">Build collision map before pathfinding</param>
+    public async Task AttackMonster(Goal goal, bool canDestroy = false, bool buildCollision = true)
+    {
+        AlgorithmBase.IPathing pathing = new AStar.Pathing();
+        if (buildCollision) pathing.BuildCollisionMap(Game1.currentLocation);
+        
+        PathNode start = new PathNode(Game1.player.TilePoint.X, Game1.player.TilePoint.Y, null);
+        
+        Stack<PathNode> path = await pathing.FindPath(start,goal,Game1.currentLocation,10000,canDestroy);
+
+        Character? npc = null;
+        if (goal is Goal.GoalDynamic dynamic) npc = dynamic.character; 
+        CharacterController.StartMoveCharacter(path,npc as Monster,true);
+
+        while (CharacterController.IsMoving()) {}
     }
 
     /// <summary>
