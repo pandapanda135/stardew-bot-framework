@@ -1,6 +1,8 @@
+using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
 using StardewValley;
 using StardewValley.Objects;
+using xTile.Dimensions;
 using Object = StardewValley.Object;
 
 namespace StardewBotFramework.Source.Modules;
@@ -91,5 +93,16 @@ public class ObjectInteraction
         }
 
         return null;
+    }
+
+    // public string[] GetActionTiles()
+    // {
+    //     Game1.currentLocation.tiles
+    // }
+
+    public bool DoActionTile(Point point)
+    {
+        if (!BotBase.CurrentLocation.isActionableTile(point.X, point.Y, BotBase.Farmer)) return false;
+        return BotBase.CurrentLocation.checkAction(new Location(point.X, point.Y), Game1.viewport, BotBase.Farmer);
     }
 }

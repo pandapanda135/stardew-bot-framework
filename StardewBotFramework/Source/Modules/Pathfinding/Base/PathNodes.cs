@@ -37,7 +37,7 @@ public class PathNode : IComparable<PathNode>
 
     private int GetCost()
     {
-        if (BotBase.CurrentLocation != null) return 0;
+        if (BotBase.CurrentLocation == null) return 0; // fixes spamming console
         string type = BotBase.CurrentLocation.doesTileHaveProperty(X, Y, "Type", "Back");
         switch (type?.ToLower()) // we take these values from the game, it probably knows best.
         {
@@ -76,7 +76,7 @@ public class PathNode : IComparable<PathNode>
     
     public static int ManhattanHeuristic(Point start,Point end)
     {
-        Logger.Info($"X:{start.X - end.X}   Y: {start.Y - end.Y}");
+        Logger.Info($"heuristic: {Math.Abs(start.X - end.X) + Math.Abs(start.Y - end.Y)}");
         return Math.Abs(start.X - end.X) + Math.Abs(start.Y - end.Y);
     }
 }
