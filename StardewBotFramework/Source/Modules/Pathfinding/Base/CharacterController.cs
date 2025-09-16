@@ -49,7 +49,7 @@ public class CharacterController
 	/// <summary>
 	/// The maximum amount of time the bot can stay in the same position for. This is in milliseconds e.g. 5 seconds would be 5000
 	/// </summary>
-	public static readonly int MaxPauseTime = 5000;
+	private const int MaxPauseTime = 5000;
 	public static void Update(object? sender, UpdateTickingEventArgs e)
 	{
 		if (_endPath.Count < 1) _movingCharacter = false;
@@ -103,7 +103,8 @@ public class CharacterController
 		MoveCharacter(Time);
 	}
 
-	private static readonly int[] CorrectFacingDirections = new[] { 0, 1, 2, 3, 0, 0, 2, 2 };
+	// this is so bot faces correct direction with diagonal tiles
+	private static readonly int[] CorrectFacingDirections = { 0, 1, 2, 3, 0, 0, 2, 2 };
 
 	private static void MoveCharacter(GameTime time) //TODO: figure out why movePosition does not change character's animation.
 	{
@@ -140,7 +141,8 @@ public class CharacterController
 		// recalculate path is character moves away from current path
 		if (_dynamicCharacter is not null && _dynamicCharacter.TilePoint != _startingCharacterTile)
 		{
-			if (_currentLocation.isCollidingPosition(_dynamicCharacter.GetBoundingBox(),Game1.viewport,_dynamicCharacter)) return; // stop issues with pathing if in wall or other occupied tile
+			// stop issues with pathing, if in wall or other occupied tile mainly for monsters.
+			if (_currentLocation.isCollidingPosition(_dynamicCharacter.GetBoundingBox(),Game1.viewport,_dynamicCharacter)) return;
 			_startingCharacterTile = _dynamicCharacter.TilePoint;
 			AlgorithmBase.IPathing pathing = new AStar.Pathing();
 			// pathing.BuildCollisionMap(_currentLocation, _character.TilePoint.X + 10, _character.TilePoint.Y + 10
@@ -187,12 +189,12 @@ public class CharacterController
 
 		if (_currentLocation is not MovieTheater)
 		{
-			foreach (var npc in _currentLocation.characters)
+			if (_currentLocation.characters.Any(npc => !npc.Equals(_character) && npc.GetBoundingBox()
+				    .Intersects(_character.GetBoundingBox()) && npc.isMoving()))
 			{
-				if (!npc.Equals(_character) && npc.GetBoundingBox().Intersects(_character.GetBoundingBox()) && npc.isMoving())
-				{
-					Logger.Error($"Ran into a character"); //TODO: re-calulate path (Could get into a loop of being in character until the npc moves. Maybe check next node for character)
-				}
+				Logger.Error($"Ran into a character"); //TODO: re-calulate path (Could get into a loop of being in character until the npc moves. Maybe check next node for character)
+				FailedPathFinding?.Invoke(new CharacterController(),EventArgs.Empty);
+				return;
 			}
 		}
 		
@@ -216,7 +218,7 @@ public class CharacterController
 			_character.SetMovingUp(true);
 			_character.FacingDirection = 0;
 		}
-		
+
 		foreach (var pathNode in _endPath)
 		{
 			_nextIndex = _endPath.ToList().IndexOf(pathNode);
@@ -225,65 +227,63 @@ public class CharacterController
 				int indexPlus = _nextIndex;
 				if (_endPath.Count > 1) indexPlus += 1;
 				_nextNode = _endPath.ToList()[indexPlus];
-				_neighbourIndex = _endPath.ToList().IndexOf(_nextNode); // need this to set next PathNode.Destroy to false
-				Object objectInNextTile = _currentLocation.getObjectAtTile(_nextNode.X,_nextNode.Y);
-			
-				if (objectInNextTile is Fence)
+				_neighbourIndex =
+					_endPath.ToList().IndexOf(_nextNode); // need this to set next PathNode.Destroy to false
+				Object objectInNextTile = _currentLocation.getObjectAtTile(_nextNode.X, _nextNode.Y);
+
+				if (objectInNextTile is Fence fence && fence.isGate.Value && !fence.isPassable())
 				{
-					if (objectInNextTile is Fence fence && fence.isGate.Value && !fence.isPassable())
-					{
-						fence.toggleGate(true);
-					}
+					fence.toggleGate(true);
 				}
 
-				if (objectInNextTile is not null && !objectInNextTile.isPassable())
-				{
-					Logger.Error($"The object in the next tile was not passable, the object was a {objectInNextTile.Name}");
-					_character.Halt();
-					FailedPathFinding?.Invoke(new CharacterController(),EventArgs.Empty);
-					return;
-				}
+				if (objectInNextTile is null || objectInNextTile.isPassable()) continue;
+				
+				Logger.Error($"The object in the next tile was not passable, the object was a {objectInNextTile.Name}");
+				_character.Halt();
+				FailedPathFinding?.Invoke(new CharacterController(), EventArgs.Empty);
+				return;
 			}
-			
-			if (!pathNode.Destroy || _isDestroying)
+		}
+
+		PathNode peekNode = _endPath.Peek();
+		if (!peekNode.Destroy || _isDestroying)
+		{
+			_character.MovePosition(time, Game1.viewport, _currentLocation);
+			HandleWarp(Game1.player);
+			return;
+		}
+		for (int i = 0; i <= 3; i++)
+		{
+			// get cardinal directions
+			int neighborX = peekNode.X + Directions[i, 0];
+			int neighborY = peekNode.Y + Directions[i, 1];
+
+			if (neighborX == Game1.player.TilePoint.X && neighborY == Game1.player.TilePoint.Y) // need to get neighbour 
 			{
+				// this is to fix issues with sudden direction changes in path (should maybe try to make it so the bot goes in the middle of a tile as this is kind of a patch fix)
+				switch (i)
+				{
+					case 0:
+						_character.FacingDirection = 1; // west
+						break;
+					case 1:
+						_character.FacingDirection = 3; // east
+						break;
+					case 2:
+						_character.FacingDirection = 0; // south
+						break;
+					case 3:
+						_character.FacingDirection = 2; // north
+						break;
+				}
+				
+				Logger.Info($"trying to use tool");
+				_isDestroying = true;
+				SwapItem(node.VectorLocation);
+				BotBase.Farmer.BeginUsingTool();
 				_character.MovePosition(time, Game1.viewport, _currentLocation);
 				HandleWarp(Game1.player);
 				return;
-			}
-			for (int i = 0; i <= 3; i++)
-			{
-				// get cardinal directions
-				int neighborX = pathNode.X + Directions[i, 0];
-				int neighborY = pathNode.Y + Directions[i, 1];
-
-				if (neighborX == Game1.player.TilePoint.X && neighborY == Game1.player.TilePoint.Y) // need to get neighbour 
-				{
-					// this is to fix issues with sudden direction changes in path (should maybe try to make it so the bot goes in the middle of a tile as this is kind of a patch fix)
-					switch (i)
-					{
-						case 0:
-							_character.FacingDirection = 1; // west
-							break;
-						case 1:
-							_character.FacingDirection = 3; // east
-							break;
-						case 2:
-							_character.FacingDirection = 0; // south
-							break;
-						case 3:
-							_character.FacingDirection = 2; // north
-							break;
-					}
-					
-					Logger.Info($"trying to use tool");
-					_isDestroying = true;
-					SwapItem(node.VectorLocation);
-					BotBase.Farmer.BeginUsingTool();
-					_character.MovePosition(time, Game1.viewport, _currentLocation);
-					HandleWarp(Game1.player);
-					return;
-				}
 			}
 		}
 	}
@@ -301,12 +301,11 @@ public class CharacterController
 				Game1.CurrentEvent.TryStartEndFestivalDialogue(character as Farmer);
 			}
 		}
-		Game1.player.warpFarmer(warp,Game1.player.FacingDirection);
+		BotBase.Farmer.warpFarmer(warp,BotBase.Farmer.FacingDirection);
 	}
 	
 	public static bool isPlayerPresent()
 	{
-		
 		return _currentLocation.farmers.Any();
 	}
 	public static bool IsMoving() => _movingCharacter;

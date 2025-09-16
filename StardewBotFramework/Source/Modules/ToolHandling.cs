@@ -190,7 +190,7 @@ public class ToolHandling
     
     private async Task UseToolOnGroup(Group group,Tool tool,int tileAmount = -1)
     {
-        SwapItemHandler.SwapItem(typeof(WateringCan),"");
+        SwapItemHandler.SwapItem(tool.GetType(),"");
         
         AlgorithmBase.IPathing pathing = new AStar.Pathing();
         pathing.BuildCollisionMap(BotBase.CurrentLocation);
@@ -199,6 +199,7 @@ public class ToolHandling
         {
             tileAmount = group.GetTiles().Count;
         }
+        Logger.Info($"tile amount: {tileAmount}");
         for (int i = 0; i < tileAmount; i++)
         {
             if (BotBase.Farmer.CurrentTool is not WateringCan wateringCan)
@@ -258,7 +259,6 @@ public class ToolHandling
                 }
                 
                 CharacterController.StartMoveCharacter(path);
-
                 while (CharacterController.IsMoving()) continue; // this is not async
                 
                 if (BotBase.Farmer.TilePoint == plantTile.Position) // will sometimes path-find to tile, this should not happen, I'm too lazy to fix this.

@@ -72,16 +72,4 @@ public class Graph : IGraph
         direction = -1;
         return false;
     }
-    
-
-    /// <summary>
-    /// This calculates the next cost between the current node and the next one 
-    /// </summary>
-    /// <param name="current">current node</param>
-    /// <param name="next">Next node</param>
-    /// <returns>the cost between the current node and next as an integer </returns>
-    public static int Cost(PathNode current, PathNode next)
-    {
-        return current.Cost - next.Cost;
-    }
 }

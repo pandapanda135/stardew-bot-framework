@@ -13,7 +13,8 @@ public class AStar : AlgorithmBase
     public class Pathing : IPathing
     {
         #region Pathfinding
-        
+
+        private int averageTileCost = 3; // between 1-6 in PathNodes
         async Task<Stack<PathNode>> IPathing.FindPath(PathNode startPoint, Goal goal, GameLocation location,
             int limit, bool canDestroy)
         {
@@ -94,9 +95,10 @@ public class AStar : AlgorithmBase
                 foreach (var next in neighbours.Where(node => !IPathing.ClosedList.Contains(node) && !IPathing.collisionMap.IsBlocked(node.X, node.Y) 
                             || canDestroyObjects && locationObjects.ContainsKey(node.VectorLocation.ToVector2())))
                 {
-                    int newCost = current.Cost - Graph.Cost(current, next);
-                    Logger.Error($"this is new cost at start: {newCost}   next.cost: {next.Cost}    contains: {IPathing.PriorityFrontier.Contains(next)}");
-                    if (IPathing.PriorityFrontier.Contains(next) && newCost < next.Cost) continue;
+                    int newCumulative = current.GCost + next.Cost;
+                    Logger.Error($"this is new cost at start: {newCumulative}   next.cost: {next.Cost}    contains: {IPathing.PriorityFrontier.Contains(next)}");
+                    
+                    if (IPathing.PriorityFrontier.Contains(next) && newCumulative >= next.GCost) continue;
                     StardewClient.debugNode.Add(next);
                     
                     // ugly but it works
@@ -104,15 +106,16 @@ public class AStar : AlgorithmBase
                     {
                         if (DestroyLitterObject.IsDestructible(locationObjects[next.VectorLocation.ToVector2()]))
                             next.Destroy = true;
-                        // if (IPathing.DestructibleObjects.Contains(locationObjects[next.VectorLocation.ToVector2()].Name)) next.Destroy = true;
                     }
 
-                    newCost += next.Cost;
-                    Logger.Error($"new cost after cost: {newCost}");
-                    int priority = newCost + PathNode.ManhattanHeuristic(next.VectorLocation,goal.VectorLocation);
+                    next.GCost = newCumulative;
+                    Logger.Error($"new cost after cost: {newCumulative}   tile cost: {next.Cost}");
+                    // we weight heuristic to find a path quicker, this may lead to more inefficient paths though.
+                    // Also multiply to make heuristic be similar to GCost.
+                    int priority = next.GCost + (PathNode.ManhattanHeuristic(next.VectorLocation,goal.VectorLocation) * averageTileCost);
                     Logger.Info($"A Star estimated heuristic {priority}");
                     IPathing.PriorityFrontier.Enqueue(next, priority);
-                    IPathing.PathToEndPoint.Push(next);
+                    IPathing.PathToEndPoint.Push(next); // we already keep track of parents in the track nodes, do we need this?    
                 }
 
                 increase++;

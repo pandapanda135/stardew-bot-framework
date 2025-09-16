@@ -1,13 +1,6 @@
-using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using StardewBotFramework.Debug;
-using StardewModdingAPI;
-using StardewModdingAPI.Events;
 using StardewValley;
-using StardewValley.Menus;
-using xTile.Dimensions;
-using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace StardewBotFramework.Source.Modules.Pathfinding.Base;
 
@@ -15,24 +8,19 @@ public class AlgorithmBase
 {
     public Character? Character;
     
-    private List<PathNode> _goals;
-    
     public GameLocation? CurrentLocation;
     
     // will be used to see if destroying stuff like trees is allowed in pathfinding
     public bool AllowDestruction;
 
-    public AlgorithmBase(Character character,GameLocation currentLocation,List<PathNode> goals)
+    public AlgorithmBase(Character character,GameLocation currentLocation)
     {
         Character = character;
         CurrentLocation = currentLocation;
-        _goals = goals;
     }
 
     public AlgorithmBase()
     {}
-    
-    // ,GameLocation location, Character character
     
     // this is so multiple types of pathing can be implemented more easily
     public interface IPathing
@@ -43,12 +31,12 @@ public class AlgorithmBase
         
         protected static readonly AlgorithmBase Base = new();
 
-        public static Stack<PathNode> PathToEndPoint = new();
+        public static readonly Stack<PathNode> PathToEndPoint = new();
         
         /// <summary>
         /// this contains Nodes the pathfinding has already reached
         /// </summary>
-        public static HashSet<PathNode> ClosedList = new();
+        public static readonly HashSet<PathNode> ClosedList = new();
 
         protected static readonly Graph Graph = new();
 
@@ -61,31 +49,21 @@ public class AlgorithmBase
         {
             if (!path.TryPeek(out var pathEndPoint) || pathEndPoint.VectorLocation != goal.VectorLocation && goal is Goal.GoalPosition)
             {
-                if (pathEndPoint is null)
-                {
-                    Logger.Error($"Ending Rebuild path early end path: {path.Count} goal: {goal.VectorLocation}");
-                    return new Stack<PathNode>();
-                }
-                
+                Logger.Error($"Ending Rebuild path early, end path: {path.Count} goal: {goal.VectorLocation}");
                 return new Stack<PathNode>();
             }
 
             PathNode current = path.Pop();
-
             Stack<PathNode> correctPath = new();
 
             Logger.Info($"starting while loop in rebuildPath");
             while (!current.Equals(startPoint))
             {
                 correctPath.Push(current);
-                if (current.Parent is not null)
-                {
-                    Logger.Info($"{current.VectorLocation} checking parent");
-                    current = current.Parent!;
-                    continue;
-                }
-
-                break;
+                if (current.Parent is null) break;
+                
+                Logger.Info($"{current.VectorLocation} checking parent {current.Parent.VectorLocation}");
+                current = current.Parent!;
             }
 
             Logger.Info($"Ending RebuildPath");

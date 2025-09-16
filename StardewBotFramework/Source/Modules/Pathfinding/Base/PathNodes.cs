@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
+using StardewValley;
 
 namespace StardewBotFramework.Source.Modules.Pathfinding.Base;
 
@@ -13,7 +14,15 @@ public class PathNode : IComparable<PathNode>
 
     public PathNode? Parent;
 
-    public int Cost;
+    /// <summary>
+    /// The Cumulative cost
+    /// </summary>
+    public int GCost;
+
+    /// <summary>
+    /// The Terrain cost
+    /// </summary>
+    public readonly int Cost;
 
     public bool Destroy;
     
@@ -22,7 +31,7 @@ public class PathNode : IComparable<PathNode>
         X = x;
         Y = y;
         Parent = parent;
-        Cost = 10 + GetCost(); // cost == -1 ? Random.Shared.Next(0, 6) : cost
+        Cost = GetCost(); // cost == -1 ? Random.Shared.Next(0, 6) : cost
         Destroy = destroy;
     }
 
@@ -31,24 +40,24 @@ public class PathNode : IComparable<PathNode>
         X = vector.X;
         Y = vector.Y;
         Parent = parent;
-        Cost = 10 + GetCost(); // cost == -1 ? Random.Shared.Next(0, 6) : cost
+        Cost = GetCost(); // cost == -1 ? Random.Shared.Next(0, 6) : cost
         Destroy = destroy;
     }
 
     private int GetCost()
     {
-        if (BotBase.CurrentLocation == null) return 0; // fixes spamming console
+        if (BotBase.CurrentLocation == null!) return 0; // fixes spamming console
         string type = BotBase.CurrentLocation.doesTileHaveProperty(X, Y, "Type", "Back");
         switch (type?.ToLower()) // we take these values from the game, it probably knows best.
         {
             case "stone":
-                return -7; // -7
+                return 1; // -7
             case "wood":
-                return -4; // -4
+                return 2; // -4
             case "dirt":
-                return -2; // -2
+                return 4; // -2
             case "grass":
-                return -1; // -1
+                return 6; // -1
             default:
                 return 0;
         }
@@ -58,7 +67,7 @@ public class PathNode : IComparable<PathNode>
     {
         if (other is null) return -1;
 
-        if (other.VectorLocation == VectorLocation && other.Parent.Equals(Parent)) return 0;
+        if (other.VectorLocation == VectorLocation && other.Parent is not null && other.Parent.Equals(Parent)) return 0;
         
         return 1;
     }
