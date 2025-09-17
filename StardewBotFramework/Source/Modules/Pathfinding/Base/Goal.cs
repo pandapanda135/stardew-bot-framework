@@ -34,18 +34,20 @@ public class Goal
         return false;
     }
 
-    public bool IsInEndRadius(PathNode node,int radius,bool cardinal = false)
+    public bool IsInEndRadius(PathNode node, int radius, bool cardinal = false)
     {
-        Point farmerPoint = BotBase.Farmer.TilePoint;
-        if (cardinal && !(node.X != farmerPoint.X && node.Y == farmerPoint.Y ||
-                         node.X == farmerPoint.X && node.Y != farmerPoint.Y))
+        return IsInEndRadius(new Point(node.X, node.Y), radius, cardinal);
+    }
+    
+    public bool IsInEndRadius(Point node,int radius,bool cardinal = false)
+    {
+        if (cardinal && !(node.X != X && node.Y == Y ||
+                         node.X == X && node.Y != Y))
         {
             return false;
         }
         
-        return Utility.tileWithinRadiusOfPlayer(node.X, node.Y, radius, BotBase.Farmer);
-        // int directions = cardinal ? 4 : 8;
-        // return Graph.IsInNeighbours(VectorLocation, node.VectorLocation, out _, directions);
+        return Math.Abs(node.X - X) <= radius && Math.Abs(node.Y - Y) <= radius;
     }
     
     /// <summary>

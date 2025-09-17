@@ -1,5 +1,3 @@
-using System.Net;
-using System.Xml.Resolvers;
 using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Modules.Pathfinding.Algorithms;
@@ -32,6 +30,7 @@ public class ToolHandling
     /// Will use currently held tool.
     /// </summary>
     /// <param name="direction">This acts as a shortcut to <see cref="ChangeFacingDirection"/>. If this is not set or not a valid value the tool will be used in the currently facing direction</param>
+    /// <param name="currentTile">This will create use the tool on the current tile.</param>
     public void UseTool(int direction = -1, bool currentTile = false)
     {
         if (BotBase.Farmer.UsingTool)
@@ -95,48 +94,53 @@ public class ToolHandling
 
     #region WateringPlants
 
-    public async Task WaterSelectPatches(int leftX,int topY,int rightX,int bottomY)
+    public async Task WaterSelectPatches(int leftX, int topY, int rightX, int bottomY)
+    {
+        Rectangle rect = new Rectangle(leftX, topY, rightX, bottomY);
+        await WaterSelectPatches(rect);
+    }
+
+    /// <summary>
+    /// Water the tiles in the rectangle
+    /// </summary>
+    /// <param name="rectangle">the rectangle's positions should be provided in pixel value not tiles. it will check if the tile contains the tile so you may need to add an extra tile to the height/width.</param>
+    /// <param name="canDestroy"></param>
+    public async Task WaterSelectPatches(Rectangle rectangle, bool canDestroy = false)
     {
         Group finalGroup = new();
         GroupedTiles groupedTiles = new();
-        Task<List<Group>> list = groupedTiles.StartDirtCheck(BotBase.CurrentLocation);
+        List<Group> list = groupedTiles.StartDirtCheck(BotBase.CurrentLocation).Result;
         
-        for (int x = leftX; x < rightX; x++)
+        foreach (var kvp in list) // go through groups of dirt
         {
-            for (int y = topY; y < bottomY; y++)
+            foreach (var itile in kvp.GetTiles())
             {
-                foreach (var kvp in list.Result) // go through groups of dirt
+                Logger.Warning($"Running foreach: {rectangle}  {itile.Position}");
+                if (!rectangle.Contains(itile.Position.ToVector2() * 64)) continue;
+                // if (itile.Position != new Point(x, y)) continue;
+                PlantTile tile = (itile as PlantTile)!;
+            
+                HoeDirt dirt = (tile.TerrainFeature as HoeDirt)!;
+                if (dirt.crop is null || dirt.isWatered()) continue;
+
+                if (finalGroup.GetTiles().Any(tile1 => tile1.Position == tile.Position))
                 {
-                    foreach (var itile in kvp.GetTiles())
-                    {
-                        if (itile.Position != new Point(x, y)) continue;
-                        PlantTile tile = (itile as PlantTile)!;
-                    
-                        HoeDirt dirt = (tile.TerrainFeature as HoeDirt)!;
-                        if (dirt.crop is null || dirt.isWatered()) continue;
-                
-                        // this is because I'm a horrible programmer that's too dumb to find a better way to do this
-                        IEnumerable<ITile> tiles = finalGroup.GetTiles().Where(tile1 => tile1.Position == tile.Position);
-                        if (tiles.Any())
-                        {
-                            continue;
-                        }
-                
-                        Logger.Info($"final group point: {tile.Position}");
-                        finalGroup.Add(tile);
-                        StardewClient.debugTiles.Add(tile);
-                    }
+                    continue;
                 }
+        
+                Logger.Info($"final group point: {tile.Position}");
+                finalGroup.Add(tile);
+                StardewClient.debugTiles.Add(tile);
             }
         }
 
-        await UseToolOnGroup(finalGroup,new WateringCan());
+        await UseToolOnGroup(finalGroup,new WateringCan(),-1,canDestroy);
     }
     
     /// <summary>
     /// Water all patches in this current location, This will only work if the bot is in the farm.
     /// </summary>
-    public async Task WaterAllPatches()
+    public async Task WaterAllPatches(bool canDestroy = false)
     {
         if (BotBase.CurrentLocation is not Farm) return;
 
@@ -165,14 +169,14 @@ public class ToolHandling
             }
         }
         
-        await UseToolOnGroup(finalGroup,new WateringCan());
+        await UseToolOnGroup(finalGroup,new WateringCan(),-1,canDestroy);
         Logger.Info($"Ending watering");
     }
 
     /// <summary>
     /// Refill watering can in this current location.
     /// </summary>
-    public async Task RefillWateringCan()
+    public async Task RefillWateringCan(bool canDestroy = false)
     {
         GetNearestWaterTiles groupedTiles = new();
         Task<Group> group = groupedTiles.GetWaterGroup(BotBase.Farmer.TilePoint,Game1.currentLocation);
@@ -183,12 +187,12 @@ public class ToolHandling
         {
             StardewClient.debugTiles.Add(tile);
         }
-        await RefillWateringCan(finalGroup,new WateringCan());
+        await RefillWateringCan(finalGroup,canDestroy);
         Logger.Info($"Ending watering");
     }
     
     
-    private async Task UseToolOnGroup(Group group,Tool tool,int tileAmount = -1)
+    private async Task UseToolOnGroup(Group group,Tool tool,int tileAmount = -1,bool canDestroy = false)
     {
         SwapItemHandler.SwapItem(tool.GetType(),"");
         
@@ -243,13 +247,13 @@ public class ToolHandling
                 Logger.Info($"using neighbour if");
                 if (direction == -1) continue;
                 ChangeFacingDirection(direction);
-                UseTool(direction,false);
+                UseTool(direction);
             }
             else // pathfind to node
             {
                 PathNode start = new PathNode(BotBase.Farmer.TilePoint.X, BotBase.Farmer.TilePoint.Y, null);
                 
-                Stack<PathNode> path = await pathing.FindPath(start,new Goal.GetToTile(plantTile.Position.X,plantTile.Position.Y),BotBase.CurrentLocation,10000);
+                Stack<PathNode> path = await pathing.FindPath(start,new Goal.GoalPosition(plantTile.Position.X,plantTile.Position.Y),BotBase.CurrentLocation,10000,canDestroy);
 
                 if (path == new Stack<PathNode>())
                 {
@@ -259,7 +263,7 @@ public class ToolHandling
                 }
                 
                 CharacterController.StartMoveCharacter(path);
-                while (CharacterController.IsMoving()) continue; // this is not async
+                while (CharacterController.IsMoving()) {} // this is not async
                 
                 if (BotBase.Farmer.TilePoint == plantTile.Position) // will sometimes path-find to tile, this should not happen, I'm too lazy to fix this.
                 {
@@ -274,12 +278,12 @@ public class ToolHandling
                     continue;
                 }
                 ChangeFacingDirection(pathDirection);
-                UseTool(pathDirection,false);
+                UseTool(pathDirection);
             }
         }
     }
 
-    private async Task RefillWateringCan(Group group, Tool tool)
+    private async Task RefillWateringCan(Group group, bool canDestroy = false)
     {
         Logger.Info($"Running refill watering can: {group.GetTiles().Count}");
         SwapItemHandler.SwapItem(typeof(WateringCan),"");
@@ -293,11 +297,11 @@ public class ToolHandling
         
         AlgorithmBase.IPathing pathing = new AStar.Pathing();
         pathing.BuildCollisionMap(BotBase.CurrentLocation);
-        int startingWater = (BotBase.Farmer.CurrentTool as WateringCan)!.WaterLeft;
-        foreach (var point in group.GetTiles())
+        if (BotBase.Farmer.CurrentTool is not WateringCan wateringCan) return;
+        int startingWater = wateringCan.WaterLeft;
+        foreach (var _ in group.GetTiles())
         {
             var tile = priorityQueue.Dequeue();
-            WateringCan wateringCan = (BotBase.Farmer.CurrentTool as WateringCan)!;
 
             if (wateringCan.WaterLeft < startingWater) return;
             
@@ -308,12 +312,12 @@ public class ToolHandling
             {
                 if (direction == -1) continue;
                 ChangeFacingDirection(direction);
-                UseTool(direction,false);
+                UseTool(direction);
                 break;
             }
             PathNode start = new PathNode(BotBase.Farmer.TilePoint.X, BotBase.Farmer.TilePoint.Y, null);
             
-            Stack<PathNode> path = await pathing.FindPath(start,new Goal.GoalPosition(tile.Position.X,tile.Position.Y),BotBase.CurrentLocation,10000);
+            Stack<PathNode> path = await pathing.FindPath(start,new Goal.GoalPosition(tile.Position.X,tile.Position.Y),BotBase.CurrentLocation,10000,canDestroy);
 
             if (path == new Stack<PathNode>())
             {
@@ -324,12 +328,12 @@ public class ToolHandling
             
             CharacterController.StartMoveCharacter(path);
 
-            while (CharacterController.IsMoving()) continue; // this is not async
+            while (CharacterController.IsMoving()){} // this is not async
             
             if (!Graph.IsInNeighbours(BotBase.Farmer.TilePoint, waterTile.Position, out var pathDirection, 4)) continue;
             ChangeFacingDirection(pathDirection);
             Logger.Error($"using bottom of useTool else");
-            UseTool(pathDirection,false);
+            UseTool(pathDirection);
             break;
         }
     }
@@ -341,32 +345,35 @@ public class ToolHandling
     /// <summary>
     /// Get list of points for <see cref="MakeFarmLand"/>. This will be the dimensions of the farm
     /// </summary>
-    /// <param name="startX">X of the farm land you want to make, this should be the top left of a rectangle.</param>
-    /// <param name="startY">Y of the farm land you want to make, this should be the top left of a rectangle.</param>
-    /// <param name="endX">the end X of the farm land you want to make, this should be the bottom right of a rectangle.</param>
-    /// <param name="endY">the end Y of the farm land you want to make, this should be the bottom right of a rectangle.</param>
+    /// <param name="rectangle">This is a rectangle that covers the tiles you want to get. This should be in pixel position.</param>
     /// <returns>List of <see cref="Point"/></returns>
-    public List<GroundTile> CreateFarmLandTiles(int startX,int startY,int endX,int endY)
+    public List<GroundTile> CreateFarmLandTiles(Rectangle rectangle)
     {
         List<GroundTile> tiles = new();
-        for (int x = startX; x < endX + 1; x++)
+
+        GameLocation location = BotBase.CurrentLocation;
+
+        for (int x = 0; x < location.Map.DisplayWidth / 64; x++)
         {
-            for (int y = startY; y < endY + 1; y++)
+            for (int y = 0; y < location.Map.DisplayHeight / 64; y++)
             {
-                GameLocation location = BotBase.CurrentLocation;
                 TerrainFeature? terrainFeature = null;
                 ResourceClump? resourceClump = null;
-                if (location.terrainFeatures.ContainsKey(new Vector2(x, y)))
+                
+                Vector2 tile = new Vector2(x, y);
+                Logger.Info($"tile: {tile}   rect: {rectangle}   contains {rectangle.Contains(tile * 64)}");
+                if (!rectangle.Contains(tile * 64)) continue;
+                if (location.terrainFeatures.ContainsKey(tile))
                 {
-                    terrainFeature = location.terrainFeatures[new Vector2(x, y)];
+                    terrainFeature = location.terrainFeatures[tile];
                 }
-                List<ResourceClump> list = BotBase.CurrentLocation.resourceClumps.ToList()
-                    .FindAll(clump => clump.Tile == new Vector2(x,y));
+                List<ResourceClump> list = location.resourceClumps.ToList()
+                    .FindAll(clump => clump.Tile == tile);
                 if (list.Count > 0)
                 {
                     resourceClump = list[0];
                 }
-                tiles.Add(new GroundTile(new Point(x,y),BotBase.CurrentLocation,terrainFeature,resourceClump));
+                tiles.Add(new GroundTile(tile.ToPoint(),location,terrainFeature,resourceClump));   
             }
         }
 
@@ -403,10 +410,10 @@ public class ToolHandling
             if (groundTile.WaterTile) continue;
             if (groundTile.TerrainFeature is HoeDirt) continue;
             
-            bool result = await SwapItemAndDestroy(groundTile.Position,true);
+            bool result = await SwapItemAndDestroy(groundTile.Position);
             
             Logger.Info($"result of object in way: {result}");
-            if (BotBase.Farmer.CurrentTool is not Hoe hoe)
+            if (BotBase.Farmer.CurrentTool is not Hoe)
             {
                 SwapItemHandler.SwapItem(typeof(Hoe),"");
             }
@@ -443,7 +450,7 @@ public class ToolHandling
                 
                 CharacterController.StartMoveCharacter(path);
 
-                while (CharacterController.IsMoving()) continue; // this is not async
+                while (CharacterController.IsMoving()){} // this is not async
                 
                 if (BotBase.Farmer.TilePoint == groundTile.Position) // will sometimes path-find to tile, this should not happen, I'm too lazy to fix this.
                 {
@@ -459,7 +466,7 @@ public class ToolHandling
                 }
                 Logger.Info($"last use tool");
                 ChangeFacingDirection(pathDirection);
-                UseTool(pathDirection,false);
+                UseTool(pathDirection);
             }
         }
     }
@@ -484,7 +491,7 @@ public class ToolHandling
         {
             Logger.Info($"object is a neighbour");
             ChangeFacingDirection(direction);
-            GetObjectType(tile);
+            DestroyObjectType(tile);
         }
         else
         {
@@ -492,16 +499,16 @@ public class ToolHandling
             if (path == new Stack<PathNode>())
             {
                 Logger.Error($"Stack was empty");
-                GetObjectType(tile);
+                DestroyObjectType(tile);
             }
 
             CharacterController.StartMoveCharacter(path);
 
-            while (CharacterController.IsMoving()) continue; // this is not async
+            while (CharacterController.IsMoving()) {} // this is not async
 
             if (BotBase.Farmer.TilePoint == tile) // will sometimes path-find to tile, this should not happen, I'm too lazy to fix this.
             {
-                GetObjectType(tile);
+                DestroyObjectType(tile);
             }
 
             if (!Graph.IsInNeighbours(BotBase.Farmer.TilePoint, tile, out var pathDirection, 4))
@@ -510,7 +517,7 @@ public class ToolHandling
                 return;
             }
             ChangeFacingDirection(pathDirection);
-            GetObjectType(tile);
+            DestroyObjectType(tile);
         }
     }
     
@@ -561,21 +568,23 @@ public class ToolHandling
     /// <summary>
     /// Remove objects that are in the provided dimensions
     /// </summary>
-    /// <param name="startX">This should be thought of as the most left edge of a square</param>
-    /// <param name="startY">This should be the top of the square</param>
-    /// <param name="endX">This should be thought of as the most right edge of a square</param>
-    /// <param name="endY">This should be the bottom of the square</param>
-    public async Task RemoveObjectsInDimension(int startX, int startY, int endX, int endY)
+    /// <param name="rectangle">This is a rectangle that contains the tiles you want to remove the objects in.</param>
+    public async Task RemoveObjectsInDimension(Rectangle rectangle)
     {
         GameLocation location = BotBase.CurrentLocation;
         List<GroundTile> tiles = new();
-        for (int x = startX; x < endX + 1; x++)
+        
+        for (int x = 0; x < location.Map.DisplayWidth / 64; x++)
         {
-            for (int y = startY; y < endY + 1; y++)
+            for (int y = 0; y < location.Map.DisplayHeight / 64; y++)
             {
                 TerrainFeature? terrainFeature = null;
                 ResourceClump? resourceClump = null;
                 Object? obj = null;
+
+                Vector2 tile = new Vector2(x, y);
+                Logger.Info($"tile: {tile}   rect: {rectangle}   contains {rectangle.Contains(tile * 64)}");
+                if (!rectangle.Contains(tile * 64)) continue;
                 if (location.terrainFeatures.ContainsKey(new Vector2(x, y)))
                 {
                     terrainFeature = location.terrainFeatures[new Vector2(x, y)];
@@ -597,7 +606,6 @@ public class ToolHandling
                 tiles.Add(new GroundTile(new Point(x,y),location,terrainFeature,resourceClump,obj));
             }
         }
-
         await RemoveObjectsInTiles(tiles);
     }
 
@@ -629,7 +637,7 @@ public class ToolHandling
             if (groundTile.TerrainFeature is null && groundTile.ResourceClump is null && groundTile.Obj is null) continue;
             
             Logger.Info($"running object in way at: {groundTile.Position}");
-            bool result = await SwapItemAndDestroy(groundTile.Position,true);
+            bool result = await SwapItemAndDestroy(groundTile.Position);
             
             Logger.Info($"result of object in way: {result}");
         }
@@ -642,41 +650,42 @@ public class ToolHandling
         await toolHandling.RemoveObject(tile);
     }
 
-    private static bool GetObjectType(Point tile)
+    /// <summary>
+    /// Destroy the object at the provided tile. This is used in other stuff
+    /// </summary>
+    /// <param name="tile"></param>
+    /// <returns>return true, if you can destroy something at the tile else false</returns>
+    private static bool DestroyObjectType(Point tile)
     {
         GameLocation location = BotBase.CurrentLocation;
+        tile = (tile.ToVector2() * 64).ToPoint();
         Logger.Info($"running get object type");
-        if (location.terrainFeatures.Keys.Contains(tile.ToVector2()) || location.largeTerrainFeatures.Count(feature => feature.getBoundingBox().Contains(tile.ToVector2())) > 0)
+        var terrainFeatures =
+            location.terrainFeatures.Values.Where(terrFeat => terrFeat.getBoundingBox().Contains(tile)).ToList();
+        List<LargeTerrainFeature> largeFeatures = location.largeTerrainFeatures
+            .Where(feature => feature.getBoundingBox().Contains(tile)).ToList();
+        if (terrainFeatures.Count > 0 || largeFeatures.Count > 0)
         {
-            if (BotBase.CurrentLocation.terrainFeatures.ContainsKey(tile.ToVector2()))
-            {
-                Logger.Info($"terrain feature destroy");
-                DestroyTerrainFeature.Destroy(location.terrainFeatures[tile.ToVector2()]);
-                return true;
-            }
-            Logger.Info($"large terrain destroy");
-            List<LargeTerrainFeature> list = location.largeTerrainFeatures.ToList()
-                .FindAll(feature => feature.Tile == tile.ToVector2());
-            DestroyTerrainFeature.Destroy(list[0]);
+            var feature = terrainFeatures.Count > 0 ? terrainFeatures[0] : largeFeatures[0];
+            Logger.Info($"destroying: {feature}");
+            DestroyTerrainFeature.Destroy(feature);
             return true;
         }
 
-        if (location.resourceClumps.Count(clump => clump.Tile == tile.ToVector2()) > 0)
+        List<ResourceClump> clumps = location.resourceClumps.ToList()
+            .FindAll(clump => clump.getBoundingBox().Contains(tile));
+        if (clumps.Count > 0)
         {
-            List<ResourceClump> list = location.resourceClumps.ToList()
-                .FindAll(clump => clump.Tile == tile.ToVector2());
-            DestroyResourceClump.Destroy(list[0]);
+            DestroyResourceClump.Destroy(clumps[0]);
             return true;
         }
 
         foreach (var objDict in location.Objects)
         {
-            if (objDict.ContainsKey(tile.ToVector2()))
-            {
-                Object obj = objDict[tile.ToVector2()];
-                DestroyLitterObject.Destroy(obj);
-                return true;
-            }
+            var objs = objDict.Where(kvp => kvp.Value.GetBoundingBox().Contains(tile)).ToList();
+            if (objs.Count < 1) return false;
+            DestroyLitterObject.Destroy(objs[0].Value);
+            return true;
         }
 
         return false;
@@ -688,12 +697,12 @@ public class ToolHandling
     /// change item and path-find then destroy object that is on specified tile.
     /// </summary>
     /// <returns></returns>
-    private static async Task<bool> SwapItemAndDestroy(Point tile,bool modifyCollisionMap = false,bool destroy = true)
+    private static async Task<bool> SwapItemAndDestroy(Point tile,bool destroy = true)
     {
-        if (TerrainFeatureToolSwap.Swap(tile,false)) // we also handle bushes here
+        if (TerrainFeatureToolSwap.Swap(tile)) // we also handle bushes here
         {
             Logger.Info($"terrain feature swap");
-            TerrainFeatureToolSwap.Swap(tile,false);
+            TerrainFeatureToolSwap.Swap(tile);
             AlgorithmBase.IPathing.collisionMap.RemoveBlockedTile(tile.X, tile.Y);
             await PrivateDestroyObject(tile);
             return true;

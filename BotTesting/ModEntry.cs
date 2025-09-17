@@ -286,7 +286,7 @@ internal sealed class ModEntry : Mod
         int endX = int.Parse(args[2]);
         int endY = int.Parse(args[3]);
 
-        List<GroundTile> tiles = _bot.Tool.CreateFarmLandTiles(startX, startY, endX, endY);
+        List<GroundTile> tiles = _bot.Tool.CreateFarmLandTiles(new Rectangle(startX, startY, endX, endY));
         await _bot.Tool.MakeFarmLand(tiles);
     }
 
