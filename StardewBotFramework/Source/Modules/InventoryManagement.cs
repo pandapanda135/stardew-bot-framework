@@ -108,7 +108,6 @@ public class InventoryManagement
         Game1.player.CurrentToolIndex = slot;
     }
     
-    
     private int GetItemIndex(Inventory inventory,Item item)
     {
         int index = new();

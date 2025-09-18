@@ -14,8 +14,6 @@ namespace StardewBotFramework.Source.Modules.Pathfinding.Base;
 
 public class CharacterController
 {
-	// public delegate void OnPathfindingFinished();
-	// public static event OnPathfindingFinished OnGoalReached;
 	/// <summary>
 	/// This is for when pathfinding gets cancelled from staying in the same place for too long.
 	/// </summary>
@@ -37,7 +35,7 @@ public class CharacterController
 
 	private static bool _attacking;
 	
-	private static readonly sbyte[,] Directions = new sbyte[4,2]
+	private static readonly sbyte[,] Directions =
 	{
 		{ -1, 0 }, // west
 		{ 1, 0 }, // east
@@ -222,75 +220,74 @@ public class CharacterController
 		foreach (var pathNode in _endPath)
 		{
 			_nextIndex = _endPath.ToList().IndexOf(pathNode);
-			if (_nextIndex == 0)
+			if (_nextIndex != 0) continue;
+			
+			int indexPlus = _nextIndex;
+			if (_endPath.Count > 1) indexPlus += 1;
+			_nextNode = _endPath.ToList()[indexPlus];
+			_neighbourIndex =
+				_endPath.ToList().IndexOf(_nextNode); // need this to set next PathNode.Destroy to false
+			Object objectInNextTile = _currentLocation.getObjectAtTile(_nextNode.X, _nextNode.Y);
+
+			if (objectInNextTile is Fence fence && fence.isGate.Value && !fence.isPassable())
 			{
-				int indexPlus = _nextIndex;
-				if (_endPath.Count > 1) indexPlus += 1;
-				_nextNode = _endPath.ToList()[indexPlus];
-				_neighbourIndex =
-					_endPath.ToList().IndexOf(_nextNode); // need this to set next PathNode.Destroy to false
-				Object objectInNextTile = _currentLocation.getObjectAtTile(_nextNode.X, _nextNode.Y);
-
-				if (objectInNextTile is Fence fence && fence.isGate.Value && !fence.isPassable())
-				{
-					fence.toggleGate(true);
-				}
-
-				if (objectInNextTile is null || objectInNextTile.isPassable()) continue;
-				
-				Logger.Error($"The object in the next tile was not passable, the object was a {objectInNextTile.Name}");
-				_character.Halt();
-				FailedPathFinding?.Invoke(new CharacterController(), EventArgs.Empty);
-				return;
+				fence.toggleGate(true);
 			}
+
+			if (objectInNextTile is null || objectInNextTile.isPassable()) continue;
+				
+			Logger.Error($"The object in the next tile was not passable, the object was a {objectInNextTile.Name}");
+			_character.Halt();
+			FailedPathFinding?.Invoke(new CharacterController(), EventArgs.Empty);
+			return;
 		}
 
 		PathNode peekNode = _endPath.Peek();
 		if (!peekNode.Destroy || _isDestroying)
 		{
 			_character.MovePosition(time, Game1.viewport, _currentLocation);
-			HandleWarp(Game1.player);
+			HandleWarp(_character);
 			return;
 		}
+		
 		for (int i = 0; i <= 3; i++)
 		{
 			// get cardinal directions
 			int neighborX = peekNode.X + Directions[i, 0];
 			int neighborY = peekNode.Y + Directions[i, 1];
 
-			if (neighborX == Game1.player.TilePoint.X && neighborY == Game1.player.TilePoint.Y) // need to get neighbour 
+			if (neighborX != _character.TilePoint.X || neighborY != _character.TilePoint.Y) continue; // need to get neighbour 
+			
+			// this is to fix issues with sudden direction changes in path (should maybe try to make it so the bot goes in the middle of a tile as this is kind of a patch fix)
+			switch (i)
 			{
-				// this is to fix issues with sudden direction changes in path (should maybe try to make it so the bot goes in the middle of a tile as this is kind of a patch fix)
-				switch (i)
-				{
-					case 0:
-						_character.FacingDirection = 1; // west
-						break;
-					case 1:
-						_character.FacingDirection = 3; // east
-						break;
-					case 2:
-						_character.FacingDirection = 0; // south
-						break;
-					case 3:
-						_character.FacingDirection = 2; // north
-						break;
-				}
-				
-				Logger.Info($"trying to use tool");
-				_isDestroying = true;
-				SwapItem(node.VectorLocation);
-				BotBase.Farmer.BeginUsingTool();
-				_character.MovePosition(time, Game1.viewport, _currentLocation);
-				HandleWarp(Game1.player);
-				return;
+				case 0:
+					_character.FacingDirection = 1; // west
+					break;
+				case 1:
+					_character.FacingDirection = 3; // east
+					break;
+				case 2:
+					_character.FacingDirection = 0; // south
+					break;
+				case 3:
+					_character.FacingDirection = 2; // north
+					break;
 			}
+				
+			Logger.Info($"trying to use tool");
+			_isDestroying = true;
+			SwapItem(node.VectorLocation);
+			BotBase.Farmer.BeginUsingTool();
+			_character.MovePosition(time, Game1.viewport, _currentLocation);
+			HandleWarp(_character);
+			return;
 		}
 	}
 
 	private static void HandleWarp(Character character)
 	{
-		Warp warp = Game1.currentLocation.isCollidingWithWarp(Game1.player.GetBoundingBox(), _character);
+		Warp warp = _currentLocation.isCollidingWithWarp(Game1.player.GetBoundingBox(), _character);
 		if (warp is null) return;
 		
 		if (Game1.eventUp)

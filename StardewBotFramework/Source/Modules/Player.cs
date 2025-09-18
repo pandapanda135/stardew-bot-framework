@@ -41,12 +41,25 @@ public class Player
     {
         if (item.Edibility == -300) return false;
 
-        if (!Game1.player.Items.Contains(item)) return false;
+        if (!BotBase.Farmer.Items.Contains(item)) return false;
         
-        Game1.player.eatObject(item);
-        Game1.player.Items.Reduce(item, 1);
+        BotBase.Farmer.eatObject(item);
+        BotBase.Farmer.Items.Reduce(item, 1);
         return true;
     }
+
+    /// <summary>
+    /// Eat the currently held item.
+    /// </summary>
+    /// <returns>Will return false if is not edible or no held item, else true.</returns>
+    public bool EatHeldItem()
+    {
+        if (BotBase.Farmer.ActiveObject is null) return false;
+        if (BotBase.Farmer.ActiveObject.Edibility == -300) return false;
+        
+        BotBase.Farmer.eatHeldObject();
+        return true;
+    } 
 
     /// <summary>
     /// Try to add item to an object (e.g. input for machine, placed on a table)

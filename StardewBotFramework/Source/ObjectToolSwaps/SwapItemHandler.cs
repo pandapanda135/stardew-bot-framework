@@ -62,15 +62,13 @@ public class SwapItemHandler
                 foreach (var item in BotBase.Farmer.Items)
                 {
                     if (item is null) continue;
-                    if (item.GetType() == toolType)
-                    {
-                        if (BotBase.Farmer.CurrentToolIndex != BotBase.Farmer.Items.IndexOf(item))
-                        {
-                            ChangeToolbar(BotBase.Farmer.Items.IndexOf(item));
-                            BotBase.Farmer.CurrentToolIndex = BotBase.Farmer.Items.IndexOf(item);
-                            return;
-                        }
-                    }
+                    if (item.GetType() != toolType) continue;
+                    
+                    if (BotBase.Farmer.CurrentToolIndex == BotBase.Farmer.Items.IndexOf(item)) continue;
+                    
+                    ChangeToolbar(BotBase.Farmer.Items.IndexOf(item));
+                    BotBase.Farmer.CurrentToolIndex = BotBase.Farmer.Items.IndexOf(item);
+                    return;
                 }
 
                 return;

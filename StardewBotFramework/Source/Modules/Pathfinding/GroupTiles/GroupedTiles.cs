@@ -51,7 +51,7 @@ public class GroupedTiles
     /// </summary>
     /// <param name="location">location to query</param>
     /// <returns>A lists of lists that contains the patches of <see cref="HoeDirt"/></returns>
-    public async Task<List<Group>> StartDirtCheck(GameLocation location) //TODO: does this need to be a list<Group> ??
+    public async Task<List<Group>> StartDirtCheck(GameLocation location)
     {
         _validFeatures = new();
         _usedFeatureTiles = new();
