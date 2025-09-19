@@ -18,6 +18,14 @@ public class CharacterController
 	/// This is for when pathfinding gets cancelled from staying in the same place for too long.
 	/// </summary>
 	public static event EventHandler? FailedPathFinding;
+
+	enum Direction
+	{
+		South = 0,
+		North = 2,
+		East = 1,
+		West = 3,
+	}
 	
 	private static bool _movingCharacter;
 	private static bool _isDestroying;
@@ -63,10 +71,20 @@ public class CharacterController
 			ForceStopMoving();
 			return;
 		} // stop issue with moving to the left when go through warp
-
-		Vector2 position = BotBase.Farmer.Position;
+		
+		Vector2 position = _character.Position;
+		if (_character is Farmer farmer1)
+		{
+			farmer1.setRunning(true, true);
+			farmer1.updateMovementAnimation(Time);
+		}
 		MoveCharacter(Time);
-		if (position == BotBase.Farmer.Position)
+		if (_character is Farmer farmer)
+		{
+			farmer.setRunning(true, true);
+			farmer.updateMovementAnimation(Time);
+		}
+		if (position == _character.Position)
 		{
 			_pausedTimer += Time.ElapsedGameTime.Milliseconds;
 		}
@@ -184,7 +202,7 @@ public class CharacterController
 			}
 			farmer.movementDirections.Clear();
 		}
-
+		
 		if (_currentLocation is not MovieTheater)
 		{
 			if (_currentLocation.characters.Any(npc => !npc.Equals(_character) && npc.GetBoundingBox()
@@ -199,22 +217,22 @@ public class CharacterController
 		if (bbox.Left < targetTile.Left && bbox.Right < targetTile.Right)
 		{
 			_character.SetMovingRight(true);
-			_character.FacingDirection = 1;
+			_character.FacingDirection = (int)Direction.East;
 		}
 		else if (bbox.Right > targetTile.Right && bbox.Left > targetTile.Left)
 		{
 			_character.SetMovingLeft(true);
-			_character.FacingDirection = 3;
+			_character.FacingDirection = (int)Direction.West;
 		}
 		else if (bbox.Top <= targetTile.Top)
 		{
 			_character.SetMovingDown(true);
-			_character.FacingDirection = 2;
+			_character.FacingDirection = (int)Direction.North;
 		}
 		else if (bbox.Bottom >= targetTile.Bottom - 2)
 		{
 			_character.SetMovingUp(true);
-			_character.FacingDirection = 0;
+			_character.FacingDirection = (int)Direction.South;
 		}
 
 		foreach (var pathNode in _endPath)
@@ -245,8 +263,16 @@ public class CharacterController
 		PathNode peekNode = _endPath.Peek();
 		if (!peekNode.Destroy || _isDestroying)
 		{
-			_character.MovePosition(time, Game1.viewport, _currentLocation);
-			HandleWarp(_character);
+			try
+			{
+				_character.MovePosition(time, Game1.viewport, _currentLocation);
+				HandleWarp(_character.nextPosition(_character.getDirection()));
+			}
+			catch (Exception e) // sometimes error here idk why
+			{
+				Logger.Error($"error in character controller: {e}");
+				throw;
+			}
 			return;
 		}
 		
@@ -262,32 +288,40 @@ public class CharacterController
 			switch (i)
 			{
 				case 0:
-					_character.FacingDirection = 1; // west
+					_character.FacingDirection = (int)Direction.West; // west
 					break;
-				case 1:
-					_character.FacingDirection = 3; // east
+				case 1: // east
+					_character.FacingDirection = (int)Direction.East;
 					break;
-				case 2:
-					_character.FacingDirection = 0; // south
+				case 2: // south
+					_character.FacingDirection = (int)Direction.South;
 					break;
-				case 3:
-					_character.FacingDirection = 2; // north
+				case 3: // north
+					_character.FacingDirection = (int)Direction.North;
 					break;
 			}
-				
+			
 			Logger.Info($"trying to use tool");
 			_isDestroying = true;
 			SwapItem(node.VectorLocation);
 			BotBase.Farmer.BeginUsingTool();
-			_character.MovePosition(time, Game1.viewport, _currentLocation);
-			HandleWarp(_character);
+			try // incase upper error also happens here
+			{
+				_character.MovePosition(time, Game1.viewport, _currentLocation);
+				HandleWarp(_character.nextPosition(_character.getDirection()));
+			}
+			catch (Exception e)
+			{
+				Logger.Error($"error in character controller: {e}");
+				throw;
+			}
 			return;
 		}
 	}
 
-	private static void HandleWarp(Character character)
+	private static void HandleWarp(Rectangle character)
 	{
-		Warp warp = _currentLocation.isCollidingWithWarp(Game1.player.GetBoundingBox(), _character);
+		Warp warp = _currentLocation.isCollidingWithWarp(character, _character);
 		if (warp is null) return;
 		
 		if (Game1.eventUp)
@@ -295,16 +329,15 @@ public class CharacterController
 			Event currentEvent = Game1.CurrentEvent;
 			if (!(!(currentEvent != null ? new bool?(currentEvent.isFestival) : null) ?? true))
 			{
-				Game1.CurrentEvent.TryStartEndFestivalDialogue(character as Farmer);
+				Game1.CurrentEvent.TryStartEndFestivalDialogue(_character as Farmer);
 			}
 		}
-		BotBase.Farmer.warpFarmer(warp,BotBase.Farmer.FacingDirection);
+
+		NPC npc = _character as NPC;
+		if (npc is null) return;
+		Game1.warpCharacter(_character as NPC, warp.TargetName, new Point(warp.TargetX, warp.TargetY));
 	}
 	
-	public static bool isPlayerPresent()
-	{
-		return _currentLocation.farmers.Any();
-	}
 	public static bool IsMoving() => _movingCharacter;
 
 	public static void ForceStopMoving()

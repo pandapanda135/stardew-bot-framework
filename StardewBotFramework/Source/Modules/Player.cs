@@ -310,14 +310,12 @@ public class PlayerInformation
         GameMenu? gameMenu = Game1.activeClickableMenu as GameMenu;
         Game1.activeClickableMenu.receiveLeftClick(gameMenu!.tabs[0].bounds.X + 5,gameMenu.tabs[0].bounds.Y + 5);
 
-        InventoryPage? tabPage = gameMenu.pages[0] as InventoryPage;
-
         return BotBase.Farmer.Items;
     }
     
     public void ExitMenu()
     {
         MenuState = MenuStates.None;
-        Game1.activeClickableMenu = null;
+        Game1.activeClickableMenu.exitThisMenu();
     }
 }

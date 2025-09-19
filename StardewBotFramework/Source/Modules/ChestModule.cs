@@ -49,8 +49,7 @@ public class ChestModule
     public void CloseChest(Chest? chest = null)
     {
         Logger.Warning("Running CloseChest");
-        Game1.activeClickableMenu = null;
-        // chest.frameCounter.Value = 0;
+        Game1.activeClickableMenu.exitThisMenu();
     }
     
     /// <summary>
