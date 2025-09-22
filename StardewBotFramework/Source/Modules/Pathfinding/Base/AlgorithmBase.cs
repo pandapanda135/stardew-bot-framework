@@ -91,7 +91,7 @@ public class AlgorithmBase
             // We reduce by 1 to avoid pathfinding going along the side of the map
             if (currentNode.X > location.Map.DisplayWidth / Game1.tileSize - 1 ||
                 currentNode.Y > Game1.currentLocation.Map.DisplayHeight / Game1.tileSize - 1 ||
-                currentNode.X < 0 || currentNode.Y < 0)
+                currentNode.X < -1 || currentNode.Y < -1)
             {
                 Logger.Info(
                     $"Blocking this tile: {currentNode.X},{currentNode.Y}     display width {location.Map.DisplayWidth}   display height {location.Map.DisplayHeight}");

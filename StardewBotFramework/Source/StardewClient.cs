@@ -63,6 +63,7 @@ public class StardewClient : BotBase
     public BuyAnimalMenu AnimalMenu { get; }
     public ItemListMenuInteraction ItemListMenu { get; }
     public ElevatorMenu ElevatorMenu { get; }
+    public ActionTiles ActionTiles { get; }
 
     #endregion
     
@@ -117,6 +118,7 @@ public class StardewClient : BotBase
         AnimalMenu = new();
         ItemListMenu = new();
         ElevatorMenu = new();
+        ActionTiles = new();
 
         #endregion
         

@@ -1,7 +1,7 @@
 using StardewBotFramework.Debug;
 using StardewValley.Menus;
 
-namespace StardewBotFramework.Source.Modules;
+namespace StardewBotFramework.Source.Modules.Menus;
 
 public class EndDayShippingMenu
 {

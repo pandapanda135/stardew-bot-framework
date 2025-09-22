@@ -1,10 +1,9 @@
 using StardewBotFramework.Debug;
 using StardewValley;
-using StardewValley.Inventories;
 using StardewValley.Menus;
 using xTile.Dimensions;
 
-namespace StardewBotFramework.Source.Modules;
+namespace StardewBotFramework.Source.Modules.Menus;
 
 public abstract class IShopMenu
 {
