@@ -1,9 +1,8 @@
 using StardewBotFramework.Debug;
-using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Menus;
 
-namespace StardewBotFramework.Source.Modules;
+namespace StardewBotFramework.Source.Modules.Menus;
 
 public class Blacksmith : IShopMenu
 {

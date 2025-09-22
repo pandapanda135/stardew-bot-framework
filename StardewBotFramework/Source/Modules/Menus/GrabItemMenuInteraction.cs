@@ -1,10 +1,9 @@
 using Microsoft.Xna.Framework;
-using StardewBotFramework.Debug;
 using StardewValley;
 using StardewValley.Inventories;
 using StardewValley.Menus;
 
-namespace StardewBotFramework.Source.Modules;
+namespace StardewBotFramework.Source.Modules.Menus;
 
 /// <summary>
 /// This is for UIs that typically have a square above the inventory that you either take an item from or into e.g. the shipping bin

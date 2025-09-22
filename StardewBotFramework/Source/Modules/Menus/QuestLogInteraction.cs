@@ -3,7 +3,7 @@ using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Quests;
 
-namespace StardewBotFramework.Source.Modules;
+namespace StardewBotFramework.Source.Modules.Menus;
 
 public class QuestLogInteraction
 {

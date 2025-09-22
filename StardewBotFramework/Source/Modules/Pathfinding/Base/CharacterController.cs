@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using StardewBotFramework.Source.Modules.Pathfinding.Algorithms;
+using StardewBotFramework.Source.ObjectDestruction;
 using StardewBotFramework.Source.ObjectToolSwaps;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -122,15 +123,21 @@ public class CharacterController
 	// this is so bot faces correct direction with diagonal tiles
 	private static readonly int[] CorrectFacingDirections = { 0, 1, 2, 3, 0, 0, 2, 2 };
 
-	private static void MoveCharacter(GameTime time) //TODO: figure out why movePosition does not change character's animation.
+	private static void MoveCharacter(GameTime time) //TODO: figure out why _character.movePosition does not change character's animation.
 	{
 		if (BotBase.Farmer.UsingTool) return; // check if animation running
 		
 		if (_isDestroying) // check if destroy
 		{
 			_isDestroying = false;
-			_endPath.ToArray()[_nextIndex].Destroy = false;
-			_endPath.ToArray()[_neighbourIndex].Destroy = false;
+			_endPath.Peek().Destroy = false;
+			
+			// tool can destroy both neighbour and next, so we check here 
+			Object objectInNextTile = _currentLocation.getObjectAtTile(_nextNode.X, _nextNode.Y);
+			if (objectInNextTile is null || objectInNextTile.isPassable())
+			{
+				_endPath.ToArray()[_neighbourIndex].Destroy = false;
+			}
 		}
 
 		if (_dynamicCharacter is not null && !_currentLocation.characters.Contains(_dynamicCharacter))
@@ -235,6 +242,7 @@ public class CharacterController
 			_character.FacingDirection = (int)Direction.South;
 		}
 
+		// destroy object and interact with object stuff
 		foreach (var pathNode in _endPath)
 		{
 			_nextIndex = _endPath.ToList().IndexOf(pathNode);
@@ -243,8 +251,7 @@ public class CharacterController
 			int indexPlus = _nextIndex;
 			if (_endPath.Count > 1) indexPlus += 1;
 			_nextNode = _endPath.ToList()[indexPlus];
-			_neighbourIndex =
-				_endPath.ToList().IndexOf(_nextNode); // need this to set next PathNode.Destroy to false
+			_neighbourIndex = _endPath.ToList().IndexOf(_nextNode); // need this to set next PathNode.Destroy to false
 			Object objectInNextTile = _currentLocation.getObjectAtTile(_nextNode.X, _nextNode.Y);
 
 			if (objectInNextTile is Fence fence && fence.isGate.Value && !fence.isPassable())
@@ -252,15 +259,17 @@ public class CharacterController
 				fence.toggleGate(true);
 			}
 
-			if (objectInNextTile is null || objectInNextTile.isPassable()) continue;
-				
+			if (objectInNextTile is null || objectInNextTile.isPassable() || DestroyLitterObject.IsDestructible(objectInNextTile)) continue;
+			
 			Logger.Error($"The object in the next tile was not passable, the object was a {objectInNextTile.Name}");
 			_character.Halt();
 			FailedPathFinding?.Invoke(new CharacterController(), EventArgs.Empty);
+			ForceStopMoving();
 			return;
 		}
 
 		PathNode peekNode = _endPath.Peek();
+		Logger.Info($"peeknode: {peekNode.Destroy}   isdestroy: {_isDestroying}");
 		if (!peekNode.Destroy || _isDestroying)
 		{
 			try
@@ -288,10 +297,10 @@ public class CharacterController
 			switch (i)
 			{
 				case 0:
-					_character.FacingDirection = (int)Direction.West; // west
+					_character.FacingDirection = (int)Direction.East;
 					break;
 				case 1: // east
-					_character.FacingDirection = (int)Direction.East;
+					_character.FacingDirection = (int)Direction.West;
 					break;
 				case 2: // south
 					_character.FacingDirection = (int)Direction.South;

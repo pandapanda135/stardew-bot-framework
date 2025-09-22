@@ -3,7 +3,7 @@ using StardewBotFramework.Debug;
 using StardewValley;
 using StardewValley.Menus;
 
-namespace StardewBotFramework.Source.Modules;
+namespace StardewBotFramework.Source.Modules.Menus;
 
 /// <summary>
 /// For interaction with the chat.

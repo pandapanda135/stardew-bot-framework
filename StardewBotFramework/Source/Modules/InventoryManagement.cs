@@ -46,7 +46,18 @@ public class InventoryManagement
     /// <param name="item"><see cref="Item"/> to be removed.</param>
     public void BinItem(Item item)
     {
+        if (!Inventory.Contains(item)) return;
         Utility.trashItem(item);
+    }
+
+    /// <summary>
+    /// Drop the item specified from the bot's inventory
+    /// </summary>
+    /// <param name="item">The item to drop</param>
+    public void DropItem(Item item)
+    {
+        if (!Inventory.Contains(item)) return;
+        Game1.createItemDebris(item, BotBase.Farmer.getStandingPosition(), BotBase.Farmer.FacingDirection).DroppedByPlayerID.Value = BotBase.Farmer.UniqueMultiplayerID;
     }
 
     /// <summary>
@@ -125,6 +136,31 @@ public class InventoryManagement
 
         return index;
     }
+    #endregion
+
+    #region UI
+
+    private InventoryPage? Page;
+
+    public void setPage(InventoryPage page) => Page = page;
+    
+    public void SelectSingleCursorItem(int index, bool playSound = false)
+    {
+        if (Page is null) return;
+        ClickableComponent cc = Page.inventory.inventory[index];
+        Page.receiveRightClick(cc.bounds.X,cc.bounds.Y, playSound);
+    }
+
+    public void ClickOutOfBounds()
+    {
+        Page?.receiveLeftClick(0,0);
+    }
+
+    public void ClickBin()
+    {
+        Page?.receiveLeftClick(Page.trashCan.bounds.X,Page.trashCan.bounds.Y);
+    }
+
     #endregion
 
     #region ClothingItems
