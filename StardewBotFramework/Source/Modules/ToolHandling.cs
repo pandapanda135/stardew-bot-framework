@@ -519,6 +519,7 @@ public class ToolHandling
             ChangeFacingDirection(pathDirection);
             DestroyObjectType(tile);
         }
+        AlgorithmBase.IPathing.collisionMap.RemoveBlockedTile(tile.X,tile.Y); // should get around not being able to rebuild collision map
     }
     
     /// <summary>
@@ -651,7 +652,8 @@ public class ToolHandling
     }
 
     /// <summary>
-    /// Destroy the object at the provided tile. This is used in other stuff
+    /// Destroy the object at the provided tile. This is used in other stuff, this allows for destroying objects
+    /// based on rules set in the destroy object type classes.
     /// </summary>
     /// <param name="tile"></param>
     /// <returns>return true, if you can destroy something at the tile else false</returns>
@@ -693,6 +695,160 @@ public class ToolHandling
 
     #endregion
 
+    #region PlaceObject
+
+    private async Task<bool> PlaceObject(PlaceTile tile)
+    {
+        AlgorithmBase.IPathing pathing = new AStar.Pathing();
+        PathNode start = new PathNode(BotBase.Farmer.TilePoint.X, BotBase.Farmer.TilePoint.Y, null);
+
+        Logger.Info($"starting place object");
+        if (tile.ItemToPlace is null) return false;
+        
+        SwapItemHandler.SwapObject(tile.ItemToPlace);
+        Logger.Info($"object: {BotBase.Farmer.ActiveObject.Name}");
+
+        Point pixelTile = (tile.Position.ToVector2() * 64).ToPoint();
+        if (Graph.IsInNeighbours(BotBase.Farmer.TilePoint, tile.Position, out var direction, 4))
+        {
+            Logger.Info($"object is a neighbour");
+            ChangeFacingDirection(direction);
+            BotBase.Farmer.reduceActiveItemByOne();
+            return BotBase.Farmer.ActiveObject.placementAction(BotBase.CurrentLocation, pixelTile.X,pixelTile.Y, BotBase.Farmer);
+        }
+        
+        Stack<PathNode> path = await pathing.FindPath(start, new Goal.GetToTile(tile.X, tile.Y),
+            BotBase.CurrentLocation, 10000);
+        if (path == new Stack<PathNode>())
+        {
+            Logger.Error($"Stack was empty");
+            BotBase.Farmer.reduceActiveItemByOne();
+            return BotBase.Farmer.ActiveObject.placementAction(BotBase.CurrentLocation, pixelTile.X,pixelTile.Y, BotBase.Farmer);
+        }
+
+        CharacterController.StartMoveCharacter(path);
+
+        while (CharacterController.IsMoving())
+        {
+        }
+
+        // will sometimes path-find to tile, this should not happen, I'm too lazy to fix this.
+        if (BotBase.Farmer.TilePoint == tile.Position)
+        {
+            if (tile.TerrainFeature is not HoeDirt || tile.TerrainFeature is HoeDirt dirt &&
+                !dirt.canPlantThisSeedHere(tile.ItemToPlace?.ItemId))
+            {
+                return false;
+            }
+            BotBase.Farmer.reduceActiveItemByOne();
+            return BotBase.Farmer.ActiveObject.placementAction(BotBase.CurrentLocation, pixelTile.X,pixelTile.Y, BotBase.Farmer);   
+        }
+
+        if (!Graph.IsInNeighbours(BotBase.Farmer.TilePoint, tile.Position, out var pathDirection, 4))
+        {
+            Logger.Error($"Tile was not in neighbours: {tile}");
+            return false;
+        }
+
+        ChangeFacingDirection(pathDirection);
+        BotBase.Farmer.reduceActiveItemByOne();
+        return BotBase.Farmer.ActiveObject.placementAction(BotBase.CurrentLocation, pixelTile.X,pixelTile.Y, BotBase.Farmer);
+    }
+
+    /// <summary>
+    /// Place a <see cref="Object"/> in a radius from the start Tile
+    /// </summary>
+    /// <param name="startTile"></param>
+    /// <param name="itemToPlace">An instance of the item you want to place, you should probably get this from the bot's inventory.</param>
+    /// <param name="radius"></param>
+    public async Task PlaceObjectsInRadius(Point startTile,Object itemToPlace,int radius)
+    {
+        List<PlaceTile> tiles = new();
+        GameLocation location = BotBase.CurrentLocation;
+        Point endPoint = new(startTile.X + radius,startTile.Y + radius);
+        startTile.X -= radius;
+        startTile.Y -= radius;
+        for (int x = startTile.X; x < endPoint.X; x++)
+        {
+            for (int y = startTile.Y; y < endPoint.Y + radius; y++)
+            {
+                TerrainFeature? terrainFeature = null;
+                ResourceClump? resourceClump = null;
+                Object? obj = null;
+                if (location.terrainFeatures.ContainsKey(new Vector2(x, y)))
+                {
+                    terrainFeature = location.terrainFeatures[new Vector2(x, y)];
+                }
+                List<ResourceClump> list = location.resourceClumps.ToList()
+                    .FindAll(clump => clump.Tile == new Vector2(x,y));
+                if (list.Count > 0)
+                {
+                    resourceClump = list[0];
+                }
+
+                foreach (var objDict in location.Objects)
+                {
+                    if (objDict.ContainsKey(new Vector2(x, y)))
+                    {
+                        obj = objDict[new Vector2(x, y)];
+                    }
+                }
+                Logger.Info($"Adding tile at: {new Point(x,y)} {itemToPlace.Name}");
+                tiles.Add(new PlaceTile(new Point(x,y),location,terrainFeature,resourceClump,obj,itemToPlace));
+            }
+        }
+
+        await PlaceObjectsAtTiles(tiles);
+    }
+
+    /// <summary>
+    /// Place the object at the provided tiles.
+    /// </summary>
+    /// <param name="tiles">Will place the object in <see cref="PlaceTile.ItemToPlace"/> if there is none or that tile
+    /// is blocked, that tile will be skipped.
+    /// </param>
+    public async Task PlaceObjectsAtTiles(List<PlaceTile> tiles)
+    {
+        AlgorithmBase.IPathing pathing = new AStar.Pathing();
+        pathing.BuildCollisionMap(BotBase.CurrentLocation);
+        PriorityQueue<PlaceTile, int> groundTileQueue = new();
+        int tileAmount = tiles.Count;
+        Logger.Info($"tile amount: {tileAmount}  queue amount: {groundTileQueue.Count}");
+        for (int i = 0; i < tileAmount; i++)
+        {
+            while (BotBase.Farmer.UsingTool)
+            {
+            }
+            groundTileQueue.Clear();
+            // reorder priority queue on new cost
+            foreach (var tile in tiles.Where(tile => !tile.WaterTile && tile.ItemToPlace is not null))
+            {
+                groundTileQueue.Enqueue(tile,tile.Cost);
+            }
+            
+            PlaceTile placeTile = groundTileQueue.Dequeue();
+            tiles.Remove(placeTile);
+            
+            if (placeTile.ItemToPlace is null) continue;
+            
+            // if is blocked
+            if (placeTile.ResourceClump is not null || placeTile.Obj is not null) continue;
+            if (placeTile.ItemToPlace.Category == -47 && (placeTile.TerrainFeature is not HoeDirt ||
+                                                          (placeTile.TerrainFeature is HoeDirt dirt &&
+                                                           !dirt.canPlantThisSeedHere(placeTile.ItemToPlace.ItemId))))
+            {
+                Logger.Info($"skipping: {placeTile.Position}  run: {i}");
+                continue;
+            }
+            
+            Logger.Info($"placing at {placeTile.Position}");
+            bool result = await PlaceObject(placeTile);
+            
+            Logger.Info($"result of object in way: {result}");
+        }
+    }
+
+    #endregion
     /// <summary>
     /// change item and path-find then destroy object that is on specified tile.
     /// </summary>
@@ -703,7 +859,6 @@ public class ToolHandling
         {
             Logger.Info($"terrain feature swap");
             TerrainFeatureToolSwap.Swap(tile);
-            AlgorithmBase.IPathing.collisionMap.RemoveBlockedTile(tile.X, tile.Y);
             await PrivateDestroyObject(tile);
             return true;
         }
@@ -712,7 +867,6 @@ public class ToolHandling
         {
             Logger.Info($"resource set");
             ResourceClumpToolSwap.Swap(tile);
-            AlgorithmBase.IPathing.collisionMap.RemoveBlockedTile(tile.X,tile.Y);
             await PrivateDestroyObject(tile);
             return true;
         }
@@ -721,7 +875,6 @@ public class ToolHandling
         {
             Logger.Info($"object set");
             LitterObjectToolSwap.Swap(tile);
-            AlgorithmBase.IPathing.collisionMap.RemoveBlockedTile(tile.X,tile.Y);
             await PrivateDestroyObject(tile);
             return true;
         }

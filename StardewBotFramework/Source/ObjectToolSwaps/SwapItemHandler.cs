@@ -5,6 +5,7 @@ using StardewValley;
 using StardewValley.ItemTypeDefinitions;
 using StardewValley.TerrainFeatures;
 using StardewValley.Tools;
+using Object = StardewValley.Object;
 
 namespace StardewBotFramework.Source.ObjectToolSwaps;
 
@@ -72,6 +73,21 @@ public class SwapItemHandler
                 }
 
                 return;
+        }
+    }
+
+    public static void SwapObject(Object obj)
+    {
+        foreach (var item in BotBase.Farmer.Items)
+        {
+            if (item is null) continue;
+            if (item != obj) continue;
+            if (BotBase.Farmer.CurrentToolIndex == BotBase.Farmer.Items.IndexOf(item)) return;
+            
+            ChangeToolbar(BotBase.Farmer.Items.IndexOf(item));
+            BotBase.Farmer.CurrentToolIndex = BotBase.Farmer.Items.IndexOf(item);
+
+            return;
         }
     }
     

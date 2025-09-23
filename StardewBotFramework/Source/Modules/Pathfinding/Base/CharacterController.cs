@@ -260,7 +260,9 @@ public class CharacterController
 			}
 
 			if (objectInNextTile is null || objectInNextTile.isPassable() || DestroyLitterObject.IsDestructible(objectInNextTile)) continue;
-			
+
+			return;
+			//TODO: recalculate path?
 			Logger.Error($"The object in the next tile was not passable, the object was a {objectInNextTile.Name}");
 			_character.Halt();
 			FailedPathFinding?.Invoke(new CharacterController(), EventArgs.Empty);
