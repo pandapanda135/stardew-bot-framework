@@ -72,4 +72,26 @@ public class Graph : IGraph
         direction = -1;
         return false;
     }
+
+    public static bool AreNeighboursBlocked(Point startTile, out int blockedDirections, int directions = 8)
+    {
+        bool blocked = true;
+        int blockedAmount = 0;
+        for (int i = 0; i < directions; i++)
+        {
+            int neighborX = startTile.X + IGraph.GroupDirections[i, 0];
+            int neighborY = startTile.Y + IGraph.GroupDirections[i, 1];
+
+            if (!AlgorithmBase.IPathing.collisionMap.IsBlocked(neighborX, neighborY))
+            {
+                blocked = false;
+                continue;
+            }
+
+            blockedAmount++;
+        }
+
+        blockedDirections = blockedAmount;
+        return blocked;
+    }
 }

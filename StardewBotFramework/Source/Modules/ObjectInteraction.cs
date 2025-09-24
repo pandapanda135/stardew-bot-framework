@@ -2,7 +2,7 @@ using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
 using StardewValley;
 using StardewValley.Objects;
-using xTile.Dimensions;
+using StardewValley.TerrainFeatures;
 using Object = StardewValley.Object;
 
 namespace StardewBotFramework.Source.Modules;
@@ -58,6 +58,11 @@ public class ObjectInteraction
     public bool InteractWithObject(Object selectedObject)
     {
         return selectedObject.checkForAction(BotBase.Farmer); // this should change to checkForActionOn{Object} in this function
+    }
+
+    public bool InteractWithTerrainFeature(TerrainFeature feature,Vector2 tile)
+    {
+        return feature.performUseAction(tile);
     }
 
     /// <summary>

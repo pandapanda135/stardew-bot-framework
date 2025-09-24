@@ -170,7 +170,7 @@ public class AlgorithmBase
                 for (int y = minY; y <= maxY; y++)
                 {
                     if (!CollisionMap.IsCurrentlyBlocked(x,y)) continue;
-                    map.BlockedTiles.Add((x,y));
+                    map.AddBlockedTile(x,y);
                 }
             }
 

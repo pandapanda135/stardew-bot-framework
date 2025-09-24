@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
 using StardewValley;
@@ -10,23 +11,26 @@ namespace StardewBotFramework.Source.Modules.Pathfinding;
 /// </summary>
 public class CollisionMap
 {
-    public HashSet<(int x, int y)> BlockedTiles = new();
+	/// <summary>
+	/// These are the blocked tiles, this should only be accessed if necessary.
+	/// </summary>
+    public readonly ConcurrentDictionary<(int x, int y),byte> BlockedTiles = new();
 
     /// <summary>
     /// Add a new tile to the list.
     /// </summary>
-    public void AddBlockedTile(int x, int y) => BlockedTiles.Add((x, y));
+    public void AddBlockedTile(int x, int y) => BlockedTiles.TryAdd((x, y),Byte.MinValue);
 
     /// <summary>
     /// Remove a tile from the list.
     /// </summary>
-    public void RemoveBlockedTile(int x, int y) => BlockedTiles.Remove((x, y));
+    public void RemoveBlockedTile(int x, int y) => BlockedTiles.TryRemove((x, y), out _);
 
     /// <summary>
     /// If the provided tile has collisions
     /// </summary>
     /// <returns>true if it has collisions otherwise false</returns>
-    public bool IsBlocked(int x, int y) => BlockedTiles.Contains((x, y));
+    public bool IsBlocked(int x, int y) => BlockedTiles.ContainsKey((x, y));
     
     /// <summary>
     /// Query if the tile has collisions, it will not get this from the collision map but from the game. Use IsBlocked for the collision map.

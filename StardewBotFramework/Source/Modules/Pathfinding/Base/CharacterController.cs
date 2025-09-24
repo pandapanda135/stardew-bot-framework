@@ -167,16 +167,7 @@ public class CharacterController
 			// stop issues with pathing, if in wall or other occupied tile mainly for monsters.
 			if (_currentLocation.isCollidingPosition(_dynamicCharacter.GetBoundingBox(),Game1.viewport,_dynamicCharacter)) return;
 			_startingCharacterTile = _dynamicCharacter.TilePoint;
-			AlgorithmBase.IPathing pathing = new AStar.Pathing();
-			// pathing.BuildCollisionMap(_currentLocation, _character.TilePoint.X + 10, _character.TilePoint.Y + 10
-			// 	,_character.TilePoint.X - 10, _character.TilePoint.Y - 10);
-			PathNode start = new PathNode(_character.TilePoint.X, _character.TilePoint.Y, null);
-			Task.Run(async () =>
-			{
-				var path = await pathing.FindPath(start, new Goal.GoalDynamic(_dynamicCharacter, 1),
-					_currentLocation, 10000);
-				if (path.Count > 0) _endPath = path;
-			});
+			RecalculatePath(new Goal.GoalDynamic(_dynamicCharacter, 1));
 		}
 		
 		PathNode node = _endPath.Peek();
@@ -261,13 +252,19 @@ public class CharacterController
 
 			if (objectInNextTile is null || objectInNextTile.isPassable() || DestroyLitterObject.IsDestructible(objectInNextTile)) continue;
 
+			// This should only really get changed when using PlaceObject stuff in ToolHandler
+			var path = RecalculatePath(new Goal.GoalPosition(_nextNode.X,_nextNode.Y));
+
+			_endPath.Pop();
+			_endPath = path;
 			return;
 			//TODO: recalculate path?
-			Logger.Error($"The object in the next tile was not passable, the object was a {objectInNextTile.Name}");
-			_character.Halt();
-			FailedPathFinding?.Invoke(new CharacterController(), EventArgs.Empty);
-			ForceStopMoving();
-			return;
+			
+			// Logger.Error($"The object in the next tile was not passable, the object was a {objectInNextTile.Name}");
+			// _character.Halt();
+			// FailedPathFinding?.Invoke(new CharacterController(), EventArgs.Empty);
+			// ForceStopMoving();
+			// return;
 		}
 
 		PathNode peekNode = _endPath.Peek();
@@ -347,6 +344,26 @@ public class CharacterController
 		NPC npc = _character as NPC;
 		if (npc is null) return;
 		Game1.warpCharacter(_character as NPC, warp.TargetName, new Point(warp.TargetX, warp.TargetY));
+	}
+
+	private static Stack<PathNode> RecalculatePath(Goal goal)
+	{
+		AlgorithmBase.IPathing pathing = new AStar.Pathing();
+		// causes crashing due to running on thread
+		// pathing.BuildCollisionMap(_currentLocation, _character.TilePoint.X + 10, _character.TilePoint.Y + 10
+		// 	,_character.TilePoint.X - 10, _character.TilePoint.Y - 10);
+		
+		PathNode start = new PathNode(_character.TilePoint.X, _character.TilePoint.Y, null);
+		var path = Task.Run(async () =>
+		{
+			var path = await pathing.FindPath(start, goal,
+				_currentLocation, 10000);
+			return path;
+			// if (path.Count > 0) _endPath = path;
+		});
+		
+		// this feels like it might have some issues
+		return path.Result;
 	}
 	
 	public static bool IsMoving() => _movingCharacter;
