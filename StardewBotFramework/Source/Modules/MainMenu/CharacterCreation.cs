@@ -88,7 +88,7 @@ public class CharacterCreation
     /// <param name="name">The name that the farmer will take. This will go through the normal filters</param>
     public void SetName(string name)
     {
-        BotBase.CharacterCreatorTextBox(_characterCustomization,name,new (){"nameBox","Text"}); // _text
+        BotBase.ChangeTextBox(_characterCustomization,name,new (){"nameBox","Text"}); // _text
     }
 
     
@@ -98,7 +98,7 @@ public class CharacterCreation
     /// <param name="name">The name that the farm name will take. This will go through the normal filters</param>
     public void SetFarmName(string name)
     {
-        BotBase.CharacterCreatorTextBox(_characterCustomization,name,new (){"farmnameBox","_text"});
+        BotBase.ChangeTextBox(_characterCustomization,name,new (){"farmnameBox","_text"});
     }
     
     /// <summary>
@@ -107,7 +107,7 @@ public class CharacterCreation
     /// <param name="name">The favourite thing of the farmer. This will go through the normal filters</param>
     public void SetFavThing(string name)
     {
-        BotBase.CharacterCreatorTextBox(_characterCustomization,name,new (){"favThingBox","_text"});
+        BotBase.ChangeTextBox(_characterCustomization,name,new (){"favThingBox","_text"});
     }
 
     /// <summary>

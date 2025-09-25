@@ -95,8 +95,8 @@ public abstract class BotBase
 
         return true;
     }
-
-    internal static void CharacterCreatorTextBox(CharacterCustomization menu,string name, List<string> properties)
+    
+    internal static void ChangeTextBox(IClickableMenu menu,string name, List<string> properties)
     {
         if (Instance is null)
         {

@@ -30,7 +30,7 @@ public class ToolHandling
     /// Will use currently held tool.
     /// </summary>
     /// <param name="direction">This acts as a shortcut to <see cref="ChangeFacingDirection"/>. If this is not set or not a valid value the tool will be used in the currently facing direction</param>
-    /// <param name="currentTile">This will create use the tool on the current tile.</param>
+    /// <param name="currentTile">This will use the tool on the current tile.</param>
     public void UseTool(int direction = -1, bool currentTile = false)
     {
         if (BotBase.Farmer.UsingTool)

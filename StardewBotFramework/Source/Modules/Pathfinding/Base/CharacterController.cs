@@ -123,8 +123,11 @@ public class CharacterController
 	// this is so bot faces correct direction with diagonal tiles
 	private static readonly int[] CorrectFacingDirections = { 0, 1, 2, 3, 0, 0, 2, 2 };
 
+	private static bool _recalculatingPath;
 	private static void MoveCharacter(GameTime time) //TODO: figure out why _character.movePosition does not change character's animation.
 	{
+		if (_recalculatingPath) return;
+		
 		if (BotBase.Farmer.UsingTool) return; // check if animation running
 		
 		if (_isDestroying) // check if destroy
@@ -249,26 +252,34 @@ public class CharacterController
 			{
 				fence.toggleGate(true);
 			}
+			
+			Object objectInCurrentTile = _currentLocation.getObjectAtTile(pathNode.X, pathNode.Y);
 
-			if (objectInNextTile is null || objectInNextTile.isPassable() || DestroyLitterObject.IsDestructible(objectInNextTile)) continue;
+			if ((objectInNextTile is null || objectInNextTile.isPassable() ||
+			     DestroyLitterObject.IsDestructible(objectInNextTile)) &&
+			    (objectInCurrentTile is null || objectInCurrentTile.isPassable())) continue;
 
-			// This should only really get changed when using PlaceObject stuff in ToolHandler
-			var path = RecalculatePath(new Goal.GoalPosition(_nextNode.X,_nextNode.Y));
+			if (objectInNextTile is not null && !objectInNextTile.isPassable())
+			{
+				AlgorithmBase.IPathing.collisionMap.AddBlockedTile(_nextNode.X,_nextNode.Y);
+			}
 
-			_endPath.Pop();
+			if (!objectInCurrentTile.isPassable())
+			{
+				AlgorithmBase.IPathing.collisionMap.AddBlockedTile(_currentNode.X,_currentNode.Y);
+			}
+			
+			PathNode lastNode = _endPath.ToList()[_endPath.Count - 1];
+			Logger.Error($"object in next tile was blocked   goal node: {lastNode.VectorLocation}   next node: {_nextNode.VectorLocation}   {pathNode.VectorLocation}");
+			var path = RecalculatePath(new Goal.GoalPosition(lastNode.X,lastNode.Y));
+			
+			if (path.Count <= 0) return;
+
 			_endPath = path;
 			return;
-			//TODO: recalculate path?
-			
-			// Logger.Error($"The object in the next tile was not passable, the object was a {objectInNextTile.Name}");
-			// _character.Halt();
-			// FailedPathFinding?.Invoke(new CharacterController(), EventArgs.Empty);
-			// ForceStopMoving();
-			// return;
 		}
 
 		PathNode peekNode = _endPath.Peek();
-		Logger.Info($"peeknode: {peekNode.Destroy}   isdestroy: {_isDestroying}");
 		if (!peekNode.Destroy || _isDestroying)
 		{
 			try
@@ -341,13 +352,14 @@ public class CharacterController
 			}
 		}
 
-		NPC npc = _character as NPC;
-		if (npc is null) return;
-		Game1.warpCharacter(_character as NPC, warp.TargetName, new Point(warp.TargetX, warp.TargetY));
+		if (_character is not NPC npc) return;
+		Game1.warpCharacter(npc, warp.TargetName, new Point(warp.TargetX, warp.TargetY));
 	}
 
 	private static Stack<PathNode> RecalculatePath(Goal goal)
 	{
+		if (_recalculatingPath) return new();
+		_recalculatingPath = true;
 		AlgorithmBase.IPathing pathing = new AStar.Pathing();
 		// causes crashing due to running on thread
 		// pathing.BuildCollisionMap(_currentLocation, _character.TilePoint.X + 10, _character.TilePoint.Y + 10
@@ -358,8 +370,12 @@ public class CharacterController
 		{
 			var path = await pathing.FindPath(start, goal,
 				_currentLocation, 10000);
+			_recalculatingPath = false;
+			if (path.Count <= 0) return new();
+			
+			Logger.Info($"path is greater than 0");
 			return path;
-			// if (path.Count > 0) _endPath = path;
+
 		});
 		
 		// this feels like it might have some issues

@@ -6,22 +6,6 @@ namespace StardewBotFramework.Source.Modules.Pathfinding.Base;
 
 public class AlgorithmBase
 {
-    public Character? Character;
-    
-    public GameLocation? CurrentLocation;
-    
-    // will be used to see if destroying stuff like trees is allowed in pathfinding
-    public bool AllowDestruction;
-
-    public AlgorithmBase(Character character,GameLocation currentLocation)
-    {
-        Character = character;
-        CurrentLocation = currentLocation;
-    }
-
-    public AlgorithmBase()
-    {}
-    
     // this is so multiple types of pathing can be implemented more easily
     public interface IPathing
     {
@@ -29,8 +13,6 @@ public class AlgorithmBase
 
         protected static PathPriorityQueue PriorityFrontier = new();
         
-        protected static readonly AlgorithmBase Base = new();
-
         public static readonly Stack<PathNode> PathToEndPoint = new();
         
         /// <summary>

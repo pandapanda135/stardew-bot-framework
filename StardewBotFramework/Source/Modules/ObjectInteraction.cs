@@ -51,7 +51,7 @@ public class ObjectInteraction
     }
     
     /// <summary>
-    /// Use for interaction with objects this includes furniture this replicates rightclicking it
+    /// Use for interaction with objects this includes furniture this replicates right-clicking it
     /// </summary>
     /// <param name="selectedObject"><see cref="Object"/> to interact with</param>
     /// <returns>Returns true if the action was performed, or false if the player should pick up the item instead.</returns>
@@ -60,6 +60,12 @@ public class ObjectInteraction
         return selectedObject.checkForAction(BotBase.Farmer); // this should change to checkForActionOn{Object} in this function
     }
 
+    /// <summary>
+    /// This replicates interacting with a terrain feature with an empty inventory slot and right-clicking it. If you want to use a tool or item, e.g. add a tapper, you should use Tool.UseTool
+    /// </summary>
+    /// <param name="feature"></param>
+    /// <param name="tile"></param>
+    /// <returns></returns>
     public bool InteractWithTerrainFeature(TerrainFeature feature,Vector2 tile)
     {
         return feature.performUseAction(tile);
