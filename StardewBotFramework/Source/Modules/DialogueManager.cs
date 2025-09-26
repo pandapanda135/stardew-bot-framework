@@ -16,8 +16,6 @@ public class DialogueManager
     public Dialogue? CurrentDialogue => CurrentDialogueBox?.characterDialogue;
     
     public DialogueBox? CurrentDialogueBox = null;
-
-    public NPC CurrentNpc;
     
     /// <summary>
     /// Get if there is a <see cref="NPC"/> at a tile
@@ -102,7 +100,6 @@ public class DialogueManager
         
         loadedDialogue = CurrentDialogueStack.Pop();
         
-        CurrentNpc = character;
         return checkAction;
     }
     

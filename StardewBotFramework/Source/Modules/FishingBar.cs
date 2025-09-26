@@ -11,7 +11,7 @@ namespace StardewBotFramework.Source.Modules;
 public class FishingBar
 {
 	internal static event EventHandler? StaticCaughtFish;
-	private static FishingRod fishingRod;
+	private static FishingRod? fishingRod;
 	static BobberBar? bobberBar
 	{
 		get
@@ -85,6 +85,6 @@ public class FishingBar
 
 	public void CloseRewardMenu()
 	{
-		fishingRod.doneHoldingFish(BotBase.Farmer);
+		fishingRod?.doneHoldingFish(BotBase.Farmer);
 	}
 }

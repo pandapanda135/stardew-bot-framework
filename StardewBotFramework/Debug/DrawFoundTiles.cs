@@ -12,18 +12,17 @@ namespace StardewBotFramework.Debug;
 
 public class DrawFoundTiles
 {
-    private static bool TextureInitialized;
-    private static Texture2D OutLineTexture;    
+    private static bool _textureInitialized;
+    private static Texture2D? _outLineTexture;    
     
     private static void InitializeOutlineTextures()
     {
-        if (!TextureInitialized)
-        {
-            // Tile outline texture setup            
-            OutLineTexture = new Texture2D(Game1.graphics.GraphicsDevice, 1, 1);
-            OutLineTexture.SetData(new Color[] { Color.White });
-            TextureInitialized = true;
-        }
+        if (_textureInitialized) return;
+        
+        // Tile outline texture setup            
+        _outLineTexture = new Texture2D(Game1.graphics.GraphicsDevice, 1, 1);
+        _outLineTexture.SetData(new Color[] { Color.White });
+        _textureInitialized = true;
     }
 
     /// <summary>
@@ -46,7 +45,7 @@ public class DrawFoundTiles
             tileLocation.Y -= Game1.viewport.Y;
             
             tileColor *= 0.25f;
-            Game1.spriteBatch.Draw(OutLineTexture,
+            Game1.spriteBatch.Draw(_outLineTexture,
                 new Rectangle((int)tileLocation.X, (int)tileLocation.Y, Game1.tileSize,
                     Game1.tileSize), tileColor);
         }
@@ -69,7 +68,7 @@ public class DrawFoundTiles
             tileLocation.Y -= Game1.viewport.Y;
             
             tileColor *= 0.25f;
-            Game1.spriteBatch.Draw(OutLineTexture,
+            Game1.spriteBatch.Draw(_outLineTexture,
                 new Rectangle((int)tileLocation.X, (int)tileLocation.Y, Game1.tileSize,
                     Game1.tileSize), tileColor);
         }

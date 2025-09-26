@@ -5,7 +5,7 @@ namespace StardewBotFramework.Source.Modules.MainMenu;
 
 public class MultiplayerMenu
 {
-    private CoopMenu _multiplayer;
+    private CoopMenu? _multiplayer;
 
     public void SetTitleMenu(CoopMenu multiplayer)
     {

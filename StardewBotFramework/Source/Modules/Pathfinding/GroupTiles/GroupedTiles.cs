@@ -80,8 +80,7 @@ public class GroupedTiles
                 Logger.Info($"Get tiles: {tile.Position}");
                 PlantTile? plantTile = tile as PlantTile;
                 if (plantTile is null) continue;
-                HoeDirt hoeDirt = plantTile.TerrainFeature as HoeDirt;
-                if (hoeDirt is null) continue;
+                if (plantTile.TerrainFeature is not HoeDirt) continue;
                 if (group.Contains(plantTile)) continue;
                 group.Add(plantTile);
             }

@@ -68,7 +68,8 @@ public class CharacterCreation
         {
             Logger.Warning($"Tried to call RandomiseCharacter when randomising character is not available. This happens when you call it in DyePots or ClothesDye");
         }
-        
+
+        if (_characterCustomization is null) return;
         Rectangle buttonBounds = _characterCustomization.randomButton.bounds; 
         _characterCustomization.receiveLeftClick(buttonBounds.X,buttonBounds.Y);
     }

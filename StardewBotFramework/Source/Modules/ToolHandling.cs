@@ -728,7 +728,7 @@ public class ToolHandling
         return false;
     }
 
-    private async Task<bool> PlaceObject(PlaceTile tile)
+    private async Task<bool> PlaceObject(PlaceTile tile, bool checkPass = true)
     {
         AlgorithmBase.IPathing pathing = new AStar.Pathing();
         PathNode start = new PathNode(BotBase.Farmer.TilePoint.X, BotBase.Farmer.TilePoint.Y, null);
@@ -745,7 +745,7 @@ public class ToolHandling
         }
         
         // TODO: check top of later fixes for reason for this
-        if (!tile.ItemToPlace.isPassable()) return false;
+        if (checkPass && !tile.ItemToPlace.isPassable()) return false;
         
         if (Graph.IsInNeighbours(BotBase.Farmer.TilePoint, tile.Position, out var direction, 4))
         {
@@ -840,7 +840,7 @@ public class ToolHandling
     /// <param name="tiles">Will place the object in <see cref="PlaceTile.ItemToPlace"/> if there is none or that tile
     /// is blocked, that tile will be skipped.
     /// </param>
-    public async Task PlaceObjectsAtTiles(List<PlaceTile> tiles)
+    public async Task PlaceObjectsAtTiles(List<PlaceTile> tiles, bool checkPass = true)
     {
         AlgorithmBase.IPathing pathing = new AStar.Pathing();
         pathing.BuildCollisionMap(BotBase.CurrentLocation);
@@ -875,9 +875,9 @@ public class ToolHandling
             }
             
             Logger.Info($"placing at {placeTile.Position}");
-            bool result = await PlaceObject(placeTile);
+            bool result = await PlaceObject(placeTile,checkPass);
             
-            Logger.Info($"result of object in way: {result}");
+            Logger.Info($"result of object in way: {result}    false is bad :(");
         }
     }
 

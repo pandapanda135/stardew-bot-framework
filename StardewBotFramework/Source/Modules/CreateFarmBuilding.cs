@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Input;
 using StardewBotFramework.Source.Utilities;
 using StardewValley;
 using StardewValley.Buildings;
+using StardewValley.Enchantments;
 using StardewValley.GameData.Buildings;
 using StardewValley.Menus;
 using xTile.Dimensions;
@@ -25,14 +26,8 @@ public class CreateFarmBuilding
         }
     }
 
-    public CarpenterMenu.BlueprintEntry BlueprintEntry
-    {
-        get
-        {
-            if (_carpenterMenu is null) return null;
-            return _carpenterMenu.Blueprint;
-        }
-    }
+    public CarpenterMenu.BlueprintEntry? BlueprintEntry => _carpenterMenu?.Blueprint;
+    
     public void SetCarpenterUI(CarpenterMenu menu)
     {
         _carpenterMenu = menu;

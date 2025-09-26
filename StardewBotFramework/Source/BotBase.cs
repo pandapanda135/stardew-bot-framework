@@ -28,7 +28,7 @@ public abstract class BotBase
     
     private static IReflectedField<int>? _selectedResponse;
     private static IReflectedField<TextBox>? _reflectedTextBox;
-    private static IReflectedField<NetMutexQueue<Guid>> _reflectedObjectDestroy;
+    private static IReflectedField<NetMutexQueue<Guid>>? _reflectedObjectDestroy;
     public GameEvents GameEvents = null!;
     public Farmer _farmer => Farmer;
     public GameLocation _currentLocation => CurrentLocation;
@@ -143,40 +143,38 @@ public abstract class BotBase
         return Instance.Helper.GameContent.Load<Dictionary<string,PetData>>("Data/Pets");
     }
 
-    internal static int GetLevelUpMenuSkill()
+    private static LevelUpMenu? GetLevelUpMenu()
     {
         if (Instance is null)
         {
             Logger.Error($"Instance is not set");
-            return -1;
+            return null;
         }
 
-        LevelUpMenu menu = Game1.activeClickableMenu as LevelUpMenu;
+        LevelUpMenu? menu = Game1.activeClickableMenu as LevelUpMenu;
+        return menu ?? null;
+    }
+    internal static int GetLevelUpMenuSkill()
+    {
+        var menu = GetLevelUpMenu();
+        if (menu is null) return -1;
+        
         IReflectedField<int> reflectedField = Instance.Helper.Reflection.GetField<int>(menu, "currentSkill");
         return reflectedField.GetValue();
     }
     
     internal static int GetLevelUpMenuLevel()
     {
-        if (Instance is null)
-        {
-            Logger.Error($"Instance is not set");
-            return -1;
-        }
-
-        LevelUpMenu menu = Game1.activeClickableMenu as LevelUpMenu;
+        var menu = GetLevelUpMenu();
+        if (menu is null) return -1;
+        
         IReflectedField<int> reflectedField = Instance.Helper.Reflection.GetField<int>(menu, "currentLevel");
         return reflectedField.GetValue();
     }
     internal static List<int> GetLevelUpMenuProfessions()
     {
-        if (Instance is null)
-        {
-            Logger.Error($"Instance is not set");
-            return new();
-        }
-
-        LevelUpMenu menu = Game1.activeClickableMenu as LevelUpMenu;
+        var menu = GetLevelUpMenu();
+        if (menu is null) return new();
         IReflectedField<List<int>> reflectedField = Instance.Helper.Reflection.GetField<List<int>>(menu, "professionsToChoose");
         return reflectedField.GetValue();
     }

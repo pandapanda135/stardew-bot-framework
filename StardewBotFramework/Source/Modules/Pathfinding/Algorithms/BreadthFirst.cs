@@ -12,7 +12,7 @@ public class BreadthFirstSearch : AlgorithmBase
     {
         #region PathFinding
 
-        async Task<Stack<PathNode>> IPathing.FindPath(PathNode startPoint, Goal goal, GameLocation location, int limit, bool canDestroy = false)
+        async Task<Stack<PathNode>> IPathing.FindPath(PathNode startPoint, Goal goal, GameLocation location, int limit, bool canDestroy)
         {
             Stack<PathNode> correctPath = await Task.Run(() => RunBreadthFirst(startPoint, goal, location, limit));
             

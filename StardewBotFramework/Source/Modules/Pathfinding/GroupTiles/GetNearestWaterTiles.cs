@@ -165,6 +165,7 @@ public class GetNearestWaterTiles : AlgorithmBase
                     }
                     catch (Exception e)
                     {
+                        Logger.Error($"exception in RemoveNonBorderWater: {e}");
                         break;
                     }
                 }

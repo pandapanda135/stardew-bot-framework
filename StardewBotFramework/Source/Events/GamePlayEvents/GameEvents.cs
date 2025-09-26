@@ -145,11 +145,11 @@ public class GameEvents
     /// <summary>
     /// When an event ends according to <see cref="Game1.eventFinished"/>
     /// </summary>
-    public event EventHandler<EventEndedEventArgs> EventFinished;
+    public event EventHandler<EventEndedEventArgs>? EventFinished;
     /// <summary>
     /// When <see cref="Game1.activeClickableMenu"/> Changes
     /// </summary>
-    public event EventHandler<BotMenuChangedEventArgs> MenuChanged;
+    public event EventHandler<BotMenuChangedEventArgs>? MenuChanged;
     private static event EventHandler<BotOnDeathEventArgs>? StaticOnBotDeath;
     private static event EventHandler<BotDamagedEventArgs>? StaticOnBotDamaged; 
     private static event EventHandler<OnOtherPlayerDeathEventArgs>? StaticOnOtherPlayerDeath;
@@ -161,7 +161,7 @@ public class GameEvents
     #region Methods
     // StardewValley.Event
     private void DisplayOnMenuChanged(object? sender, MenuChangedEventArgs e) =>
-        MenuChanged.Invoke(sender, new BotMenuChangedEventArgs(e.NewMenu!,e.OldMenu!)); 
+        MenuChanged?.Invoke(sender, new BotMenuChangedEventArgs(e.NewMenu!,e.OldMenu!)); 
     private void OnDayStarted(object? sender, DayStartedEventArgs e) => DayStarted?.Invoke(sender,new BotDayStartedEventArgs());
     
     private void OnDayEnding(object? sender, DayEndingEventArgs e) => DayEnded?.Invoke(sender, new BotDayEndedEventArgs());
@@ -243,7 +243,7 @@ public class GameEvents
     private void OnStaticOnBotDeath(object? sender, BotOnDeathEventArgs e) => OnBotDeath?.Invoke(sender, e);
     private void StaticBotDamaged(object? sender, BotDamagedEventArgs e) => OnBotDamaged?.Invoke(sender, e);
     private void OnStaticCaughtFish(object? sender, System.EventArgs e) => CaughtFish?.Invoke(sender, e);
-    private void OnStaticEventFinished(object? sender, EventEndedEventArgs e) => EventFinished.Invoke(sender, e);
+    private void OnStaticEventFinished(object? sender, EventEndedEventArgs e) => EventFinished?.Invoke(sender, e);
         
     #endregion
 

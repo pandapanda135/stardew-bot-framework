@@ -78,10 +78,12 @@ public class CharacterController
 		{
 			farmer1.setRunning(true, true);
 			farmer1.updateMovementAnimation(Time);
+			// Logger.Info($"pre interval modifier: {farmer1.FarmerSprite.intervalModifier}");
 		}
 		MoveCharacter(Time);
 		if (_character is Farmer farmer)
 		{
+			// Logger.Info($"post interval modifier: {farmer.FarmerSprite.intervalModifier}");
 			farmer.setRunning(true, true);
 			farmer.updateMovementAnimation(Time);
 		}
@@ -309,7 +311,7 @@ public class CharacterController
 				case 0:
 					_character.FacingDirection = (int)Direction.East;
 					break;
-				case 1: // east
+				case 1:
 					_character.FacingDirection = (int)Direction.West;
 					break;
 				case 2: // south
@@ -346,7 +348,7 @@ public class CharacterController
 		if (Game1.eventUp)
 		{
 			Event currentEvent = Game1.CurrentEvent;
-			if (!(!(currentEvent != null ? new bool?(currentEvent.isFestival) : null) ?? true))
+			if (!(bool)!(currentEvent != null ? new bool?(currentEvent.isFestival) : null))
 			{
 				Game1.CurrentEvent.TryStartEndFestivalDialogue(_character as Farmer);
 			}
