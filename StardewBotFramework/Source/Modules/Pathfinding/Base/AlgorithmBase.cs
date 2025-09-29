@@ -13,7 +13,10 @@ public class AlgorithmBase
 
         protected static PathPriorityQueue PriorityFrontier = new();
         
-        public static readonly Stack<PathNode> PathToEndPoint = new();
+        /// <summary>
+        /// This is used to keep track of the final node as we get the path from traversing the node's parent
+        /// </summary>
+        public static PathNode? EndNode;
         
         /// <summary>
         /// this contains Nodes the pathfinding has already reached
@@ -27,15 +30,15 @@ public class AlgorithmBase
         public Task<Stack<PathNode>> FindPath(PathNode startPoint, Goal goal, GameLocation location,
             int limit,bool canDestroy = false);
 
-        public static Stack<PathNode> RebuildPath(PathNode startPoint, Goal goal, Stack<PathNode> path)
+        public static Stack<PathNode> RebuildPath(PathNode startPoint, Goal goal,PathNode? finalNode)
         {
-            if (!path.TryPeek(out var pathEndPoint) || pathEndPoint.VectorLocation != goal.VectorLocation && goal is Goal.GoalPosition)
+            if (finalNode is null || finalNode.VectorLocation != goal.VectorLocation && goal is Goal.GoalPosition)
             {
-                Logger.Error($"Ending Rebuild path early, end path: {path.Count} goal: {goal.VectorLocation}");
+                Logger.Error($"Ending Rebuild path early, goal: {goal.VectorLocation}");
                 return new Stack<PathNode>();
             }
 
-            PathNode current = path.Pop();
+            PathNode current = finalNode;
             Stack<PathNode> correctPath = new();
 
             Logger.Info($"starting while loop in rebuildPath");
@@ -66,7 +69,7 @@ public class AlgorithmBase
                 Logger.Info($"Ending using CheckIfEnd function");
                 // _pathfinding.PathToEndPoint.Reverse(); // this is done as otherwise get ugly paths
 
-                PathToEndPoint.Push(currentNode);
+                EndNode = currentNode;
                 return true;
             }
 

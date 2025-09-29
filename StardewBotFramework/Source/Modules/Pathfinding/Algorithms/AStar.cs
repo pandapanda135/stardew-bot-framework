@@ -3,7 +3,6 @@ using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
 using StardewBotFramework.Source.ObjectDestruction;
 using StardewValley;
-using StardewValley.Network;
 using Object = StardewValley.Object;
 
 namespace StardewBotFramework.Source.Modules.Pathfinding.Algorithms;
@@ -14,7 +13,7 @@ public class AStar : AlgorithmBase
     {
         #region Pathfinding
 
-        private int averageTileCost = 3; // between 1-6 in PathNodes
+        private readonly int _averageTileCost = 3; // between 1-6 in PathNodes
         async Task<Stack<PathNode>> IPathing.FindPath(PathNode startPoint, Goal goal, GameLocation location,
             int limit, bool canDestroy)
         {
@@ -112,17 +111,17 @@ public class AStar : AlgorithmBase
                     Logger.Error($"new cost after cost: {newCumulative}   tile cost: {next.Cost}");
                     // we weight heuristic to find a path quicker, this may lead to more inefficient paths though.
                     // Also multiply to make heuristic be similar to GCost.
-                    int priority = next.GCost + (PathNode.ManhattanHeuristic(next.VectorLocation,goal.VectorLocation) * averageTileCost);
+                    int priority = next.GCost + (PathNode.ManhattanHeuristic(next.VectorLocation,goal.VectorLocation) * _averageTileCost);
                     Logger.Info($"A Star estimated heuristic {priority}");
                     IPathing.PriorityFrontier.Enqueue(next, priority);
-                    IPathing.PathToEndPoint.Push(next); // we already keep track of parents in the track nodes, do we need this?    
+                    IPathing.EndNode = next;
                 }
 
                 increase++;
             }
             
             Logger.Info($"AStar about to return");
-            return IPathing.RebuildPath(startNode, goal, IPathing.PathToEndPoint);
+            return IPathing.RebuildPath(startNode, goal,IPathing.EndNode);
         }
 
         #endregion
@@ -131,7 +130,7 @@ public class AStar : AlgorithmBase
             IPathing.Frontier = new();
             IPathing.PriorityFrontier.Clear();
             IPathing.ClosedList.Clear();
-            IPathing.PathToEndPoint.Clear();
+            IPathing.EndNode = null;
         }
     }
 }

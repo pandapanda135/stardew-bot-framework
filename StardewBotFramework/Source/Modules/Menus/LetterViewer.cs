@@ -7,11 +7,17 @@ public class LetterViewer
 {
 	private static LetterViewerMenu? _menu;
 
-	public bool? HasQuest => _menu?.HasQuestOrSpecialOrder;
+	/// <summary>
+	/// This is if the letter has a quest or special order
+	/// </summary>
+	public bool HasQuest => (bool)_menu?.HasQuestOrSpecialOrder;
 
+	/// <summary>
+	/// If there are items to grab
+	/// </summary>
 	public bool? itemsToGrab => _menu?.itemsLeftToGrab();
 
-	public string recipeLearned => _menu is null ? "" : _menu.learnedRecipe;
+	public string? recipeLearned => _menu?.learnedRecipe;
 
 	public List<ClickableComponent> Items => _menu is null ? new() : _menu.itemsToGrab;
 

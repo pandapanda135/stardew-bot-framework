@@ -72,7 +72,7 @@ public class BreadthFirstSearch : AlgorithmBase
                 {
                     Logger.Info($"in foreach this is node: {node.X},{node.Y}");
                     IPathing.Frontier.Enqueue(node);
-                    IPathing.PathToEndPoint.Push(current);
+                    IPathing.EndNode = node;
                 }
 
                 increase++;
@@ -80,7 +80,7 @@ public class BreadthFirstSearch : AlgorithmBase
             
             Logger.Info($"breadth first about to return");
 
-            return IPathing.RebuildPath(startNode, goal, IPathing.PathToEndPoint);
+            return IPathing.RebuildPath(startNode, goal,IPathing.EndNode);
         }
         
     #endregion
@@ -89,7 +89,6 @@ public class BreadthFirstSearch : AlgorithmBase
          {
              IPathing.Frontier = new();
              IPathing.ClosedList.Clear();
-             IPathing.PathToEndPoint.Clear();
          }
      }
 }
