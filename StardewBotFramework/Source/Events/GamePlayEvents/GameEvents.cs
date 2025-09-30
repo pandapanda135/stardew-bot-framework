@@ -37,7 +37,6 @@ public class GameEvents
         _helper.Events.World.TerrainFeatureListChanged += OnTerrainFeatureListChanged;
         _helper.Events.World.LargeTerrainFeatureListChanged += OnLargeTerrainFeatureListChanged;
         
-        _helper.Events.GameLoop.UpdateTicking += CharacterController.Update;
         _helper.Events.GameLoop.UpdateTicking += FishingBar.Update;
         
         FishingBar.StaticCaughtFish += OnStaticCaughtFish;

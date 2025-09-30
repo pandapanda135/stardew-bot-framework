@@ -237,7 +237,8 @@ public class ToolHandling
                     continue;
                 }
                 
-                CharacterController.StartMoveCharacter(path);
+                var controller = new CharacterController(new(), BotBase.Farmer, BotBase.CurrentLocation);
+                controller.StartMoveCharacter(path);
                 while (CharacterController.IsMoving()) {} // this is not async
                 
                 if (BotBase.Farmer.TilePoint == plantTile.Position) // will sometimes path-find to tile, this should not happen, I'm too lazy to fix this.
@@ -325,7 +326,8 @@ public class ToolHandling
                 break;
             }
 
-            CharacterController.StartMoveCharacter(path);
+            var controller = new CharacterController(new(), BotBase.Farmer, BotBase.CurrentLocation);
+            controller.StartMoveCharacter(path);
 
             while (CharacterController.IsMoving())
             {
@@ -449,7 +451,8 @@ public class ToolHandling
                     continue;
                 }
                 
-                CharacterController.StartMoveCharacter(path);
+                var controller = new CharacterController(new(), BotBase.Farmer, BotBase.CurrentLocation);
+                controller.StartMoveCharacter(path);
 
                 while (CharacterController.IsMoving()){} // this is not async
                 
@@ -508,7 +511,8 @@ public class ToolHandling
                 DestroyObjectType(tile);
             }
 
-            CharacterController.StartMoveCharacter(path);
+            var controller = new CharacterController(new(), BotBase.Farmer, BotBase.CurrentLocation);
+            controller.StartMoveCharacter(path);
 
             while (CharacterController.IsMoving()) {} // this is not async
 
@@ -762,7 +766,8 @@ public class ToolHandling
             // return PlaceCurrentAndModifyMap(tile.Position);
         }
 
-        CharacterController.StartMoveCharacter(path);
+        var controller = new CharacterController(new(), BotBase.Farmer, BotBase.CurrentLocation);
+        controller.StartMoveCharacter(path);
 
         while (CharacterController.IsMoving())
         {

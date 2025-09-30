@@ -29,8 +29,10 @@ public class Pathfinder
         Stack<PathNode> path = await pathing.FindPath(start,goal,Game1.currentLocation,10000,canDestroy);
 
         Character? npc = null;
-        if (goal is Goal.GoalDynamic dynamic) npc = dynamic.character; 
-        CharacterController.StartMoveCharacter(path,npc);
+        if (goal is Goal.GoalDynamic dynamic) npc = dynamic.character;
+
+        var controller = new CharacterController(new(), BotBase.Farmer, BotBase.CurrentLocation);
+        controller.StartMoveCharacter(path,npc);
 
         while (CharacterController.IsMoving()) {} // slightly jank way to get around MovingCharacter not being async
     }
@@ -52,7 +54,8 @@ public class Pathfinder
 
         Character? npc = null;
         if (goal is Goal.GoalDynamic dynamic) npc = dynamic.character; 
-        CharacterController.StartMoveCharacter(path,npc as Monster,true);
+        var controller = new CharacterController(new(), BotBase.Farmer, BotBase.CurrentLocation);
+        controller.StartMoveCharacter(path,npc as Monster,true);
 
         while (CharacterController.IsMoving()) {}
     }

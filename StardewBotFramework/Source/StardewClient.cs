@@ -147,5 +147,4 @@ public class StardewClient : BotBase
         Harmony.Patch(original: AccessTools.Method(typeof(Game1), nameof(Game1.eventFinished)),
             prefix: new HarmonyMethod(typeof(GameEvents.EventFinishedPatch), nameof(GameEvents.EventFinishedPatch.eventFinished_prefix)));
     }
-    
 }

@@ -15,7 +15,6 @@ public class Main : Mod
         Logger.SetMonitor(Monitor);
 
         helper.Events.Input.ButtonPressed += ButtonPressed;
-        helper.Events.GameLoop.UpdateTicking += CharacterController.Update;
         helper.Events.Display.Rendered += DrawFoundTiles.OnRenderTiles;
     }
 
