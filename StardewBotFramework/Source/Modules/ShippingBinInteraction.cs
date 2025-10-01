@@ -1,7 +1,9 @@
 using Microsoft.Xna.Framework;
 using StardewBotFramework.Source.Modules.Menus;
+using StardewBotFramework.Source.Utilities;
 using StardewValley;
 using StardewValley.Buildings;
+using StardewValley.Menus;
 
 namespace StardewBotFramework.Source.Modules;
 
@@ -56,10 +58,34 @@ public class ShippingBinInteraction : GrabItemMenuInteraction
         shippingBin.leftClicked();
     }
 
+    /// <summary>
+    /// This dont work :(
+    /// </summary>
     public void OpenBin(ShippingBin shippingBin)
     {
         // TODO: this does not work as need to use non-old MouseState
         shippingBin.doAction(new Vector2(shippingBin.tileX.Value, shippingBin.tileY.Value), BotBase.Farmer);
+    }
+
+    public Item? GetLastItem()
+    {
+        return Game1.getFarm().lastItemShipped;
+    }
+
+    public Item? GrabLastItem()
+    { 
+        if (_menu is null) return null;
+        
+        ClickableComponent cc = _menu.lastShippedHolder;
+        
+        Item? grabItem = GetLastItem();
+        if (grabItem is null) return null;
+        
+        _menu.receiveLeftClick(cc.bounds.X, cc.bounds.Y);
+
+        int emptyIndex = InventoryUtilities.GetFirstEmptySlot(BotBase.Farmer.Items);
+        _menu.receiveLeftClick(_menu.inventory.inventory[emptyIndex].bounds.X, _menu.inventory.inventory[emptyIndex].bounds.Y);
+        return grabItem;
     }
 
     /// <summary>

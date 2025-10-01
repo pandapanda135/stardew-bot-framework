@@ -64,12 +64,15 @@ public class CharacterController : PathFindController
 	/// The maximum amount of time the bot can stay in the same position for. This is in milliseconds e.g. 5 seconds would be 5000
 	/// </summary>
 	private const int MaxPauseTime = 5000;
-	
+
+	private int _updateCallAmount;
+	private int _moveCallAmount;
 	// this gets called in farmer's update, return true if end else false
 	public override bool update(GameTime time)
 	{
+		_updateCallAmount += 1;
 		if (_endPath.Count < 1) _movingCharacter = false;
-		Logger.Info($"new update called: moving character");
+		Logger.Info($"new update called  {_updateCallAmount}     {_moveCallAmount}");
 
 		var monster = _dynamicCharacter as Monster;
 		if ((!_movingCharacter && !_attacking) || (_attacking && monster is not null && monster.Health < 1))
@@ -215,7 +218,7 @@ public class CharacterController : PathFindController
 				    .Intersects(_character.GetBoundingBox()) && npc.isMoving()))
 			{
 				Logger.Error($"Ran into a character"); //TODO: re-calulate path (Could get into a loop of being in character until the npc moves. Maybe check next node for character)
-				FailedPathFinding?.Invoke(this,FailureReason.NoCharacter);
+				FailedPathFinding?.Invoke(this,FailureReason.GoalBlocked);
 				return;
 			}
 		}
@@ -237,7 +240,7 @@ public class CharacterController : PathFindController
 			_character.SetMovingUp(true);
 		}
 
-		// destroy object and interact with object stuff
+		// destroy object
 		foreach (var pathNode in _endPath)
 		{
 			_nextIndex = _endPath.ToList().IndexOf(pathNode);
@@ -249,27 +252,25 @@ public class CharacterController : PathFindController
 			_neighbourIndex = _endPath.ToList().IndexOf(_nextNode); // need this to set next PathNode.Destroy to false
 		}
 		
-		Object objectAtNextTile = _currentLocation.getObjectAtTile(_nextNode.X, _nextNode.Y);
+		// This is for interacting with specific objects and re calculating paths if an object is in the way
+		Object? objectAtNextTile = _currentLocation.getObjectAtTile(_nextNode.X, _nextNode.Y);
+		Object? objectInCurrentTile = _currentLocation.getObjectAtTile(node.X, node.Y);
 
 		if (objectAtNextTile is Fence fence && fence.isGate.Value && !fence.isPassable())
 		{
 			fence.toggleGate(true);
 		}
 
-		Location point = _character.nextPositionPoint();
-		Object objectInCurrentTile = _currentLocation.getObjectAtTile(node.X, node.Y);
-
-		if ((objectAtNextTile is null || objectAtNextTile.isPassable() ||
-		     DestroyLitterObject.IsDestructible(objectAtNextTile)) &&
-		    (objectInCurrentTile is null || objectInCurrentTile.isPassable())) {}
-		else
+		if ((objectAtNextTile is not null && (!objectAtNextTile.isPassable() || 
+		                                      !DestroyLitterObject.IsDestructible(objectAtNextTile))) ||
+		    (objectInCurrentTile is not null && !objectInCurrentTile.isPassable()))
 		{
 			if (objectAtNextTile != null && !objectAtNextTile.isPassable())
 			{
 				AlgorithmBase.IPathing.collisionMap.AddBlockedTile(_nextNode.X,_nextNode.Y);
 			}
 
-			if (objectInCurrentTile != null && !objectInCurrentTile.isPassable())
+			if (!objectInCurrentTile.isPassable())
 			{
 				AlgorithmBase.IPathing.collisionMap.AddBlockedTile(node.X,node.Y);
 			}
@@ -294,6 +295,7 @@ public class CharacterController : PathFindController
 		{
 			try
 			{
+				_moveCallAmount += 1;
 				_character.MovePosition(time, Game1.viewport, _currentLocation);
 				HandleWarp(_character.nextPosition(_character.getFacingDirection()));
 			}
