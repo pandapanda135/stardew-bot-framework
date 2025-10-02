@@ -158,48 +158,34 @@ public class DialogueManager
     /// <param name="response">The <see cref="Response"/> you want to pick</param>
     public void ChooseResponse(Response response)
     {
-        if (Game1.activeClickableMenu is not DialogueBox) return;
+        if (Game1.activeClickableMenu is not DialogueBox || CurrentDialogueBox is null) return;
 
         Response[] responses = PossibleResponses();
+        ClickableComponent? cc = null;
         for (int i = 0; i < responses.Length; i++)
         {
             if (responses[i] != response) continue;
             
             Logger.Info($"setting response to: {i}");
+            cc = CurrentDialogueBox.responseCC[i];
             BotBase.ChangeSelectedResponse(i);
             break;
         }
 
-        // I think this is related to event stuff kinda forgot.
-        if (CurrentDialogue is null)
+        if (CurrentDialogueBox.transitioning)
         {
-            if (CurrentDialogueBox is null)
-            {
-                Logger.Error($"current dialogue box is not null");
-                return;
-            }
-            if (Game1.eventUp && Game1.currentLocation.afterQuestion == null)
-            {
-                Game1.playSound("smallSelect");
-                Game1.currentLocation.currentEvent.answerDialogue(Game1.currentLocation.lastQuestionKey, CurrentDialogueBox.selectedResponse);
-            }
-            else
-            {
-                Game1.currentLocation.answerDialogue(responses[CurrentDialogueBox.selectedResponse]);
-            }
-            CurrentDialogueBox.selectedResponse = -1;
-            IReflectedMethod? method = BotBase.GetTryOutro(CurrentDialogueBox);
-            if (method is not null) method.Invoke();
-            else
-            {
-                Logger.Error($"method is null");
-                return;
-            }
+            Logger.Error($"box is transitioning");
             return;
         }
+        if (cc is null) return;
+        Logger.Info($"cc bounds: {cc.bounds}");
+        // TODO: sometimes this will not click just highlight, or at least it looks like that.
+        // if we don't click on the response, it won't process the change or set Game1.DialogueUp to false
+        CurrentDialogueBox.performHoverAction(cc.bounds.X + 10,cc.bounds.Y + 10);
+        CurrentDialogueBox.receiveLeftClick(cc.bounds.X + 10,cc.bounds.Y + 10);
         
-        Game1.activeClickableMenu.receiveLeftClick(0, 0);
-        CurrentDialogue.chooseResponse(response);
+        // try to get clicking working before using this
+        // CurrentDialogue.chooseResponse(response);
     }
     
     /// <summary>

@@ -61,7 +61,7 @@ public class Shop
     /// </summary>
     public void CloseShop()
     {
-        if (_currentShop is null) return;
+        if (_currentShop is null || !_currentShop.readyToClose()) return;
         _currentShop.exitThisMenu();
         _currentShop = null;
     }

@@ -92,6 +92,24 @@ public class CreateFarmBuilding
         Rectangle bounds = _carpenterMenu.forwardButton.bounds;
         _carpenterMenu.receiveLeftClick(bounds.X + 1,bounds.Y + 1);
     }
+
+    public void SetSelectedTile(Point tile)
+    {
+        Game1.viewport.X = (tile.X * Game1.tileSize) - Game1.viewport.X;
+        Game1.viewport.Y = tile.Y * Game1.tileSize - Game1.viewport.Y;
+        Game1.oldMouseState = new MouseState((tile.X * Game1.tileSize) - Game1.viewport.X,
+            (tile.Y * Game1.tileSize) - Game1.viewport.Y, 0, ButtonState.Released,
+            ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
+    }
+    /// <summary>
+    /// Check if building can be placed here, this checks the Game1.oldMouseState for where you want to place the building
+    /// </summary>
+    public bool CanPlaceBuilding(Building building)
+    {
+        Vector2 tileLocation = new Vector2((Game1.viewport.X + Game1.getOldMouseX(false)) / 64f, (Game1.viewport.Y + Game1.getOldMouseY(false)) / 64f);
+
+        return BuildingUtilities.CanBuildHere(building, tileLocation);
+    }
     
     /// <summary>
     /// Create building at tile, the tile should be the middle of the building you want to make.
@@ -101,11 +119,14 @@ public class CreateFarmBuilding
     public bool CreateBuilding(Point tile)
     {
         if (_carpenterMenu is null) return false;
-        Game1.viewport.X = (tile.X * Game1.tileSize) - Game1.viewport.X;
-        Game1.viewport.Y = tile.Y * Game1.tileSize - Game1.viewport.Y;
-        Game1.oldMouseState = new MouseState((tile.X * Game1.tileSize) - Game1.viewport.X, (tile.Y * Game1.tileSize) - Game1.viewport.Y, 0, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
+        SetSelectedTile(tile);
         // tryToBuild uses oldMouseState
 
+        if (!CanPlaceBuilding(_carpenterMenu.currentBuilding))
+        {
+            return false;
+        }
+        
         bool tryToBuild = _carpenterMenu.tryToBuild();
         if (!tryToBuild)
         {

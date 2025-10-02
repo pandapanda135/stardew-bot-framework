@@ -7,7 +7,6 @@ using StardewValley.Locations;
 using StardewValley.Monsters;
 using StardewValley.Pathfinding;
 using StardewValley.Tools;
-using xTile.Dimensions;
 using Logger = StardewBotFramework.Debug.Logger;
 using Object = StardewValley.Object;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
@@ -214,12 +213,18 @@ public class CharacterController : PathFindController
 		
 		if (_currentLocation is not MovieTheater)
 		{
-			if (_currentLocation.characters.Any(npc => !npc.Equals(_character) && npc.GetBoundingBox()
-				    .Intersects(_character.GetBoundingBox()) && npc.isMoving()))
+			var characters = _currentLocation.characters.Where(npc => !npc.Equals(_character) && npc.GetBoundingBox()
+				.Intersects(_character.GetBoundingBox())).ToList(); // probably don't need  && npc.isMoving()
+			if (characters.Count > 0)
 			{
-				Logger.Error($"Ran into a character"); //TODO: re-calulate path (Could get into a loop of being in character until the npc moves. Maybe check next node for character)
-				FailedPathFinding?.Invoke(this,FailureReason.GoalBlocked);
-				return;
+				Logger.Warning($"Ran into character");
+				foreach (var npc in characters)
+				{
+					AlgorithmBase.IPathing.collisionMap.AddBlockedTile(npc.TilePoint.X,npc.TilePoint.Y);
+				}
+				PathNode endNode = _endPath.ToList()[_endPath.Count - 1];
+				var path = RecalculatePath(new Goal.GoalPosition(endNode.X,endNode.Y));
+				_endPath = path;
 			}
 		}
 		
@@ -275,10 +280,10 @@ public class CharacterController : PathFindController
 				AlgorithmBase.IPathing.collisionMap.AddBlockedTile(node.X,node.Y);
 			}
 			
-			PathNode lastNode = _endPath.ToList()[_endPath.Count - 1];
-			Logger.Error($"object in next tile was blocked   goal node: {lastNode.VectorLocation}   next node: {_nextNode.VectorLocation}");
-			var path = RecalculatePath(new Goal.GoalPosition(lastNode.X,lastNode.Y));
-
+			PathNode endNode = _endPath.ToList()[_endPath.Count - 1];
+			Logger.Error($"object in next tile was blocked   goal node: {endNode.VectorLocation}   next node: {_nextNode.VectorLocation}");
+			var path = RecalculatePath(new Goal.GoalPosition(endNode.X,endNode.Y));
+			
 			if (path.Count <= 0)
 			{
 				FailedPathFinding?.Invoke(this,FailureReason.GoalBlocked);
