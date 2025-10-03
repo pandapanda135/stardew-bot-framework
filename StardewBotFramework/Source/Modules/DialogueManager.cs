@@ -153,12 +153,16 @@ public class DialogueManager
     }
     
     /// <summary>
-    /// Choose response from the current dialogue
+    /// Choose response from the current dialogue, you may need to check if the current dialogue box is available using
+    /// these or else it will return. transitioning or safetyTimer > 0 or characterIndexInDialogue less than getCurrentString().Length - 1.
     /// </summary>
     /// <param name="response">The <see cref="Response"/> you want to pick</param>
-    public void ChooseResponse(Response response)
+    /// <returns>This will return true if there is nothing blocking from advancing, this does not mean advancing is
+    /// guaranteed just that it will advance more often then not.
+    /// </returns>
+    public bool ChooseResponse(Response response)
     {
-        if (Game1.activeClickableMenu is not DialogueBox || CurrentDialogueBox is null) return;
+        if (Game1.activeClickableMenu is not DialogueBox || CurrentDialogueBox is null) return false;
 
         Response[] responses = PossibleResponses();
         ClickableComponent? cc = null;
@@ -168,24 +172,23 @@ public class DialogueManager
             
             Logger.Info($"setting response to: {i}");
             cc = CurrentDialogueBox.responseCC[i];
-            BotBase.ChangeSelectedResponse(i);
+            CurrentDialogueBox.selectedResponse = i;
             break;
         }
-
-        if (CurrentDialogueBox.transitioning)
+        
+        if (cc is null) return false;
+        
+        if (CurrentDialogueBox.transitioning || CurrentDialogueBox.safetyTimer > 0 || CurrentDialogueBox.characterIndexInDialogue < CurrentDialogueBox.getCurrentString().Length - 1)
         {
             Logger.Error($"box is transitioning");
-            return;
+            return false;
         }
-        if (cc is null) return;
-        Logger.Info($"cc bounds: {cc.bounds}");
-        // TODO: sometimes this will not click just highlight, or at least it looks like that.
-        // if we don't click on the response, it won't process the change or set Game1.DialogueUp to false
-        CurrentDialogueBox.performHoverAction(cc.bounds.X + 10,cc.bounds.Y + 10);
-        CurrentDialogueBox.receiveLeftClick(cc.bounds.X + 10,cc.bounds.Y + 10);
         
-        // try to get clicking working before using this
-        // CurrentDialogue.chooseResponse(response);
+        Logger.Info($"cc bounds: {cc.bounds}   response: {CurrentDialogueBox.selectedResponse}");
+        // We need to click to set Game1.dialogueUp to false after as other stuff breaks
+        CurrentDialogueBox.receiveLeftClick(cc.bounds.X + 10,cc.bounds.Y + 10);
+
+        return true;
     }
     
     /// <summary>
