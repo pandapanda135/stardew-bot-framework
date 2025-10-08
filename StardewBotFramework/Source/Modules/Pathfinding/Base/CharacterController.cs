@@ -5,6 +5,7 @@ using StardewBotFramework.Source.ObjectToolSwaps;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Monsters;
+using StardewValley.Objects;
 using StardewValley.Pathfinding;
 using StardewValley.Tools;
 using Logger = StardewBotFramework.Debug.Logger;
@@ -266,7 +267,7 @@ public class CharacterController : PathFindController
 			fence.toggleGate(true);
 		}
 
-		if ((objectAtNextTile is not null && (!objectAtNextTile.isPassable() || 
+		if ((objectAtNextTile is not null && (!objectAtNextTile.isPassable() && 
 		                                      !DestroyLitterObject.IsDestructible(objectAtNextTile))) ||
 		    (objectInCurrentTile is not null && !objectInCurrentTile.isPassable()))
 		{
@@ -290,7 +291,7 @@ public class CharacterController : PathFindController
 				ForceStopMoving();
 				return;
 			}
-
+			
 			_endPath = path;
 			return;
 		}

@@ -1,3 +1,4 @@
+using Microsoft.Xna.Framework;
 using StardewBotFramework.Source.Modules.Pathfinding.Algorithms;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
 using StardewValley;
@@ -18,16 +19,18 @@ public class Pathfinder
     /// <param name="goal"><see cref="Goal"/></param>
     /// <param name="canDestroy">Will destroy objects to get to the goal</param>
     /// <param name="buildCollision">Build collision map.</param>
-    public async Task Goto(Goal goal, bool canDestroy = false, bool buildCollision = true)
+    public void Goto(Goal goal, bool canDestroy = false, bool buildCollision = true)
     {
         AlgorithmBase.IPathing pathing = new AStar.Pathing();
         
         if (buildCollision) pathing.BuildCollisionMap(Game1.currentLocation);
         
         PathNode start = new PathNode(Game1.player.TilePoint.X, Game1.player.TilePoint.Y, null);
-        
-        Stack<PathNode> path = await pathing.FindPath(start,goal,Game1.currentLocation,10000,canDestroy);
 
+        var t = Task.Run(async () => await pathing.FindPath(start, goal, Game1.currentLocation, 10000, canDestroy));
+        t.Wait();
+        Stack<PathNode> path = t.Result;
+        
         Character? npc = null;
         if (goal is Goal.GoalDynamic dynamic) npc = dynamic.character;
 
@@ -43,14 +46,16 @@ public class Pathfinder
     /// <param name="goal">Should be <see cref="Goal.GoalDynamic"/> with a monster being provided</param>
     /// <param name="canDestroy">can destroy if needed</param>
     /// <param name="buildCollision">Build collision map before pathfinding</param>
-    public async Task AttackMonster(Goal goal, bool canDestroy = false, bool buildCollision = true)
+    public void AttackMonster(Goal goal, bool canDestroy = false, bool buildCollision = true)
     {
         AlgorithmBase.IPathing pathing = new AStar.Pathing();
         if (buildCollision) pathing.BuildCollisionMap(Game1.currentLocation);
         
         PathNode start = new PathNode(Game1.player.TilePoint.X, Game1.player.TilePoint.Y, null);
         
-        Stack<PathNode> path = await pathing.FindPath(start,goal,Game1.currentLocation,10000,canDestroy);
+        var t = Task.Run(async () => await pathing.FindPath(start,goal,Game1.currentLocation,10000,canDestroy));
+        t.Wait();
+        Stack<PathNode> path = t.Result ;
 
         Character? npc = null;
         if (goal is Goal.GoalDynamic dynamic) npc = dynamic.character; 
@@ -68,13 +73,18 @@ public class Pathfinder
     /// <param name="distance">the amount of times the pathfinder will run, this should be though about as each tile will increase this by one</param>
     /// <param name="buildCollision">Build collision map.</param>
     /// <returns>A <see cref="Stack{T}"/> of <see cref="PathNode"/>, the end point will be first in dequeue and the start will be last</returns>
-    public async Task<Stack<PathNode>> GetPathTo(Goal goal, int distance,bool canDestroy = false, bool buildCollision = true)
+    public Stack<PathNode> GetPathTo(Goal goal, int distance,bool canDestroy = false, bool buildCollision = true)
     {
-        if (buildCollision) Pathing.BuildCollisionMap(Game1.currentLocation);
+        AlgorithmBase.IPathing pathing = new AStar.Pathing();
+        if (buildCollision) pathing.BuildCollisionMap(Game1.currentLocation);
 
-        PathNode start = new PathNode(Game1.player.TilePoint.X, Game1.player.TilePoint.Y, null);
+        PathNode start = new PathNode(BotBase.Farmer.TilePoint.X, BotBase.Farmer.TilePoint.Y, null);
 
-        return await Pathing.FindPath(start, goal, Game1.currentLocation, distance,canDestroy);
+        var t = Task.Run(async () => await pathing.FindPath(start, goal, Game1.currentLocation, distance,canDestroy));
+        t.Wait();
+        Stack<PathNode> path = t.Result;
+        
+        return path;
     }
 
     public bool IsBlocked(int x, int y)
@@ -87,10 +97,10 @@ public class Pathfinder
         Pathing.BuildCollisionMap(BotBase.CurrentLocation);
     }
 
-    public void BuildCollisionMapInRadius(int startTile, int radius)
+    public void BuildCollisionMapInRadius(Point startTile, int radius)
     {
         Pathing.BuildCollisionMap(BotBase.CurrentLocation,
-            startTile + radius, startTile + radius,
-            startTile - radius, startTile - radius);
+            startTile.X + radius, startTile.Y + radius,
+            startTile.X - radius, startTile.Y - radius);
     }
 }
