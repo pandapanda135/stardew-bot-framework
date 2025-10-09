@@ -5,7 +5,6 @@ using StardewBotFramework.Source.ObjectToolSwaps;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Monsters;
-using StardewValley.Objects;
 using StardewValley.Pathfinding;
 using StardewValley.Tools;
 using Logger = StardewBotFramework.Debug.Logger;
@@ -48,7 +47,7 @@ public class CharacterController : PathFindController
 	private static bool _isDestroying;
 
 	private static Stack<PathNode> _endPath = new();
-	private static Character _character => BotBase.Farmer;
+	private static Character Character => BotBase.Farmer;
 	private static GameLocation _currentLocation = null!;
 	private static int _nextIndex;
 	private static int _neighbourIndex;
@@ -58,10 +57,9 @@ public class CharacterController : PathFindController
 	private static PathNode _nextNode = null!;
 
 	private static bool _attacking;
-	
 	private static int _pausedTimer;
 	/// <summary>
-	/// The maximum amount of time the bot can stay in the same position for. This is in milliseconds e.g. 5 seconds would be 5000
+	/// The maximum amount of time the bot can stay in the same position for, this is in milliseconds.
 	/// </summary>
 	private const int MaxPauseTime = 5000;
 
@@ -72,26 +70,26 @@ public class CharacterController : PathFindController
 	{
 		_updateCallAmount += 1;
 		if (_endPath.Count < 1) _movingCharacter = false;
-		Logger.Info($"new update called  {_updateCallAmount}     {_moveCallAmount}");
+		Logger.Info($"update called  {_updateCallAmount}     {_moveCallAmount}");
 
 		var monster = _dynamicCharacter as Monster;
 		if ((!_movingCharacter && !_attacking) || (_attacking && monster is not null && monster.Health < 1))
 		{
-			Logger.Info($"return false at first if");
+			Logger.Info($"return true as ended");
 			return true;
 		}
 	
 		// stop issue with continuing pathfinding when going through warp
 		if (!BotBase.CurrentLocation.Equals(_currentLocation))
 		{
-			Logger.Info($"location change return false");
+			Logger.Info($"location change return true");
 			ForceStopMoving();
 			return true;
 		}
 		
-		Vector2 position = _character.Position;
+		Vector2 position = Character.Position;
 		MoveCharacter(time);
-		if (position == _character.Position)
+		if (position == Character.Position)
 		{
 			_pausedTimer += time.ElapsedGameTime.Milliseconds;
 		}
@@ -104,9 +102,12 @@ public class CharacterController : PathFindController
 		
 		Logger.Error($"Paused for too long");
 		ForceStopMoving();
-		FailedPathFinding?.Invoke(new CharacterController(new(),_character,_currentLocation), FailureReason.Paused);
+		FailedPathFinding?.Invoke(this, FailureReason.Paused);
 		return true;
 	}
+	/// <summary>
+	/// This is used to start the process of moving.
+	/// </summary>
 	public void StartMoveCharacter(Stack<PathNode> endPointPath, Character? dynamicCharacter = null,bool attacking = false)
 	{
 		Logger.Info($"start move character");
@@ -123,7 +124,7 @@ public class CharacterController : PathFindController
 
 		if (dynamicCharacter is not null) _lastDynamicCharacterTile = dynamicCharacter.TilePoint;
 
-		_character.controller = this;
+		Character.controller = this;
 
 		MoveCharacter(Game1.currentGameTime);
 	}
@@ -162,8 +163,8 @@ public class CharacterController : PathFindController
 		}
 		
 		if (_dynamicCharacter is not null && _attacking &&
-		    (Graph.IsInNeighbours(_character.TilePoint, _dynamicCharacter.TilePoint, out var direction)
-		     || _dynamicCharacter.TilePoint == _character.TilePoint))
+		    (Graph.IsInNeighbours(Character.TilePoint, _dynamicCharacter.TilePoint, out var direction)
+		     || _dynamicCharacter.TilePoint == Character.TilePoint))
 		{
 			Logger.Info($"attacking in character controller");
 			BotBase.Farmer.FacingDirection = CorrectFacingDirections[direction];
@@ -175,7 +176,7 @@ public class CharacterController : PathFindController
 		// recalculate path is character moves away from current path
 		if (_dynamicCharacter is not null && _dynamicCharacter.TilePoint != _lastDynamicCharacterTile)
 		{
-			// stop issues with pathing, if in wall or other occupied tile mainly for monsters.
+			// stop issues with pathing, if in wall or other occupied tile, mainly for monsters.
 			if (_currentLocation.isCollidingPosition(_dynamicCharacter.GetBoundingBox(),Game1.viewport,_dynamicCharacter)) return;
 			_lastDynamicCharacterTile = _dynamicCharacter.TilePoint;
 			RecalculatePath(new Goal.GoalDynamic(_dynamicCharacter, 1));
@@ -185,24 +186,25 @@ public class CharacterController : PathFindController
 		int tilesize = Game1.tileSize;
 		Rectangle targetTile = new Rectangle(node.X * tilesize, node.Y * tilesize, tilesize, tilesize); // could probably change this if we want more precise pathfinding onto specific parts of tile
 		targetTile.Inflate(-2, 0);
-		Rectangle bbox = _character.GetBoundingBox();
+		Rectangle bbox = Character.GetBoundingBox();
 
 		if ((targetTile.Contains(bbox) || (bbox.Width > targetTile.Width && targetTile.Contains(bbox.Center))) &&
 		    targetTile.Bottom - bbox.Bottom >= 2)
 		{
 			_endPath.Pop();
-			_character.stopWithoutChangingFrame();
+			Character.stopWithoutChangingFrame();
 			
 			if (_endPath.Count == 0)
 			{
 				// OnGoalReached.Invoke();
-				_character.Halt();
+				Logger.Error("Halt character");
+				Character.Halt();
 			}
 
 			return;
 		}
 
-		if (_character is Farmer farmer)
+		if (Character is Farmer farmer)
 		{
 			if (farmer != BotBase.Farmer)
 			{
@@ -214,8 +216,8 @@ public class CharacterController : PathFindController
 		
 		if (_currentLocation is not MovieTheater)
 		{
-			var characters = _currentLocation.characters.Where(npc => !npc.Equals(_character) && npc.GetBoundingBox()
-				.Intersects(_character.GetBoundingBox())).ToList(); // probably don't need  && npc.isMoving()
+			var characters = _currentLocation.characters.Where(npc => !npc.Equals(Character) && npc.GetBoundingBox()
+				.Intersects(Character.GetBoundingBox())).ToList(); // probably don't need  && npc.isMoving()
 			if (characters.Count > 0)
 			{
 				Logger.Warning($"Ran into character");
@@ -231,19 +233,19 @@ public class CharacterController : PathFindController
 		
 		if (bbox.Left < targetTile.Left && bbox.Right < targetTile.Right)
 		{
-			_character.SetMovingRight(true);
+			Character.SetMovingRight(true);
 		}
 		else if (bbox.Right > targetTile.Right && bbox.Left > targetTile.Left)
 		{
-			_character.SetMovingLeft(true);
+			Character.SetMovingLeft(true);
 		}
 		else if (bbox.Top <= targetTile.Top)
 		{
-			_character.SetMovingDown(true);
+			Character.SetMovingDown(true);
 		}
 		else if (bbox.Bottom >= targetTile.Bottom - 2)
 		{
-			_character.SetMovingUp(true);
+			Character.SetMovingUp(true);
 		}
 
 		// destroy object
@@ -285,7 +287,7 @@ public class CharacterController : PathFindController
 			Logger.Error($"object in next tile was blocked   goal node: {endNode.VectorLocation}   next node: {_nextNode.VectorLocation}");
 			var path = RecalculatePath(new Goal.GoalPosition(endNode.X,endNode.Y));
 			
-			if (path.Count <= 0)
+			if (path.Count < 1)
 			{
 				FailedPathFinding?.Invoke(this,FailureReason.GoalBlocked);
 				ForceStopMoving();
@@ -295,15 +297,15 @@ public class CharacterController : PathFindController
 			_endPath = path;
 			return;
 		}
-
+		
 		PathNode peekNode = _endPath.Peek();
 		if (!peekNode.Destroy || _isDestroying)
 		{
 			try
 			{
 				_moveCallAmount += 1;
-				_character.MovePosition(time, Game1.viewport, _currentLocation);
-				HandleWarp(_character.nextPosition(_character.getFacingDirection()));
+				Character.MovePosition(time, Game1.viewport, _currentLocation);
+				HandleWarp(Character.nextPosition(Character.getFacingDirection()));
 			}
 			catch (Exception e) // sometimes error here IDK why might be because character controller is made on non-main thread
 			{
@@ -319,22 +321,22 @@ public class CharacterController : PathFindController
 			int neighborX = peekNode.X + Directions[i, 0];
 			int neighborY = peekNode.Y + Directions[i, 1];
 
-			if (neighborX != _character.TilePoint.X || neighborY != _character.TilePoint.Y) continue; // need to get neighbour 
+			if (neighborX != Character.TilePoint.X || neighborY != Character.TilePoint.Y) continue; // need to get neighbour 
 
 			// this is to fix issues with sudden direction changes in path (should maybe try to make it so the bot goes in the middle of a tile as this is kind of a patch fix)
 			switch (i)
 			{
 				case 0:
-					_character.FacingDirection = (int)Direction.East;
+					Character.FacingDirection = (int)Direction.East;
 					break;
 				case 1:
-					_character.FacingDirection = (int)Direction.West;
+					Character.FacingDirection = (int)Direction.West;
 					break;
 				case 2:
-					_character.FacingDirection = (int)Direction.South;
+					Character.FacingDirection = (int)Direction.South;
 					break;
 				case 3:
-					_character.FacingDirection = (int)Direction.North;
+					Character.FacingDirection = (int)Direction.North;
 					break;
 			}
 			
@@ -344,8 +346,8 @@ public class CharacterController : PathFindController
 			BotBase.Farmer.BeginUsingTool();
 			try // incase upper error also happens here
 			{
-				_character.MovePosition(time, Game1.viewport, _currentLocation);
-				HandleWarp(_character.nextPosition(_character.getFacingDirection()));
+				Character.MovePosition(time, Game1.viewport, _currentLocation);
+				HandleWarp(Character.nextPosition(Character.getFacingDirection()));
 			}
 			catch (Exception e)
 			{
@@ -358,8 +360,7 @@ public class CharacterController : PathFindController
 
 	private static void HandleWarp(Rectangle character)
 	{
-		Logger.Warning($"handle warp");
-		Warp warp = _currentLocation.isCollidingWithWarpOrDoor(character, _character);
+		Warp warp = _currentLocation.isCollidingWithWarpOrDoor(character, Character);
 		if (warp is null) return;
 		
 		if (Game1.eventUp)
@@ -367,12 +368,12 @@ public class CharacterController : PathFindController
 			Event currentEvent = Game1.CurrentEvent;
 			if (!(bool)!(currentEvent != null ? new bool?(currentEvent.isFestival) : null))
 			{
-				Game1.CurrentEvent.TryStartEndFestivalDialogue(_character as Farmer);
+				Game1.CurrentEvent.TryStartEndFestivalDialogue(Character as Farmer);
 			}
 		}
 
 		Logger.Error($"pre npc check");
-		if (_character is not Farmer farmer) return;
+		if (Character is not Farmer farmer) return;
 		Logger.Error($"warping farmer");
 		farmer.warpFarmer(warp);
 		ForceStopMoving();
@@ -383,16 +384,14 @@ public class CharacterController : PathFindController
 		if (_recalculatingPath) return new();
 		_recalculatingPath = true;
 		AlgorithmBase.IPathing pathing = new AStar.Pathing();
-		// causes crashing due to running on thread
-		// pathing.BuildCollisionMap(_currentLocation, _character.TilePoint.X + 10, _character.TilePoint.Y + 10
-		// 	,_character.TilePoint.X - 10, _character.TilePoint.Y - 10);
+		// causes crashing due to running on thread. Should be fixed now, going to keep this comment in case.
+		pathing.BuildCollisionMap(_currentLocation, Character.TilePoint.X + 3, Character.TilePoint.Y + 3
+			,Character.TilePoint.X - 3, Character.TilePoint.Y - 3);
 		
-		PathNode start = new PathNode(_character.TilePoint.X, _character.TilePoint.Y, null);
+		PathNode start = new PathNode(Character.TilePoint.X, Character.TilePoint.Y, null);
 		var path = Task.Run(async () =>
 		{
-			var path = await pathing.FindPath(start, goal,
-				_currentLocation, 10000);
-			_recalculatingPath = false;
+			var path = await pathing.FindPath(start, goal, _currentLocation, 10000);
 
 			if (path.Count > 0) return path;
 			
@@ -401,6 +400,7 @@ public class CharacterController : PathFindController
 		});
 		
 		path.Wait();
+		_recalculatingPath = false;
 		return path.Result;
 	}
 	

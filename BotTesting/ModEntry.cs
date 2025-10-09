@@ -246,7 +246,7 @@ internal sealed class ModEntry : Mod
         // }
         else if (e.Button == SButton.B)
         {
-            await _bot.Tool.RemoveObjectsInRadius(Game1.player.TilePoint,10);
+            _bot.Tool.RemoveObjectsInRadius(Game1.player.TilePoint,10);
         }
         else if (e.Button == SButton.Z)
         {
@@ -287,7 +287,7 @@ internal sealed class ModEntry : Mod
         int endY = int.Parse(args[3]);
 
         List<GroundTile> tiles = _bot.Tool.CreateFarmLandTiles(new Rectangle(startX, startY, endX, endY));
-        await _bot.Tool.MakeFarmLand(tiles);
+        _bot.Tool.MakeFarmLand(tiles);
     }
 
     private void AddItemToBinCommand(string arg, string[] args)

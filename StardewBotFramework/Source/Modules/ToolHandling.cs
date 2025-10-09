@@ -88,8 +88,6 @@ public class ToolHandling
                 Logger.Error($"{direction} is not in switch statement");
                 break;
         }
-        // BotBase.Farmer.lastClick = points.ToList()[direction].ToVector2() * 64;
-        // BotBase.Farmer.BeginUsingTool();
     }
 
     #region WateringPlants
@@ -99,7 +97,7 @@ public class ToolHandling
     /// </summary>
     /// <param name="rectangle">the rectangle's positions should be provided in pixel value not tiles. it will check if the tile contains the tile so you may need to add an extra tile to the height/width.</param>
     /// <param name="canDestroy"></param>
-    public async Task WaterSelectPatches(Rectangle rectangle, bool canDestroy = false)
+    public void WaterSelectPatches(Rectangle rectangle, bool canDestroy = false)
     {
         Group finalGroup = new();
         GroupedTiles groupedTiles = new();
@@ -128,13 +126,13 @@ public class ToolHandling
             }
         }
 
-        await UseToolOnGroup(finalGroup,new WateringCan(),-1,canDestroy);
+        UseToolOnGroup(finalGroup,new WateringCan(),-1,canDestroy);
     }
     
     /// <summary>
     /// Water all patches in this current location, This will only work if the bot is in the farm.
     /// </summary>
-    public async Task WaterAllPatches(bool canDestroy = false)
+    public void WaterAllPatches(bool canDestroy = false)
     {
         if (BotBase.CurrentLocation is not Farm) return;
 
@@ -163,11 +161,11 @@ public class ToolHandling
             }
         }
         
-        await UseToolOnGroup(finalGroup,new WateringCan(),-1,canDestroy);
+        UseToolOnGroup(finalGroup,new WateringCan(),-1,canDestroy);
         Logger.Info($"Ending watering");
     }
     
-    private async Task UseToolOnGroup(Group group,Tool tool,int tileAmount = -1,bool canDestroy = false)
+    private void UseToolOnGroup(Group group,Tool tool,int tileAmount = -1,bool canDestroy = false)
     {
         SwapItemHandler.SwapItem(tool.GetType(),"");
         
@@ -190,7 +188,7 @@ public class ToolHandling
             if (wateringCan.WaterLeft < 2)
             {
                 Logger.Error($"Ran out of water");
-                await RefillWateringCan();
+                RefillWateringCan();
             }
 
             plantTileQueue.Clear();
@@ -228,9 +226,11 @@ public class ToolHandling
             {
                 PathNode start = new PathNode(BotBase.Farmer.TilePoint.X, BotBase.Farmer.TilePoint.Y, null);
                 
-                Stack<PathNode> path = await pathing.FindPath(start,new Goal.GoalPosition(plantTile.Position.X,plantTile.Position.Y),BotBase.CurrentLocation,10000,canDestroy);
+                var path = Task.Run(async () => await pathing.FindPath(start,new Goal.GoalPosition
+                    (plantTile.Position.X,plantTile.Position.Y),BotBase.CurrentLocation,10000,canDestroy));
+                path.Wait();
 
-                if (path == new Stack<PathNode>())
+                if (path.Result == new Stack<PathNode>())
                 {
                     Logger.Error($"Stack was empty");
                     UseTool(-2,true);
@@ -238,7 +238,7 @@ public class ToolHandling
                 }
                 
                 var controller = new CharacterController(new(), BotBase.Farmer, BotBase.CurrentLocation);
-                controller.StartMoveCharacter(path);
+                controller.StartMoveCharacter(path.Result);
                 while (CharacterController.IsMoving()) {} // this is not async
                 
                 if (BotBase.Farmer.TilePoint == plantTile.Position) // will sometimes path-find to tile, this should not happen, I'm too lazy to fix this.
@@ -266,7 +266,7 @@ public class ToolHandling
     /// <summary>
     /// Refill watering can in this current location.
     /// </summary>
-    public async Task RefillWateringCan(bool canDestroy = false)
+    public void RefillWateringCan(bool canDestroy = false)
     {
         GetNearestWaterTiles groupedTiles = new();
         Task<Group> group = groupedTiles.GetWaterGroup(BotBase.Farmer.TilePoint,Game1.currentLocation);
@@ -277,11 +277,11 @@ public class ToolHandling
         {
             StardewClient.debugTiles.Add(tile);
         }
-        await RefillWateringCan(finalGroup,canDestroy);
+        RefillWateringCan(finalGroup,canDestroy);
         Logger.Info($"Ending watering");
     }
 
-    private async Task RefillWateringCan(Group group, bool canDestroy = false)
+    private void RefillWateringCan(Group group, bool canDestroy = false)
     {
         Logger.Info($"Running refill watering can: {group.GetTiles().Count}");
         SwapItemHandler.SwapItem(typeof(WateringCan), "");
@@ -316,10 +316,11 @@ public class ToolHandling
 
             PathNode start = new PathNode(BotBase.Farmer.TilePoint.X, BotBase.Farmer.TilePoint.Y, null);
 
-            Stack<PathNode> path = await pathing.FindPath(start,
-                new Goal.GoalPosition(tile.Position.X, tile.Position.Y), BotBase.CurrentLocation, 10000, canDestroy);
+            var path = Task.Run(async () => await pathing.FindPath(start, new Goal.GoalPosition
+                (tile.Position.X, tile.Position.Y), BotBase.CurrentLocation, 10000, canDestroy));
+            path.Wait();
 
-            if (path == new Stack<PathNode>())
+            if (path.Result == new Stack<PathNode>())
             {
                 Logger.Error($"Stack was empty");
                 UseTool(-2, true);
@@ -327,7 +328,7 @@ public class ToolHandling
             }
 
             var controller = new CharacterController(new(), BotBase.Farmer, BotBase.CurrentLocation);
-            controller.StartMoveCharacter(path);
+            controller.StartMoveCharacter(path.Result);
 
             while (CharacterController.IsMoving())
             {
@@ -387,7 +388,7 @@ public class ToolHandling
     /// Make a portion of farm land based on the provided tiles, this will destroy any objects in the way.
     /// </summary>
     /// <param name="tiles">The tiles to turn into dirt, you can get these from <see cref="CreateFarmLandTiles"/></param>
-    public async Task MakeFarmLand(List<GroundTile> tiles)
+    public void MakeFarmLand(List<GroundTile> tiles)
     {
         SwapItemHandler.SwapItem(typeof(Hoe),"");
         
@@ -413,7 +414,7 @@ public class ToolHandling
             if (groundTile.WaterTile) continue;
             if (groundTile.TerrainFeature is HoeDirt) continue;
             
-            bool result = await SwapItemAndDestroy(groundTile.Position);
+            bool result = SwapItemAndDestroy(groundTile.Position);
             
             Logger.Info($"result of object in way: {result}");
             if (BotBase.Farmer.CurrentTool is not Hoe)
@@ -442,9 +443,11 @@ public class ToolHandling
             {
                 PathNode start = new PathNode(BotBase.Farmer.TilePoint.X, BotBase.Farmer.TilePoint.Y, null);
                 
-                Stack<PathNode> path = await pathing.FindPath(start,new Goal.GetToTile(groundTile.X,groundTile.Y),BotBase.CurrentLocation,10000);
-
-                if (path == new Stack<PathNode>())
+                
+                var path = Task.Run(async () => await pathing.FindPath(start,new Goal.GetToTile(groundTile.X,groundTile.Y),BotBase.CurrentLocation,10000));
+                path.Wait();
+                
+                if (path.Result == new Stack<PathNode>())
                 {
                     Logger.Error($"Stack was empty");
                     UseTool(-1,true);
@@ -452,7 +455,7 @@ public class ToolHandling
                 }
                 
                 var controller = new CharacterController(new(), BotBase.Farmer, BotBase.CurrentLocation);
-                controller.StartMoveCharacter(path);
+                controller.StartMoveCharacter(path.Result);
 
                 while (CharacterController.IsMoving()){} // this is not async
                 
@@ -483,15 +486,16 @@ public class ToolHandling
     /// Path-find and remove object at tile, current tool needs to be changed before this is called.
     /// </summary>
     /// <param name="tile">The tile of the object you want to destroy</param>
-    public async Task RemoveObject(Point tile)
+    public void RemoveObject(Point tile)
     {
-        await PathDestroyObject(tile);
+        SwapItemAndDestroy(tile);
+        PathDestroyObject(tile);
     }
     
-    private async Task PathDestroyObject(Point tile) //TODO: can have weird pathing as it does not account for updated collision map. I think I removed due to crashing or something?
+    private void PathDestroyObject(Point tile) //TODO: can have weird pathing as it does not account for updated collision map. I think I removed due to crashing or something?
     {
         AlgorithmBase.IPathing pathing = new AStar.Pathing();
-        // pathing.BuildCollisionMap(BotBase.CurrentLocation);
+        pathing.BuildCollisionMap(BotBase.CurrentLocation);
 
         Logger.Info($"starting removeObject public");
         PathNode start = new PathNode(BotBase.Farmer.TilePoint.X, BotBase.Farmer.TilePoint.Y, null);
@@ -504,15 +508,16 @@ public class ToolHandling
         }
         else
         {
-            Stack<PathNode> path = await pathing.FindPath(start, new Goal.GetToTile(tile.X, tile.Y), BotBase.CurrentLocation, 10000);
-            if (path == new Stack<PathNode>())
+            var pathTask = Task.Run(async () => await pathing.FindPath(start, new Goal.GetToTile(tile.X, tile.Y), BotBase.CurrentLocation, 10000));
+            pathTask.Wait();
+            if (pathTask.Result == new Stack<PathNode>())
             {
                 Logger.Error($"Stack was empty");
                 DestroyObjectType(tile);
             }
 
             var controller = new CharacterController(new(), BotBase.Farmer, BotBase.CurrentLocation);
-            controller.StartMoveCharacter(path);
+            controller.StartMoveCharacter(pathTask.Result);
 
             while (CharacterController.IsMoving()) {} // this is not async
 
@@ -537,7 +542,7 @@ public class ToolHandling
     /// </summary>
     /// <param name="startPoint">The Point to get tiles in radius of.</param>
     /// <param name="radius">radius you want to extend to</param>
-    public async Task RemoveObjectsInRadius(Point startPoint,int radius)
+    public void RemoveObjectsInRadius(Point startPoint,int radius)
     {
         List<GroundTile> tiles = new();
         GameLocation location = BotBase.CurrentLocation;
@@ -574,13 +579,13 @@ public class ToolHandling
             }
         }
 
-        await RemoveObjectsInTiles(tiles);
+        RemoveObjectsInTiles(tiles);
     }
     /// <summary>
     /// Remove objects that are in the provided dimensions
     /// </summary>
     /// <param name="rectangle">This is a rectangle that contains the tiles you want to remove the objects in.</param>
-    public async Task RemoveObjectsInDimension(Rectangle rectangle)
+    public void RemoveObjectsInDimension(Rectangle rectangle)
     {
         GameLocation location = BotBase.CurrentLocation;
         List<GroundTile> tiles = new();
@@ -617,10 +622,10 @@ public class ToolHandling
                 tiles.Add(new GroundTile(new Point(x,y),location,terrainFeature,resourceClump,obj));
             }
         }
-        await RemoveObjectsInTiles(tiles);
+        RemoveObjectsInTiles(tiles);
     }
 
-    private async Task RemoveObjectsInTiles(List<GroundTile> tiles)
+    private void RemoveObjectsInTiles(List<GroundTile> tiles)
     {
         AlgorithmBase.IPathing pathing = new AStar.Pathing();
         pathing.BuildCollisionMap(BotBase.CurrentLocation);
@@ -648,7 +653,7 @@ public class ToolHandling
             if (groundTile.TerrainFeature is null && groundTile.ResourceClump is null && groundTile.Obj is null) continue;
             
             Logger.Info($"running object in way at: {groundTile.Position}");
-            bool result = await SwapItemAndDestroy(groundTile.Position);
+            bool result = SwapItemAndDestroy(groundTile.Position);
             
             Logger.Info($"result of object in way: {result}");
         }
@@ -732,7 +737,7 @@ public class ToolHandling
         return false;
     }
 
-    private async Task<bool> PlaceObject(PlaceTile tile, bool checkPass = true)
+    private bool PlaceObject(PlaceTile tile, bool checkPass = true)
     {
         AlgorithmBase.IPathing pathing = new AStar.Pathing();
         PathNode start = new PathNode(BotBase.Farmer.TilePoint.X, BotBase.Farmer.TilePoint.Y, null);
@@ -758,16 +763,19 @@ public class ToolHandling
             return PlaceCurrentAndModifyMap(tile.Position);
         }
         
-        Stack<PathNode> path = await pathing.FindPath(start, new Goal.GetToTile(tile.X, tile.Y),
-            BotBase.CurrentLocation, 10000);
-        if (path == new Stack<PathNode>()) // assume we are close to it
+        
+        var path = Task.Run(async () => await pathing.FindPath(start, new Goal.GetToTile(tile.X, tile.Y),
+            BotBase.CurrentLocation, 10000));
+        path.Wait();
+        
+        if (path.Result == new Stack<PathNode>()) // assume we are close to it
         {
             Logger.Error($"Stack was empty");
             // return PlaceCurrentAndModifyMap(tile.Position);
         }
 
         var controller = new CharacterController(new(), BotBase.Farmer, BotBase.CurrentLocation);
-        controller.StartMoveCharacter(path);
+        controller.StartMoveCharacter(path.Result);
 
         while (CharacterController.IsMoving())
         {
@@ -779,8 +787,7 @@ public class ToolHandling
         // will sometimes path-find to tile, this should not happen, I'm too lazy to fix this.
         if (BotBase.Farmer.TilePoint == tile.Position)
         {
-            if (tile.TerrainFeature is not HoeDirt) return false;
-            return PlaceCurrentAndModifyMap(tile.Position);
+            return tile.TerrainFeature is HoeDirt && PlaceCurrentAndModifyMap(tile.Position);
         }
 
         if (!Graph.IsInNeighbours(BotBase.Farmer.TilePoint, tile.Position, out var pathDirection, 4))
@@ -799,7 +806,7 @@ public class ToolHandling
     /// <param name="startTile"></param>
     /// <param name="itemToPlace">An instance of the item you want to place, you should probably get this from the bot's inventory.</param>
     /// <param name="radius"></param>
-    public async Task PlaceObjectsInRadius(Point startTile,Object itemToPlace,int radius)
+    public void PlaceObjectsInRadius(Point startTile,Object itemToPlace,int radius)
     {
         List<PlaceTile> tiles = new();
         GameLocation location = BotBase.CurrentLocation;
@@ -836,7 +843,7 @@ public class ToolHandling
             }
         }
 
-        await PlaceObjectsAtTiles(tiles);
+        PlaceObjectsAtTiles(tiles);
     }
 
     /// <summary>
@@ -845,7 +852,8 @@ public class ToolHandling
     /// <param name="tiles">Will place the object in <see cref="PlaceTile.ItemToPlace"/> if there is none or that tile
     /// is blocked, that tile will be skipped.
     /// </param>
-    public async Task PlaceObjectsAtTiles(List<PlaceTile> tiles, bool checkPass = true)
+    /// <param name="checkPass">Check if the item is passable</param>
+    public void PlaceObjectsAtTiles(List<PlaceTile> tiles, bool checkPass = true)
     {
         AlgorithmBase.IPathing pathing = new AStar.Pathing();
         pathing.BuildCollisionMap(BotBase.CurrentLocation);
@@ -880,7 +888,7 @@ public class ToolHandling
             }
             
             Logger.Info($"placing at {placeTile.Position}");
-            bool result = await PlaceObject(placeTile,checkPass);
+            bool result = PlaceObject(placeTile,checkPass);
             
             Logger.Info($"result of object in way: {result}    false is bad :(");
         }
@@ -892,13 +900,15 @@ public class ToolHandling
     /// change item and path-find then destroy object that is on specified tile.
     /// </summary>
     /// <returns></returns>
-    private async Task<bool> SwapItemAndDestroy(Point tile,bool destroy = true)
+    private bool SwapItemAndDestroy(Point tile,bool destroy = true)
     {
         if (TerrainFeatureToolSwap.Swap(tile)) // we also handle bushes here
         {
             Logger.Info($"terrain feature swap");
             TerrainFeatureToolSwap.Swap(tile);
-            await PathDestroyObject(tile);
+            if (!destroy) return true;
+            
+            PathDestroyObject(tile);
             return true;
         }
 
@@ -906,7 +916,9 @@ public class ToolHandling
         {
             Logger.Info($"resource set");
             ResourceClumpToolSwap.Swap(tile);
-            await PathDestroyObject(tile);
+            if (!destroy) return true;
+            
+            PathDestroyObject(tile);
             return true;
         }
 
@@ -914,7 +926,9 @@ public class ToolHandling
         {
             Logger.Info($"object set");
             LitterObjectToolSwap.Swap(tile);
-            await PathDestroyObject(tile);
+            if (!destroy) return true;
+            
+            PathDestroyObject(tile);
             return true;
         }
         
