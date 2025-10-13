@@ -63,7 +63,7 @@ internal sealed class ModEntry : Mod
         helper.ConsoleCommands.Add("shippingBin", "", AddItemToBinCommand);
         helper.ConsoleCommands.Add("farm-land", "", CreateFarmLandCommand);
 
-        helper.Events.Display.Rendered += DrawFoundTiles.OnRenderTiles;
+        helper.Events.Display.Rendered += DebugDraw.OnRenderTiles;
     }
 
     private void BotOnBotWarped(object? sender, BotWarpedEventArgs e)

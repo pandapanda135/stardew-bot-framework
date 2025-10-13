@@ -71,8 +71,14 @@ public class InventoryManagement
     {
         if (!Game1.player.Items.Contains(item)) return item;
 
+        int previousIndex = Inventory.IndexOf(item);
+        Item? previousItem = Inventory[position];
         Utility.removeItemFromInventory(GetItemIndex(GetInventory(), item),GetInventory());
-        return Utility.addItemToInventory(item, position, Game1.player.Items, callbackMethod);
+        if (previousItem is not null)
+        {
+            Utility.addItemToInventory(previousItem, previousIndex, Inventory, callbackMethod);
+        }
+        return Utility.addItemToInventory(item, position, Inventory, callbackMethod);
     }
 
     /// <summary>

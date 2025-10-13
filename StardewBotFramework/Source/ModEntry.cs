@@ -15,7 +15,7 @@ public class Main : Mod
         Logger.SetMonitor(Monitor);
 
         helper.Events.Input.ButtonPressed += ButtonPressed;
-        helper.Events.Display.Rendered += DrawFoundTiles.OnRenderTiles;
+        helper.Events.Display.Rendered += DebugDraw.OnRenderTiles;
     }
 
     public void ButtonPressed(object? sender, ButtonPressedEventArgs e)

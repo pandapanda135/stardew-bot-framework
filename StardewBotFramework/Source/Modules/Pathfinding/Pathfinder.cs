@@ -49,11 +49,11 @@ public class Pathfinder
     public void AttackMonster(Goal goal, bool canDestroy = false, bool buildCollision = true)
     {
         AlgorithmBase.IPathing pathing = new AStar.Pathing();
-        if (buildCollision) pathing.BuildCollisionMap(Game1.currentLocation);
+        if (buildCollision) pathing.BuildCollisionMap(BotBase.CurrentLocation);
         
-        PathNode start = new PathNode(Game1.player.TilePoint.X, Game1.player.TilePoint.Y, null);
+        PathNode start = new PathNode(BotBase.Farmer.TilePoint.X, BotBase.Farmer.TilePoint.Y, null);
         
-        var t = Task.Run(async () => await pathing.FindPath(start,goal,Game1.currentLocation,10000,canDestroy));
+        var t = Task.Run(async () => await pathing.FindPath(start,goal,BotBase.CurrentLocation,10000,canDestroy));
         t.Wait();
         Stack<PathNode> path = t.Result ;
 

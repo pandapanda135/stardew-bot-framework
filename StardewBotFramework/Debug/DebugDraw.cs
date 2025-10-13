@@ -5,12 +5,10 @@ using StardewBotFramework.Source.Modules.Pathfinding.Base;
 using StardewBotFramework.Source.Modules.Pathfinding.GroupTiles;
 using StardewModdingAPI.Events;
 using StardewValley;
-using StardewValley.TerrainFeatures;
-using StardewValley.Tools;
 
 namespace StardewBotFramework.Debug;
 
-public class DrawFoundTiles
+public class DebugDraw
 {
     private static bool _textureInitialized;
     private static Texture2D? _outLineTexture;    
@@ -67,6 +65,30 @@ public class DrawFoundTiles
             tileLocation.X -= Game1.viewport.X;
             tileLocation.Y -= Game1.viewport.Y;
             
+            tileColor *= 0.25f;
+            Game1.spriteBatch.Draw(_outLineTexture,
+                new Rectangle((int)tileLocation.X, (int)tileLocation.Y, Game1.tileSize,
+                    Game1.tileSize), tileColor);
+        }
+    }
+    
+    public static void RenderMap(object? sender, RenderedEventArgs e)
+    {
+        InitializeOutlineTextures();
+
+        Vector2 tileLocation = new Vector2(Game1.tileSize, Game1.tileSize);
+        // Logger.Info($"collision map tiles: {AlgorithmBase.IPathing.collisionMap.BlockedTiles.Count}");
+        foreach (var kvp in AlgorithmBase.IPathing.collisionMap.BlockedTiles)
+        {
+            Color tileColor = Color.Red;
+		
+            // convert from tiles to screen (see stardew wiki GameFundamentals Tiles)
+            tileLocation.X = kvp.Key.x * Game1.tileSize;
+            tileLocation.Y = kvp.Key.y * Game1.tileSize;
+    
+            tileLocation.X -= Game1.viewport.X;
+            tileLocation.Y -= Game1.viewport.Y;
+        
             tileColor *= 0.25f;
             Game1.spriteBatch.Draw(_outLineTexture,
                 new Rectangle((int)tileLocation.X, (int)tileLocation.Y, Game1.tileSize,

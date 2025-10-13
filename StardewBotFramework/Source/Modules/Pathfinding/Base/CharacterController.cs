@@ -35,6 +35,9 @@ public class CharacterController : PathFindController
 	/// </summary>
 	public static event EventHandler<FailureReason>? FailedPathFinding;
 
+	/// <summary>
+	/// These are values <see cref="Farmer.FacingDirection"/> uses in the format of an enum
+	/// </summary>
 	enum Direction
 	{
 		South = 0,
@@ -43,7 +46,7 @@ public class CharacterController : PathFindController
 		West = 3,
 	}
 	
-	private static bool _movingCharacter;
+	private static bool MovingCharacter => _endPath.Count >= 1;
 	private static bool _isDestroying;
 
 	private static Stack<PathNode> _endPath = new();
@@ -61,7 +64,7 @@ public class CharacterController : PathFindController
 	/// <summary>
 	/// The maximum amount of time the bot can stay in the same position for, this is in milliseconds.
 	/// </summary>
-	private const int MaxPauseTime = 5000;
+	private static int MaxPauseTime => _attacking ? 30000 : 5000;
 
 	private int _updateCallAmount;
 	private int _moveCallAmount;
@@ -69,13 +72,18 @@ public class CharacterController : PathFindController
 	public override bool update(GameTime time)
 	{
 		_updateCallAmount += 1;
-		if (_endPath.Count < 1) _movingCharacter = false;
-		Logger.Info($"update called  {_updateCallAmount}     {_moveCallAmount}");
+		if (_recalculatingPath)
+		{
+			Logger.Info($"recalculating path: {_endPath.Count}");
+			return false;
+		}
+		// Logger.Info($"update called  {_updateCallAmount}     {_moveCallAmount}");
 
 		var monster = _dynamicCharacter as Monster;
-		if ((!_movingCharacter && !_attacking) || (_attacking && monster is not null && monster.Health < 1))
+		if ((!MovingCharacter && !_attacking) || (_attacking && monster is not null && monster.Health < 1))
 		{
 			Logger.Info($"return true as ended");
+			ForceStopMoving();
 			return true;
 		}
 	
@@ -88,7 +96,7 @@ public class CharacterController : PathFindController
 		}
 		
 		Vector2 position = Character.Position;
-		MoveCharacter(time);
+		moveCharacter(time);
 		if (position == Character.Position)
 		{
 			_pausedTimer += time.ElapsedGameTime.Milliseconds;
@@ -116,7 +124,6 @@ public class CharacterController : PathFindController
 		// stop pathfinder getting stuck as _movingCharacter wouldn't get set to false again
 		if (!endPointPath.Any()) return;
 		
-		_movingCharacter = true;
 		_endPath = endPointPath;
 		_currentLocation = BotBase.CurrentLocation;
 		_dynamicCharacter = dynamicCharacter;
@@ -126,14 +133,17 @@ public class CharacterController : PathFindController
 
 		Character.controller = this;
 
-		MoveCharacter(Game1.currentGameTime);
+		moveCharacter(Game1.currentGameTime);
 	}
 	
 	// this is so bot faces correct direction with diagonal tiles
-	private static readonly int[] CorrectFacingDirections = { 0, 1, 2, 3, 0, 0, 2, 2 };
-
+	private static readonly int[] CorrectFacingDirections = { (int)Direction.East, (int)Direction.West, 
+		(int)Direction.South, (int)Direction.North, (int)Direction.East, (int)Direction.East, (int)Direction.South, 
+		(int)Direction.South };
+	
 	private static bool _recalculatingPath;
-	private void MoveCharacter(GameTime time) //TODO: figure out why _character.movePosition does not change character's animation.
+	// different naming convention so we can override PathFindController's moveCharacter
+	protected override void moveCharacter(GameTime time) // TODO: figure out why _character.movePosition does not change character's animation.
 	{
 		if (_recalculatingPath) return;
 		
@@ -167,7 +177,7 @@ public class CharacterController : PathFindController
 		     || _dynamicCharacter.TilePoint == Character.TilePoint))
 		{
 			Logger.Info($"attacking in character controller");
-			BotBase.Farmer.FacingDirection = CorrectFacingDirections[direction];
+			// BotBase.Farmer.FacingDirection = CorrectFacingDirections[direction];
 			SwapItemHandler.SwapItem(typeof(MeleeWeapon),"Weapon");
 			BotBase.Farmer.BeginUsingTool();
 			return;
@@ -179,8 +189,10 @@ public class CharacterController : PathFindController
 			// stop issues with pathing, if in wall or other occupied tile, mainly for monsters.
 			if (_currentLocation.isCollidingPosition(_dynamicCharacter.GetBoundingBox(),Game1.viewport,_dynamicCharacter)) return;
 			_lastDynamicCharacterTile = _dynamicCharacter.TilePoint;
-			RecalculatePath(new Goal.GoalDynamic(_dynamicCharacter, 1));
+			_endPath = RecalculatePath(new Goal.GoalDynamic(_dynamicCharacter, 1));
 		}
+
+		if (_endPath.Count < 1) return;
 		
 		PathNode node = _endPath.Peek();
 		int tilesize = Game1.tileSize;
@@ -213,7 +225,7 @@ public class CharacterController : PathFindController
 			}
 			farmer.movementDirections.Clear();
 		}
-		
+
 		if (_currentLocation is not MovieTheater)
 		{
 			var characters = _currentLocation.characters.Where(npc => !npc.Equals(Character) && npc.GetBoundingBox()
@@ -223,11 +235,11 @@ public class CharacterController : PathFindController
 				Logger.Warning($"Ran into character");
 				foreach (var npc in characters)
 				{
-					AlgorithmBase.IPathing.collisionMap.AddBlockedTile(npc.TilePoint.X,npc.TilePoint.Y);
+					AlgorithmBase.IPathing.collisionMap.AddBlockedTile(npc.TilePoint.X, npc.TilePoint.Y);
 				}
+
 				PathNode endNode = _endPath.ToList()[_endPath.Count - 1];
-				var path = RecalculatePath(new Goal.GoalPosition(endNode.X,endNode.Y));
-				_endPath = path;
+				_endPath = RecalculatePath(new Goal.GoalPosition(endNode.X, endNode.Y));
 			}
 		}
 		
@@ -269,8 +281,8 @@ public class CharacterController : PathFindController
 			fence.toggleGate(true);
 		}
 
-		if ((objectAtNextTile is not null && (!objectAtNextTile.isPassable() && 
-		                                      !DestroyLitterObject.IsDestructible(objectAtNextTile))) ||
+		if ((objectAtNextTile is not null && !objectAtNextTile.isPassable() 
+		                                  && !DestroyLitterObject.IsDestructible(objectAtNextTile)) ||
 		    (objectInCurrentTile is not null && !objectInCurrentTile.isPassable()))
 		{
 			if (objectAtNextTile != null && !objectAtNextTile.isPassable())
@@ -357,7 +369,7 @@ public class CharacterController : PathFindController
 			return;
 		}
 	}
-
+	
 	private static void HandleWarp(Rectangle character)
 	{
 		Warp warp = _currentLocation.isCollidingWithWarpOrDoor(character, Character);
@@ -384,9 +396,9 @@ public class CharacterController : PathFindController
 		if (_recalculatingPath) return new();
 		_recalculatingPath = true;
 		AlgorithmBase.IPathing pathing = new AStar.Pathing();
-		// causes crashing due to running on thread. Should be fixed now, going to keep this comment in case.
 		pathing.BuildCollisionMap(_currentLocation, Character.TilePoint.X + 3, Character.TilePoint.Y + 3
 			,Character.TilePoint.X - 3, Character.TilePoint.Y - 3);
+		// pathing.BuildCollisionMap(_currentLocation);
 		
 		PathNode start = new PathNode(Character.TilePoint.X, Character.TilePoint.Y, null);
 		var path = Task.Run(async () =>
@@ -404,14 +416,14 @@ public class CharacterController : PathFindController
 		return path.Result;
 	}
 	
-	public static bool IsMoving() => _movingCharacter;
+	public static bool IsMoving() => MovingCharacter || _attacking;
 
 	public static void ForceStopMoving()
 	{
 		_endPath = new Stack<PathNode>();
 		_currentNode = new PathNode(-1, -1, null);
 		_nextNode = _currentNode;
-		_movingCharacter = false;
+		_attacking = false;
 	}
 	
 	private static bool SwapItem(Point tile)

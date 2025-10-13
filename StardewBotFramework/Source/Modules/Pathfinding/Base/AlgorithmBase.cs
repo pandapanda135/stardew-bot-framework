@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using StardewBotFramework.Debug;
+using StardewBotFramework.Source.Utilities;
 using StardewValley;
 
 namespace StardewBotFramework.Source.Modules.Pathfinding.Base;
@@ -136,17 +137,17 @@ public class AlgorithmBase
         /// Build collision map this should be run before any type of pathfinding due to the dynamic nature of the world.
         /// </summary>
         /// <param name="location">the <see cref="GameLocation"/> you want the collision map of</param>
-        /// <param name="maxX">Max X of the current location, you should only use if you are looking for a subset of a location</param>
-        /// <param name="maxY">Max Y of the current location, you should only use if you are looking for a subset of a location</param>
+        /// <param name="maxX">Max X of the current location, you should only use this if you are looking to update a subset of a location</param>
+        /// <param name="maxY">Max Y of the current location, you should only use this if you are looking to update a subset of a location</param>
         /// <param name="minX">Minimum X of the current location, this should never be below 0</param>
         /// <param name="minY">Minimum Y of the current location, this should never be below 0</param>
         /// <returns>A <see cref="CollisionMap"/> however this is only useful if you want to make changes otherwise you should use IPathing.collisionMap</returns>
         CollisionMap BuildCollisionMap(GameLocation location,int maxX = -1, int maxY = -1, int minX = 0,
             int minY = 0)
         {
-            if (maxX == -1) maxX = location.Map.DisplayWidth / Game1.tileSize;
-            if (maxY == -1) maxY = location.Map.DisplayHeight / Game1.tileSize; 
-
+            if (maxX == -1) maxX = TileUtilities.MaxX;
+            if (maxY == -1) maxY = TileUtilities.MaxY;
+            
             Logger.Error($"size of map {maxX},{maxY}");
             var map = new CollisionMap();
 
