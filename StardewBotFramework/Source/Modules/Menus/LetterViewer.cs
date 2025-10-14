@@ -10,7 +10,7 @@ public class LetterViewer
 	/// <summary>
 	/// This is if the letter has a quest or special order
 	/// </summary>
-	public bool HasQuest => (bool)_menu?.HasQuestOrSpecialOrder;
+	public bool? HasQuest => (bool)_menu?.HasQuestOrSpecialOrder;
 
 	/// <summary>
 	/// If there are items to grab

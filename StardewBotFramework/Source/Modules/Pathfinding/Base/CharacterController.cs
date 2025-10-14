@@ -22,7 +22,7 @@ public class CharacterController : PathFindController
 	{
 		_currentLocation = l;
 	}
-
+	
 	public enum FailureReason
 	{
 		GoalBlocked,
@@ -132,7 +132,7 @@ public class CharacterController : PathFindController
 		if (dynamicCharacter is not null) _lastDynamicCharacterTile = dynamicCharacter.TilePoint;
 
 		Character.controller = this;
-
+		
 		moveCharacter(Game1.currentGameTime);
 	}
 	
@@ -173,12 +173,13 @@ public class CharacterController : PathFindController
 		}
 		
 		if (_dynamicCharacter is not null && _attacking &&
-		    (Graph.IsInNeighbours(Character.TilePoint, _dynamicCharacter.TilePoint, out var direction)
+		    (Graph.IsInNeighbours(Character.TilePoint, _dynamicCharacter.TilePoint, out _)
 		     || _dynamicCharacter.TilePoint == Character.TilePoint))
 		{
 			Logger.Info($"attacking in character controller");
 			// BotBase.Farmer.FacingDirection = CorrectFacingDirections[direction];
-			SwapItemHandler.SwapItem(typeof(MeleeWeapon),"Weapon");
+			// this might stop character disappearing
+			if (BotBase.Farmer.CurrentTool is not MeleeWeapon || BotBase.Farmer.CurrentTool.isScythe()) SwapItemHandler.SwapItem(typeof(MeleeWeapon), "Weapon");
 			BotBase.Farmer.BeginUsingTool();
 			return;
 		}
@@ -186,7 +187,7 @@ public class CharacterController : PathFindController
 		// recalculate path is character moves away from current path
 		if (_dynamicCharacter is not null && _dynamicCharacter.TilePoint != _lastDynamicCharacterTile)
 		{
-			// stop issues with pathing, if in wall or other occupied tile, mainly for monsters.
+			// stop issues with pathing, if in wall or other occupied tile, mainly for monsters. Can't rely on collision map as only the walls are blocked.
 			if (_currentLocation.isCollidingPosition(_dynamicCharacter.GetBoundingBox(),Game1.viewport,_dynamicCharacter)) return;
 			_lastDynamicCharacterTile = _dynamicCharacter.TilePoint;
 			_endPath = RecalculatePath(new Goal.GoalDynamic(_dynamicCharacter, 1));
@@ -290,13 +291,13 @@ public class CharacterController : PathFindController
 				AlgorithmBase.IPathing.collisionMap.AddBlockedTile(_nextNode.X,_nextNode.Y);
 			}
 
-			if (!objectInCurrentTile.isPassable())
+			if (objectInCurrentTile != null && !objectInCurrentTile.isPassable())
 			{
 				AlgorithmBase.IPathing.collisionMap.AddBlockedTile(node.X,node.Y);
 			}
 			
 			PathNode endNode = _endPath.ToList()[_endPath.Count - 1];
-			Logger.Error($"object in next tile was blocked   goal node: {endNode.VectorLocation}   next node: {_nextNode.VectorLocation}");
+			Logger.Info($"object in next tile was blocked   goal node: {endNode.VectorLocation}   next node: {_nextNode.VectorLocation}");
 			var path = RecalculatePath(new Goal.GoalPosition(endNode.X,endNode.Y));
 			
 			if (path.Count < 1)
@@ -398,7 +399,6 @@ public class CharacterController : PathFindController
 		AlgorithmBase.IPathing pathing = new AStar.Pathing();
 		pathing.BuildCollisionMap(_currentLocation, Character.TilePoint.X + 3, Character.TilePoint.Y + 3
 			,Character.TilePoint.X - 3, Character.TilePoint.Y - 3);
-		// pathing.BuildCollisionMap(_currentLocation);
 		
 		PathNode start = new PathNode(Character.TilePoint.X, Character.TilePoint.Y, null);
 		var path = Task.Run(async () =>
@@ -420,6 +420,7 @@ public class CharacterController : PathFindController
 
 	public static void ForceStopMoving()
 	{
+		Character.controller = null;
 		_endPath = new Stack<PathNode>();
 		_currentNode = new PathNode(-1, -1, null);
 		_nextNode = _currentNode;

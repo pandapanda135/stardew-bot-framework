@@ -149,19 +149,19 @@ public class AlgorithmBase
             if (maxY == -1) maxY = TileUtilities.MaxY;
             
             Logger.Error($"size of map {maxX},{maxY}");
-            var map = new CollisionMap();
-
+            
+            // TODO: The walls of caves just don't get added in character controller for some reason when this is ran after already being ran in that location
             for (int x = minX; x <= maxX; x++)
             {
                 for (int y = minY; y <= maxY; y++)
                 {
-                    if (!CollisionMap.IsCurrentlyBlocked(x,y)) continue;
-                    map.AddBlockedTile(x,y);
+                    if (!CollisionMap.IsCurrentlyBlocked(location, x, y)) continue;
+                    
+                    collisionMap.AddBlockedTile(x,y);
                 }
             }
 
-            collisionMap = map;
-            return map;
+            return collisionMap;
         }
     }
 }

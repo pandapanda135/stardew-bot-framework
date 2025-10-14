@@ -26,32 +26,28 @@ public class SwapItemHandler
                     case "Scythe":
                         foreach (var item in BotBase.Farmer.Items)
                         {
-                            if (item is null) continue;
-                            if (item.Name == "Scythe" && item.GetType() == toolType)
+                            if (item is not Tool tool || !tool.isScythe() || item.GetType() != toolType) continue;
+                            
+                            if (BotBase.Farmer.CurrentToolIndex != BotBase.Farmer.Items.IndexOf(item))
                             {
-                                if (BotBase.Farmer.CurrentToolIndex != BotBase.Farmer.Items.IndexOf(item))
-                                {
-                                    ChangeToolbar(BotBase.Farmer.Items.IndexOf(item));
-                                    BotBase.Farmer.CurrentToolIndex = BotBase.Farmer.Items.IndexOf(item);
-                                }
-
-                                return;
+                                ChangeToolbar(BotBase.Farmer.Items.IndexOf(item));
+                                BotBase.Farmer.CurrentToolIndex = BotBase.Farmer.Items.IndexOf(item);
                             }
+
+                            return;
                         }
 
                         return;
                     case "Weapon":
                         foreach (var item in BotBase.Farmer.Items)
                         {
-                            if (item is null) continue;
-                            if (!item.Name.Contains("Scythe") && item.GetType() == toolType)
+                            if (item is not Tool tool || tool.isScythe() || item.GetType() != toolType) continue;
+                            
+                            if (BotBase.Farmer.CurrentToolIndex != BotBase.Farmer.Items.IndexOf(item))
                             {
-                                if (BotBase.Farmer.CurrentToolIndex != BotBase.Farmer.Items.IndexOf(item))
-                                {
-                                    ChangeToolbar(BotBase.Farmer.Items.IndexOf(item));
-                                    BotBase.Farmer.CurrentToolIndex = BotBase.Farmer.Items.IndexOf(item);
-                                    return;
-                                }
+                                ChangeToolbar(BotBase.Farmer.Items.IndexOf(item));
+                                BotBase.Farmer.CurrentToolIndex = BotBase.Farmer.Items.IndexOf(item);
+                                return;
                             }
                         }
 

@@ -1,10 +1,8 @@
 using HarmonyLib;
-using Microsoft.Xna.Framework.Input;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Events.GamePlayEvents;
 using StardewModdingAPI;
 using StardewValley;
-using StardewValley.Characters;
 using StardewValley.GameData.Pets;
 using StardewValley.Menus;
 using StardewValley.Network;
