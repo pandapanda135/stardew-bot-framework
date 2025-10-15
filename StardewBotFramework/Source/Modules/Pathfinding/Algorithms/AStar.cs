@@ -95,7 +95,7 @@ public class AStar : AlgorithmBase
                             || canDestroyObjects && locationObjects.ContainsKey(node.VectorLocation.ToVector2())))
                 {
                     int newCumulative = current.GCost + next.Cost;
-                    Logger.Error($"this is new cost at start: {newCumulative}   next.cost: {next.Cost}    contains: {IPathing.PriorityFrontier.Contains(next)}");
+                    Logger.Info($"this is new cost at start: {newCumulative}   next.cost: {next.Cost}    contains: {IPathing.PriorityFrontier.Contains(next)}");
                     
                     if (IPathing.PriorityFrontier.Contains(next) && newCumulative >= next.GCost) continue;
                     StardewClient.debugNode.Add(next);
@@ -108,7 +108,7 @@ public class AStar : AlgorithmBase
                     }
 
                     next.GCost = newCumulative;
-                    Logger.Error($"new cost after cost: {newCumulative}   tile cost: {next.Cost}");
+                    Logger.Info($"new cost after cost: {newCumulative}   tile cost: {next.Cost}");
                     // we weight heuristic to find a path quicker, this may lead to more inefficient paths though.
                     // Also multiply to make heuristic be similar to GCost.
                     int priority = next.GCost + (PathNode.ManhattanHeuristic(next.VectorLocation,goal.VectorLocation) * _averageTileCost);

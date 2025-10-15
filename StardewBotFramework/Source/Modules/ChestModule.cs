@@ -1,4 +1,3 @@
-using Microsoft.Xna.Framework.Input;
 using StardewBotFramework.Debug;
 using StardewValley;
 using StardewValley.Inventories;
@@ -9,7 +8,7 @@ namespace StardewBotFramework.Source.Modules;
 
 public class ChestModule
 {
-    private IInventory CurrentChestInventory;
+    private IInventory _currentChestInventory = new Inventory();
     
     private static bool ChestOpen => Game1.activeClickableMenu is ItemGrabMenu;
     
@@ -22,24 +21,24 @@ public class ChestModule
     {
         if (ChestOpen) return null;
 
-        CurrentChestInventory = chest.GetItemsForPlayer();
+        _currentChestInventory = chest.GetItemsForPlayer();
 
         chest.ShowMenu();
 
         Game1.playSound(chest.fridge.Value ? "doorCreak" : "openChest");    
 
         // gift boxes cause crashes if performOpenChest runs
-        if (chest.giftbox.Value || chest.giftboxIsStarterGift.Value) return CurrentChestInventory;
+        if (chest.giftbox.Value || chest.giftboxIsStarterGift.Value) return _currentChestInventory;
         
         chest.performOpenChest();
         
-        return CurrentChestInventory;
+        return _currentChestInventory;
     }
 
     public IInventory? SetChest(Chest chest)
     {
-        CurrentChestInventory = chest.GetItemsForPlayer();
-        return CurrentChestInventory;
+        _currentChestInventory = chest.GetItemsForPlayer();
+        return _currentChestInventory;
     }
     
     /// <summary>
@@ -87,7 +86,7 @@ public class ChestModule
         if (!ChestOpen) return;
         
         // chest.grabItemFromInventory(item,player); // get from player inventory
-        if (!CurrentChestInventory.Contains(item)) return;
+        if (!_currentChestInventory.Contains(item)) return;
         
         chest.grabItemFromChest(item,player);
         player.addItemToInventory(item);

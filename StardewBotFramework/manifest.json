@@ -1,7 +1,7 @@
 {
   "Name": "BotFramework",
   "Author": "PandaPanda135",
-  "Version": "0.5.0",
+  "Version": "0.8.0",
   "Description": "This is a bot framework for Stardew Valley. If this message is showing, you should remove BotFramework from your Mods folder.",
   "UniqueID": "Panda.BotFramework",
   "EntryDll": "StardewBotFramework.dll",

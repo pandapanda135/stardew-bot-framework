@@ -18,7 +18,7 @@ public class CharacterCreation
     /// You can get character creation in the main menu using TitleMenu.subMenu as CharacterCustomization
     /// </summary>
     /// <param name="characterCustomization"></param>
-    public void SetCreator(CharacterCustomization? characterCustomization)
+    public void SetCreator(CharacterCustomization characterCustomization)
     {
         _characterCustomization = characterCustomization;
     }
@@ -26,50 +26,48 @@ public class CharacterCreation
     public void ExitCharacterCreation()
     {
         if (_characterCustomization is null) return;
-        if (_characterCustomization.source == CharacterCustomization.Source.Dresser || // find how to do this in these places
+        if (_characterCustomization.source == CharacterCustomization.Source.Dresser ||
             _characterCustomization.source == CharacterCustomization.Source.Wizard ||
             _characterCustomization.source == CharacterCustomization.Source.ClothesDye)
         {
-            Logger.Error($"Tried to run ExitCharacterCreation in a place that doesn't support it");
+            _characterCustomization.exitThisMenu();
+            _characterCustomization = null;
             return;
         }
         
         Rectangle buttonBounds = _characterCustomization.backButton.bounds; 
         _characterCustomization.receiveLeftClick(buttonBounds.X,buttonBounds.Y);
+        _characterCustomization = null;
     }
     
     public void SkipIntro()
     {
-        if ((_characterCustomization?.source == CharacterCustomization.Source.NewGame ||
-             _characterCustomization?.source == CharacterCustomization.Source.HostNewFarm))
+        if (_characterCustomization?.source == CharacterCustomization.Source.NewGame ||
+             _characterCustomization?.source == CharacterCustomization.Source.HostNewFarm)
         {
             Rectangle buttonBounds = _characterCustomization.skipIntroButton.bounds;
-            _characterCustomization.receiveLeftClick(_characterCustomization.skipIntroButton.bounds.X,_characterCustomization.skipIntroButton.bounds.Y);
+            _characterCustomization.receiveLeftClick(buttonBounds.X,buttonBounds.Y);
             return;
         }
-        else
-        {
-            Logger.Warning($"Tried to call SkipIntro when not starting new game or hosting new farm");
-        }
         
+        Logger.Error($"Tried to call SkipIntro when not starting new game or hosting new farm");
     }
 
     public void StartGame()
     {
-        if (_characterCustomization is null) return;
+        if (_characterCustomization is null || !_characterCustomization.okButton.visible) return;
         Rectangle buttonBounds = _characterCustomization.okButton.bounds; 
         _characterCustomization.receiveLeftClick(buttonBounds.X,buttonBounds.Y);
     }
 
     public void RandomiseCharacter()
     {
-        if (_characterCustomization?.source == CharacterCustomization.Source.DyePots ||
-            _characterCustomization?.source == CharacterCustomization.Source.ClothesDye)
+        if (_characterCustomization is null || _characterCustomization.source is CharacterCustomization.Source.DyePots or CharacterCustomization.Source.ClothesDye)
         {
             Logger.Warning($"Tried to call RandomiseCharacter when randomising character is not available. This happens when you call it in DyePots or ClothesDye");
+            return;
         }
-
-        if (_characterCustomization is null) return;
+        
         Rectangle buttonBounds = _characterCustomization.randomButton.bounds; 
         _characterCustomization.receiveLeftClick(buttonBounds.X,buttonBounds.Y);
     }
@@ -274,7 +272,7 @@ public class CharacterCreation
     public void ChangeShirt(int change)
     {
         // increase is positive will wrap around if negative
-        Game1.player.rotateShirt(change, _characterCustomization?.GetValidShirtIds());
+        BotBase.Farmer.rotateShirt(change, _characterCustomization?.GetValidShirtIds());
         Game1.playSound("coin");
     }
     

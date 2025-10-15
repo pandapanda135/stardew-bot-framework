@@ -11,7 +11,7 @@ namespace StardewBotFramework.Source;
 
 public abstract class BotBase
 {
-    protected static BotBase Instance = null!;
+    protected static BotBase? Instance = null;
     protected IModHelper _helper = null!;
     protected IManifest _manifest = null!;
     protected IMonitor _monitor = null!;
@@ -102,7 +102,7 @@ public abstract class BotBase
             return;
         }
         
-        _reflectedTextBox = Instance.Helper.Reflection.GetField<TextBox>(menu, properties[0], true);
+        _reflectedTextBox = Instance.Helper.Reflection.GetField<TextBox>(menu, properties[0]);
         
         TextBox textBox = _reflectedTextBox.GetValue();
         
@@ -119,7 +119,7 @@ public abstract class BotBase
             return;
         }
         
-        _reflectedObjectDestroy = Instance.Helper.Reflection.GetField<NetMutexQueue<Guid>>(location,"furnitureToRemove",true);
+        _reflectedObjectDestroy = Instance.Helper.Reflection.GetField<NetMutexQueue<Guid>>(location,"furnitureToRemove");
 
         NetMutexQueue<Guid> value = _reflectedObjectDestroy.GetValue();
         
@@ -154,6 +154,7 @@ public abstract class BotBase
     }
     internal static int GetLevelUpMenuSkill()
     {
+        if (Instance is null) return -1;
         var menu = GetLevelUpMenu();
         if (menu is null) return -1;
         
@@ -163,6 +164,7 @@ public abstract class BotBase
     
     internal static int GetLevelUpMenuLevel()
     {
+        if (Instance is null) return -1;
         var menu = GetLevelUpMenu();
         if (menu is null) return -1;
         
@@ -171,6 +173,7 @@ public abstract class BotBase
     }
     internal static List<int> GetLevelUpMenuProfessions()
     {
+        if (Instance is null) return new();
         var menu = GetLevelUpMenu();
         if (menu is null) return new();
         IReflectedField<List<int>> reflectedField = Instance.Helper.Reflection.GetField<List<int>>(menu, "professionsToChoose");
