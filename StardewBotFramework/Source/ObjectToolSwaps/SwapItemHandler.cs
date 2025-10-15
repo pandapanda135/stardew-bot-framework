@@ -1,13 +1,12 @@
-using System.Runtime.CompilerServices;
-using Netcode;
-using StardewBotFramework.Debug;
 using StardewValley;
-using StardewValley.ItemTypeDefinitions;
 using StardewValley.TerrainFeatures;
 using StardewValley.Tools;
 using Object = StardewValley.Object;
 
 namespace StardewBotFramework.Source.ObjectToolSwaps;
+
+// Thanks to https://www.nexusmods.com/stardewvalley/mods/21050?tab=description as the SwapItem method comes from them,
+// you can see what they allow for their mod to be used for in the "Permissions and credits" tab. 
 
 public class SwapItemHandler
 {
@@ -72,12 +71,14 @@ public class SwapItemHandler
         }
     }
 
+    /// <summary>
+    /// Change the currently selected object to whatever you specify. 
+    /// </summary>
     public static void SwapObject(Object obj)
     {
         foreach (var item in BotBase.Farmer.Items)
         {
-            if (item is null) continue;
-            if (item != obj) continue;
+            if (item is null || item != obj) continue;
             if (BotBase.Farmer.CurrentToolIndex == BotBase.Farmer.Items.IndexOf(item)) return;
             
             ChangeToolbar(BotBase.Farmer.Items.IndexOf(item));
