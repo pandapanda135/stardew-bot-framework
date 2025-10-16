@@ -50,7 +50,7 @@ public class CharacterController : PathFindController
 	private static bool _isDestroying;
 
 	private static Stack<PathNode> _endPath = new();
-	private static Character Character => BotBase.Farmer;
+	private static Farmer Character => BotBase.Farmer;
 	private static GameLocation _currentLocation = null!;
 	private static int _nextIndex;
 	private static int _neighbourIndex;
@@ -77,6 +77,7 @@ public class CharacterController : PathFindController
 			Logger.Info($"recalculating path: {_endPath.Count}");
 			return false;
 		}
+
 		// Logger.Info($"update called  {_updateCallAmount}     {_moveCallAmount}");
 
 		var monster = _dynamicCharacter as Monster;
@@ -95,6 +96,9 @@ public class CharacterController : PathFindController
 			return true;
 		}
 		
+		// might have issues with multiplayer?
+		if (Game1.isWarping) return true;
+		
 		Vector2 position = Character.Position;
 		moveCharacter(time);
 		if (position == Character.Position)
@@ -105,8 +109,12 @@ public class CharacterController : PathFindController
 		{
 			_pausedTimer = 0;
 		}
-	
-		if (_pausedTimer < MaxPauseTime) return false;
+
+		if (_pausedTimer < MaxPauseTime)
+		{
+			Logger.Info($"standard return false");
+			return false;
+		}
 		
 		Logger.Error($"Paused for too long");
 		ForceStopMoving();
@@ -135,11 +143,6 @@ public class CharacterController : PathFindController
 		
 		moveCharacter(Game1.currentGameTime);
 	}
-	
-	// this is so bot faces correct direction with diagonal tiles
-	private static readonly int[] CorrectFacingDirections = { (int)Direction.East, (int)Direction.West, 
-		(int)Direction.South, (int)Direction.North, (int)Direction.East, (int)Direction.East, (int)Direction.South, 
-		(int)Direction.South };
 	
 	private static bool _recalculatingPath;
 	// different naming convention so we can override PathFindController's moveCharacter
@@ -184,7 +187,7 @@ public class CharacterController : PathFindController
 			return;
 		}
 		
-		// recalculate path is character moves away from current path
+		// recalculate path if character moves away from current path
 		if (_dynamicCharacter is not null && _dynamicCharacter.TilePoint != _lastDynamicCharacterTile)
 		{
 			// stop issues with pathing, if in wall or other occupied tile, mainly for monsters. Can't rely on collision map as only the walls are blocked.
@@ -204,6 +207,7 @@ public class CharacterController : PathFindController
 		if ((targetTile.Contains(bbox) || (bbox.Width > targetTile.Width && targetTile.Contains(bbox.Center))) &&
 		    targetTile.Bottom - bbox.Bottom >= 2)
 		{
+			Logger.Error($"remove from end path {node.VectorLocation}");
 			_endPath.Pop();
 			Character.stopWithoutChangingFrame();
 			
@@ -217,19 +221,11 @@ public class CharacterController : PathFindController
 			return;
 		}
 
-		if (Character is Farmer farmer)
-		{
-			if (farmer != BotBase.Farmer)
-			{
-				Logger.Error($"Farmer is not the bot");
-				return;
-			}
-			farmer.movementDirections.Clear();
-		}
+		Character.movementDirections.Clear();
 
 		if (_currentLocation is not MovieTheater)
 		{
-			var characters = _currentLocation.characters.Where(npc => !npc.Equals(Character) && npc.GetBoundingBox()
+			var characters = _currentLocation.characters.Where(npc => npc.GetBoundingBox()
 				.Intersects(Character.GetBoundingBox())).ToList(); // probably don't need  && npc.isMoving()
 			if (characters.Count > 0)
 			{
@@ -318,6 +314,7 @@ public class CharacterController : PathFindController
 			{
 				_moveCallAmount += 1;
 				Character.MovePosition(time, Game1.viewport, _currentLocation);
+				Character.updateMovementAnimation(time);
 				HandleWarp(Character.nextPosition(Character.getFacingDirection()));
 			}
 			catch (Exception e) // sometimes error here IDK why might be because character controller is made on non-main thread
@@ -370,7 +367,7 @@ public class CharacterController : PathFindController
 			return;
 		}
 	}
-	
+
 	private static void HandleWarp(Rectangle character)
 	{
 		Warp warp = _currentLocation.isCollidingWithWarpOrDoor(character, Character);
@@ -381,14 +378,12 @@ public class CharacterController : PathFindController
 			Event currentEvent = Game1.CurrentEvent;
 			if (!(bool)!(currentEvent != null ? new bool?(currentEvent.isFestival) : null))
 			{
-				Game1.CurrentEvent.TryStartEndFestivalDialogue(Character as Farmer);
+				Game1.CurrentEvent.TryStartEndFestivalDialogue(Character);
 			}
 		}
 
-		Logger.Error($"pre npc check");
-		if (Character is not Farmer farmer) return;
-		Logger.Error($"warping farmer");
-		farmer.warpFarmer(warp);
+		Logger.Error($"Warping farmer");
+		Character.warpFarmer(warp);
 		ForceStopMoving();
 	}
 

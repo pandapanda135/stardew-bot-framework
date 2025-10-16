@@ -22,11 +22,11 @@ public class Pathfinder
     {
         AlgorithmBase.IPathing pathing = new AStar.Pathing();
         
-        if (buildCollision) pathing.BuildCollisionMap(Game1.currentLocation);
+        if (buildCollision) pathing.BuildCollisionMap(BotBase.CurrentLocation);
         
-        PathNode start = new PathNode(Game1.player.TilePoint.X, Game1.player.TilePoint.Y, null);
+        PathNode start = new PathNode(BotBase.Farmer.TilePoint.X, BotBase.Farmer.TilePoint.Y, null);
 
-        Stack<PathNode> path = await pathing.FindPath(start, goal, Game1.currentLocation, 10000, canDestroy);
+        Stack<PathNode> path = await pathing.FindPath(start, goal, BotBase.CurrentLocation, 10000, canDestroy);
 
         Character? npc = null;
         if (goal is Goal.GoalDynamic dynamic) npc = dynamic.character;
