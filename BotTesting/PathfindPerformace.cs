@@ -22,13 +22,14 @@ public static class PathfindPerformace
 		Dictionary<string, List<string>> results = new()
 		{
 			{"Collision", new()},
-			{"Pathing", new()}
+			{"Pathing", new()},
+			{"Total", new()}
 		};
 
 		for (int i = 0; i < amount; i++)
 		{
 			Logger.Info($"amount: {i}");
-			
+			Stopwatch totalWatch = Stopwatch.StartNew();
 			await TaskDispatcher.SwitchToMainThread();
 			AlgorithmBase.IPathing pathing = new AStar.Pathing();
 			AlgorithmBase.IPathing.collisionMap = new CollisionMap();
@@ -42,9 +43,11 @@ public static class PathfindPerformace
 			PathNode start = new PathNode(Game1.player.TilePoint.X, Game1.player.TilePoint.Y, null);
 			var path = await pathing.FindPath(start, goal, Game1.currentLocation, 10000);
 			pathingWatch.Stop();
+			totalWatch.Stop();
 			// running on different threads might cause issues with data?
 			await TaskDispatcher.SwitchToMainThread();
 			results["Pathing"].Add(pathingWatch.ElapsedMilliseconds.ToString());
+			results["Total"].Add(totalWatch.ElapsedMilliseconds.ToString());
 		}
 		
 		CsvWriter.Write(results);
