@@ -44,6 +44,7 @@ internal sealed class ModEntry : Mod
         
         Monitor.Log($"Start setting events",LogLevel.Debug);
         helper.Events.Input.ButtonPressed += ButtonPressed;
+        helper.Events.GameLoop.UpdateTicking += GameLoopOnUpdateTicking;
         helper.ConsoleCommands.Add("chat", $"", ChatCommand);
         helper.ConsoleCommands.Add("colour", "White, red, blue, green, jade, yellowgreen, pink, purple, yellow, orange, brown, gray, cream, salmon, peach, aqua, jungle, plum", ColourCommand);
         helper.ConsoleCommands.Add("emote", $"", EmoteCommand);
@@ -64,6 +65,11 @@ internal sealed class ModEntry : Mod
         helper.ConsoleCommands.Add("farm-land", "", CreateFarmLandCommand);
 
         helper.Events.Display.Rendered += DebugDraw.OnRenderTiles;
+    }
+
+    private void GameLoopOnUpdateTicking(object? sender, UpdateTickingEventArgs e)
+    {
+        PathfindPerformace.TaskDispatcher.RunPending();
     }
 
     private void BotOnBotWarped(object? sender, BotWarpedEventArgs e)
@@ -276,6 +282,10 @@ internal sealed class ModEntry : Mod
             }
             
             Logger.Info($"Nothing on this tile: {point}");
+        }
+        else if (e.Button == SButton.Delete)
+        {
+            await PathfindPerformace.Test(new Goal.GoalPosition((int)Game1.currentCursorTile.X,(int)Game1.currentCursorTile.Y),10);
         }
     }
 
