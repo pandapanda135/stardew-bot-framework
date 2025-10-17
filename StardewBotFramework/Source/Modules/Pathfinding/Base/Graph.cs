@@ -16,7 +16,6 @@ public class Graph : IGraph
         int directions = 4;
         for (int i = 0; i < directions; i++)
         {
-            Logger.Error($"I: {i}   {IGraph.Directions[i,0]}   {IGraph.Directions[i,1]}");
             int neighborX = currentNode.X + IGraph.Directions[i, 0];
             int neighborY = currentNode.Y + IGraph.Directions[i, 1];
             

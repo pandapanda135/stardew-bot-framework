@@ -96,8 +96,12 @@ public class CharacterController : PathFindController
 			return true;
 		}
 		
-		// might have issues with multiplayer?
-		if (Game1.isWarping) return true;
+		// This is here as otherwise, it will get into a loop of fading to black and never warping. Might have issues with multiplayer?
+		if (Game1.isWarping)
+		{
+			ForceStopMoving();
+			return true;
+		}
 		
 		Vector2 position = Character.Position;
 		moveCharacter(time);
@@ -127,20 +131,33 @@ public class CharacterController : PathFindController
 	public void StartMoveCharacter(Stack<PathNode> endPointPath, Character? dynamicCharacter = null,bool attacking = false)
 	{
 		Logger.Info($"start move character");
-		if (IsMoving()) return;
+		if (IsMoving())
+		{
+			Logger.Error($"Not setting character as is already moving {MovingCharacter}  {_attacking}");
+			return;
+		}
 	
 		// stop pathfinder getting stuck as _movingCharacter wouldn't get set to false again
-		if (!endPointPath.Any()) return;
+		if (!endPointPath.Any())
+		{
+			Logger.Error($"Not setting character controller as path is empty");
+			return;
+		}
+		ForceStopMoving();
+		Logger.Info($"setting");
 		
 		_endPath = endPointPath;
 		_currentLocation = BotBase.CurrentLocation;
 		_dynamicCharacter = dynamicCharacter;
 		_attacking = attacking;
+		Logger.Info($"post set");
 
 		if (dynamicCharacter is not null) _lastDynamicCharacterTile = dynamicCharacter.TilePoint;
 
+		Logger.Info($"set character");
 		Character.controller = this;
 		
+		Logger.Info($"setting move");
 		moveCharacter(Game1.currentGameTime);
 	}
 	
@@ -148,6 +165,7 @@ public class CharacterController : PathFindController
 	// different naming convention so we can override PathFindController's moveCharacter
 	protected override void moveCharacter(GameTime time) // TODO: figure out why _character.movePosition does not change character's animation.
 	{
+		Logger.Info($"move character");
 		if (_recalculatingPath) return;
 		
 		if (BotBase.Farmer.UsingTool) return; // check if animation running
@@ -376,7 +394,7 @@ public class CharacterController : PathFindController
 		if (Game1.eventUp)
 		{
 			Event currentEvent = Game1.CurrentEvent;
-			if (!(bool)!(currentEvent != null ? new bool?(currentEvent.isFestival) : null))
+			if (currentEvent.isFestival)
 			{
 				Game1.CurrentEvent.TryStartEndFestivalDialogue(Character);
 			}
@@ -419,6 +437,10 @@ public class CharacterController : PathFindController
 		_endPath = new Stack<PathNode>();
 		_currentNode = new PathNode(-1, -1, null);
 		_nextNode = _currentNode;
+		_lastDynamicCharacterTile = new Point();
+		_dynamicCharacter = null;
+		_nextIndex = -1;
+		_neighbourIndex = -1;
 		_attacking = false;
 	}
 	

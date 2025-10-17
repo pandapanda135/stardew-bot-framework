@@ -13,21 +13,20 @@ public class AStar : AlgorithmBase
     {
         #region Pathfinding
 
-        private readonly int _averageTileCost = 3; // between 1-6 in PathNodes
+        private const int AverageTileCost = 3; // between 1-6 in PathNodes
         async Task<Stack<PathNode>> IPathing.FindPath(PathNode startPoint, Goal goal, GameLocation location,
             int limit, bool canDestroy)
         {
-            Stack<PathNode> correctPath = await Task.Run(() => RunAStar(startPoint, goal, location, limit,canDestroy)); // this is for it to run on a background thread
+             // this is for it to run on a background thread to stop stutter
+            Stack<PathNode> correctPath = await Task.Run(() => RunAStar(startPoint, goal, location, limit,canDestroy));
             
             ClearVariables();
-            if (correctPath.Count == 0)
-            {
-                Logger.Error($"Rebuild path returned empty stack");
-                return new Stack<PathNode>();
-            }
-            return correctPath;
+            if (correctPath.Count != 0) return correctPath;
+            
+            Logger.Error($"Rebuild path returned empty stack");
+            return new Stack<PathNode>();
         }
-
+        
         private Stack<PathNode> RunAStar(PathNode startPoint, Goal goal, GameLocation location,int limit, bool canDestroyObjects)
         {
             ClearVariables();
@@ -39,17 +38,14 @@ public class AStar : AlgorithmBase
             IPathing.ClosedList.Add(startNode);
             
             SerializableDictionary<Vector2, Object> locationObjects = new();
+            
             if (canDestroyObjects)
             {
                 foreach (var locationObject in location.Objects)
                 {
-                    foreach (var kvp in locationObject)
+                    foreach (var kvp in locationObject.Where(kvp => DestroyLitterObject.IsDestructible(kvp.Value)))
                     {
-                        Object obj = kvp.Value;
-                        if (DestroyLitterObject.IsDestructible(obj))
-                        {
-                            locationObjects.Add(kvp.Key,kvp.Value);
-                        }
+                        locationObjects.Add(kvp.Key,kvp.Value);
                     }
                 }
             }
@@ -81,11 +77,12 @@ public class AStar : AlgorithmBase
                 
                 IPathing.ClosedList.Add(current);
                 
+                // This check for goal depending on the type of goal.
                 if (IPathing.CanEnd(current,goal))
                 {
                     Logger.Info($"breaking as current is equal to goal");
-                    // IPathing.PathToEndPoint.Push(current);
-                    break; // this is here as cant return in NodeChecks. This checks if this is goal
+                    IPathing.EndNode = current;
+                    break;
                 }
                 
                 Logger.Info($"this is current: {current.VectorLocation}");
@@ -111,7 +108,7 @@ public class AStar : AlgorithmBase
                     Logger.Info($"new cost after cost: {newCumulative}   tile cost: {next.Cost}");
                     // we weight heuristic to find a path quicker, this may lead to more inefficient paths though.
                     // Also multiply to make heuristic be similar to GCost.
-                    int priority = next.GCost + (PathNode.ManhattanHeuristic(next.VectorLocation,goal.VectorLocation) * _averageTileCost);
+                    int priority = next.GCost + (PathNode.ManhattanHeuristic(next.VectorLocation,goal.VectorLocation) * AverageTileCost);
                     Logger.Info($"A Star estimated heuristic {priority}");
                     IPathing.PriorityFrontier.Enqueue(next, priority);
                     IPathing.EndNode = next;
@@ -131,6 +128,8 @@ public class AStar : AlgorithmBase
             IPathing.PriorityFrontier.Clear();
             IPathing.ClosedList.Clear();
             IPathing.EndNode = null;
+            
+            StardewClient.debugNode.Clear();
         }
     }
 }

@@ -21,7 +21,7 @@ public class Pathfinder
     public async Task Goto(Goal goal, bool canDestroy = false, bool buildCollision = true)
     {
         AlgorithmBase.IPathing pathing = new AStar.Pathing();
-        
+
         if (buildCollision) pathing.BuildCollisionMap(BotBase.CurrentLocation);
         
         PathNode start = new PathNode(BotBase.Farmer.TilePoint.X, BotBase.Farmer.TilePoint.Y, null);
@@ -34,7 +34,10 @@ public class Pathfinder
         var controller = new CharacterController(new(), BotBase.Farmer, BotBase.CurrentLocation);
         controller.StartMoveCharacter(path,npc);
 
-        while (CharacterController.IsMoving()) {} // slightly jank way to get around MovingCharacter not being async
+        // slightly jank way to get around MovingCharacter not being async
+        while (CharacterController.IsMoving())
+        {
+        }
     }
 
     /// <summary>
@@ -57,7 +60,9 @@ public class Pathfinder
         var controller = new CharacterController(new(), BotBase.Farmer, BotBase.CurrentLocation);
         controller.StartMoveCharacter(path,npc as Monster,true);
 
-        while (CharacterController.IsMoving()) {}
+        while (CharacterController.IsMoving())
+        {
+        }
     }
 
     /// <summary>

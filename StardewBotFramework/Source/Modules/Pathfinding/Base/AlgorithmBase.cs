@@ -51,7 +51,7 @@ public class AlgorithmBase
                 Logger.Info($"{current.VectorLocation} checking parent {current.Parent.VectorLocation}");
                 current = current.Parent!;
             }
-
+            
             Logger.Info($"Ending RebuildPath");
             return correctPath;
         }
@@ -64,23 +64,13 @@ public class AlgorithmBase
             GameLocation location)
         {
             Logger.Info($"Current tile {currentNode.X},{currentNode.Y}");
-
-            if (goal.IsEnd(currentNode) || IPathing.CanEnd(currentNode,goal)) // put GoalReached here (I think)
-            {
-                Logger.Info($"Ending using CheckIfEnd function");
-                // _pathfinding.PathToEndPoint.Reverse(); // this is done as otherwise get ugly paths
-
-                EndNode = currentNode;
-                return true;
-            }
-
+            
             // We reduce by 1 to avoid pathfinding going along the side of the map
             if (currentNode.X > location.Map.DisplayWidth / Game1.tileSize - 1 ||
                 currentNode.Y > Game1.currentLocation.Map.DisplayHeight / Game1.tileSize - 1 ||
                 currentNode.X < -1 || currentNode.Y < -1)
             {
-                Logger.Info(
-                    $"Blocking this tile: {currentNode.X},{currentNode.Y}     display width {location.Map.DisplayWidth}   display height {location.Map.DisplayHeight}");
+                Logger.Info($"Blocking this tile due to off map: {currentNode.X},{currentNode.Y}");
                 return false;
             }
 
