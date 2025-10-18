@@ -1,3 +1,4 @@
+using StardewBotFramework.Source.Utilities;
 using StardewValley.Menus;
 
 namespace StardewBotFramework.Source.Modules.Menus;
@@ -6,27 +7,19 @@ namespace StardewBotFramework.Source.Modules.Menus;
 /// for <see cref="NamingMenu"/>, this is used in a few scenarios like naming horses, naming children and using signs.
 /// You can see all of its uses in the stardew source.
 /// </summary>
-public class NamingMenuInteraction
+public class NamingMenuInteraction : MenuHandler
 {
-	public NamingMenu Menu = null!;
-
-	public void setUI(NamingMenu menu)
+	public NamingMenu Menu
 	{
-		Menu = menu;
+		get => _menu as NamingMenu ?? throw new InvalidOperationException("Menu has not been initialized. Call either SetStoredMenu() or another method around setting UI first.");
+		private set => _menu = value;
 	}
 
-	public void ChangeName(string name)
-	{
-		Menu.textBox.Text = name;
-	}
+	public void setUI(NamingMenu menu) => Menu = menu;
 
-	public void DoneNaming()
-	{
-		Menu.receiveLeftClick(Menu.doneNamingButton.bounds.X,Menu.doneNamingButton.bounds.Y);
-	}
+	public void ChangeName(string name) => Menu.textBox.Text = name;
 
-	public void RandomizeName()
-	{
-		Menu.receiveLeftClick(Menu.randomButton.bounds.X,Menu.randomButton.bounds.Y);
-	}
+	public void DoneNaming() => LeftClick(Menu.doneNamingButton);
+
+	public void RandomizeName() => LeftClick(Menu.randomButton);
 }

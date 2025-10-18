@@ -1,42 +1,31 @@
 using StardewBotFramework.Debug;
+using StardewBotFramework.Source.Utilities;
 using StardewValley.Menus;
 
 namespace StardewBotFramework.Source.Modules.Menus;
 
-public class EndDayShippingMenu
+public class EndDayShippingMenu : MenuHandler
 {
-    private ShippingMenu? _ShippingMenu;
+    public ShippingMenu Menu
+    {
+        get => _menu as ShippingMenu ?? throw new InvalidOperationException("Menu has not been initialized. Call either SetStoredMenu() or another method around setting UI first.");
+        private set => _menu = value;
+    }
     
-    public void SetMenu(ShippingMenu shippingMenu)
-    {
-        _ShippingMenu = shippingMenu;
-    }
+    public void SetMenu(ShippingMenu shippingMenu) => Menu = shippingMenu;
 
-    public void AdvanceToNextDay()
-    {
-        if (_ShippingMenu is null) return;
-        _ShippingMenu.receiveLeftClick(_ShippingMenu.okButton.bounds.X + 5,_ShippingMenu.okButton.bounds.Y + 5);
-    }
+    public void AdvanceToNextDay() => LeftClick(Menu.okButton);
 
-    public void PressForwardArrow(bool back)
-    {
-        if (_ShippingMenu is null) return;
-        _ShippingMenu.receiveLeftClick(_ShippingMenu.forwardButton.bounds.X + 5, _ShippingMenu.forwardButton.bounds.Y + 5);
-    }
+    public void PressForwardArrow() => LeftClick(Menu.forwardButton);
 
-    public void PressBackArrow()
-    {
-        
-        if (_ShippingMenu is null) return;
-        _ShippingMenu.receiveLeftClick(_ShippingMenu.backButton.bounds.X + 5, _ShippingMenu.backButton.bounds.Y + 5);
-    }
+    public void PressBackArrow() => LeftClick(Menu.backButton);
+    
     public void OpenItemTypeMenu(int index)
     {
-        if (_ShippingMenu is null) return;
-        if (index > _ShippingMenu.categories.Count)
+        if (index > Menu.categories.Count)
         {
             Logger.Error($"{index} is larger than the amount of categories there are");
         }
-        _ShippingMenu.receiveLeftClick(_ShippingMenu.categories[index].bounds.X + 5,_ShippingMenu.categories[index].bounds.Y + 5);
+        LeftClick(Menu.categories[index]);
     }
 }

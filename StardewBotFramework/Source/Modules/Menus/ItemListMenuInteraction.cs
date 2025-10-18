@@ -1,41 +1,28 @@
+using StardewBotFramework.Source.Utilities;
 using StardewValley;
 using StardewValley.Menus;
 
 namespace StardewBotFramework.Source.Modules.Menus;
 
-public class ItemListMenuInteraction
+public class ItemListMenuInteraction : MenuHandler
 {
-	public ItemListMenu Menu = null!;
+	public ItemListMenu Menu
+	{
+		get => _menu as ItemListMenu ?? throw new InvalidOperationException("Menu has not been initialized. Call either SetStoredMenu() or another method around setting UI first.");
+		private set => _menu = value;
+	}
 	public int ItemPerPage => Menu.itemsPerCategoryPage;
 	// public int CurrentPage => BotBase.?.Helper.Reflection.GetField<int>(Menu, "currentTab").GetValue() ?? -1;
 
-	public void SetMenu(ItemListMenu menu)
-	{
-		Menu = menu;
-	}
+	public void SetMenu(ItemListMenu menu) => Menu = menu;
 
-	public void RemoveMenu()
-	{
-		Menu = null!;
-	}
+	public void RemoveMenu() => _menu = null;
 
-	public List<Item> GetItems()
-	{
-		return BotBase.GetItemListItems();
-	}
+	public List<Item> GetItems() => BotBase.GetItemListItems();
 
-	public void ClickOk()
-	{
-		Menu.receiveLeftClick(Menu.okButton.bounds.X,Menu.okButton.bounds.Y);
-	}
+	public void ClickOk() => LeftClick(Menu.okButton);
 	
-	public void ClickForward()
-	{
-		Menu.receiveLeftClick(Menu.forwardButton.bounds.X,Menu.forwardButton.bounds.Y);
-	}
+	public void ClickForward() => LeftClick(Menu.forwardButton);
 	
-	public void ClickBack()
-	{
-		Menu.receiveLeftClick(Menu.backButton.bounds.X,Menu.backButton.bounds.Y);
-	}
+	public void ClickBack() => LeftClick(Menu.backButton);
 }
