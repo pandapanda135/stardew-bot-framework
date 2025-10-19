@@ -312,7 +312,7 @@ internal sealed class ModEntry : Mod
     private void PlaceBuildingCommand(string arg,string[] args)
     {
         CarpenterMenu carpenterMenu = Game1.activeClickableMenu as CarpenterMenu;
-        _bot.FarmBuilding.SetCarpenterUI(carpenterMenu);
+        _bot.FarmBuilding.SetCarpenterUi(carpenterMenu);
         _bot.FarmBuilding.InteractWithButton(carpenterMenu.okButton);
         _bot.FarmBuilding.CreateBuilding(new Point(int.Parse(args[0]), int.Parse(args[1])));
     }

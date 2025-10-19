@@ -1,4 +1,5 @@
 using StardewBotFramework.Debug;
+using StardewBotFramework.Source.Utilities;
 using StardewValley;
 using StardewValley.Menus;
 using xTile.Dimensions;
@@ -18,52 +19,36 @@ namespace StardewBotFramework.Source.Modules;
     
 // The currency in which all items in the shop should be priced. The valid values are 0 (money), 1 (star tokens), 2 (Qi coins), and 4 (Qi gems).
 
-public class Shop
+public class Shop : MenuHandler
 {
-    public ShopMenu? _currentShop;
+    public ShopMenu Menu
+    {
+        get => _menu as ShopMenu ?? throw new InvalidOperationException("Menu has not been initialized. Call either SetStoredMenu() or another method around setting UI first.");
+        private set => _menu = value;
+    }
 
     /// <summary>
-    /// The amount of tabs in this shop. If this returns null then that means _currentShop is not set
+    /// The amount of tabs in this shop.
     /// </summary>
-    public int? TabAmount
-    {
-        get
-        {
-            if (_currentShop is not null)
-            {
-                return _currentShop.tabButtons.Count;
-            }
+    public int? TabAmount => Menu.tabButtons.Count;
 
-            return null;
-        }
-    }
-
-    public Dictionary<ISalable, ItemStockInformation> StockInformation
-    {
-        get
-        {
-            if (_currentShop is null) return new();
-            return _currentShop.itemPriceAndStock;
-        }
-    }
+    public Dictionary<ISalable, ItemStockInformation> StockInformation => Menu.itemPriceAndStock;
 
     /// <summary>
     /// Open selected shop menu, this will need to be called before anything else. If you are calling OpenShopUI this is done for you.
     /// </summary>
     /// <param name="shopMenu">Shop to open</param>
-    public void OpenShop(ShopMenu shopMenu)
-    {
-        _currentShop = shopMenu;
-    }
-
+    public void OpenShop(ShopMenu shopMenu) => Menu = shopMenu;
+    
     /// <summary>
     /// Close selected shop menu.
     /// </summary>
-    public void CloseShop()
+    /// <returns>This will return false if the current menu cannot be closed according to Menu.readyToClose</returns>
+    public bool CloseShop()
     {
-        if (_currentShop is null || !_currentShop.readyToClose()) return;
-        _currentShop.exitThisMenu();
-        _currentShop = null;
+        if (!Menu.readyToClose()) return false;
+        RemoveMenu();
+        return true;
     }
     
     /// <summary>
@@ -83,26 +68,27 @@ public class Shop
         OpenShop((Game1.activeClickableMenu as ShopMenu)!);
         return true;
     }
-
+    
     /// <summary>
     /// Buy an item from the shop based on it's corresponding index in the shop's UI.
     /// </summary>
     /// <param name="index">The index of item to buy.</param>
     /// <param name="quantity">Amount of item to buy.</param>
+    //TODO: Still need padding / bounds? 
     public void BuyItem(int index, int quantity)
     {
-        if (_currentShop is null) return;
-        
         if (index < 4)
         {
             for (int i = 0; i < quantity; i++)
-            { _currentShop.receiveLeftClick(_currentShop.forSaleButtons[index].bounds.X + 10, _currentShop.forSaleButtons[index].bounds.Y + 10); }
-
-            for (int i = 0; i < _currentShop.inventory.actualInventory.Count; i++)
             {
-                if (_currentShop.inventory.actualInventory[i] is null)
+                LeftClick(Menu.forSaleButtons[index].bounds.X + 10, Menu.forSaleButtons[index].bounds.Y + 10);
+            }
+
+            for (int i = 0; i < Menu.inventory.actualInventory.Count; i++)
+            {
+                if (Menu.inventory.actualInventory[i] is null)
                 {
-                    _currentShop.receiveLeftClick(_currentShop.inventory.inventory[i].bounds.X + 1, _currentShop.inventory.inventory[i].bounds.Y + 1);
+                    LeftClick(Menu.inventory.inventory[i].bounds.X + 1, Menu.inventory.inventory[i].bounds.Y + 1);
                 }
             }
             
@@ -112,22 +98,22 @@ public class Shop
         // use down arrow
         for (int i = index; i >= 4; i--)
         {
-            _currentShop.receiveLeftClick(_currentShop.downArrow.bounds.X, _currentShop.downArrow.bounds.Y);   
+            LeftClick(Menu.downArrow);   
         }
         
         // buy amount
-        int maxIndex = _currentShop.forSaleButtons.Count - 1;
+        int maxIndex = Menu.forSaleButtons.Count - 1;
         for (int i = 0; i < quantity; i++)
         {
             Logger.Info($"buying click {i}");
-            _currentShop.receiveLeftClick(_currentShop.forSaleButtons[maxIndex].bounds.X, _currentShop.forSaleButtons[maxIndex].bounds.Y);    
+            LeftClick(Menu.forSaleButtons[maxIndex]);    
         }
         
-        for (int i = 0; i < _currentShop.inventory.actualInventory.Count; i++)
+        for (int i = 0; i < Menu.inventory.actualInventory.Count; i++)
         {
-            if (_currentShop.inventory.actualInventory[i] is null)
+            if (Menu.inventory.actualInventory[i] is null)
             {
-                _currentShop.receiveLeftClick(_currentShop.inventory.inventory[i].bounds.X + 1, _currentShop.inventory.inventory[i].bounds.Y + 1);
+                LeftClick(Menu.inventory.inventory[i].bounds.X + 1, Menu.inventory.inventory[i].bounds.Y + 1);
             }
         }
         
@@ -135,7 +121,7 @@ public class Shop
         for (int i = index; i >= 4; i--)
         {
             Logger.Info($"using down arrow  i: {i}");
-            _currentShop.receiveLeftClick(_currentShop.upArrow.bounds.X, _currentShop.upArrow.bounds.Y);   
+            LeftClick(Menu.upArrow);   
         }
     }
 
@@ -146,15 +132,12 @@ public class Shop
     /// <param name="quantity">Amount of item to buy.</param>
     public void BuyItem(Item item, int quantity)
     {
-        if (_currentShop is null) return;
-        
-        for (int i = 0; i < _currentShop.forSale.Count; i++)
+        for (int i = 0; i < Menu.forSale.Count; i++)
         {
-            if (_currentShop.forSale[i].Name == item.Name)
-            {
-                BuyItem(i, quantity);
-                return;
-            }
+            if (Menu.forSale[i].Name != item.Name) continue;
+            
+            BuyItem(i, quantity);
+            return;
         }
     }
 
@@ -162,12 +145,7 @@ public class Shop
     /// Returns all items as their <see cref="ISalable"/> class 
     /// </summary>
     /// <returns>A list of all items for sale however is a shop has not been opened yet, it will return null</returns>
-    public List<ISalable> ListAllItems()
-    {
-        if (_currentShop is null) return new();
-        
-        return _currentShop.forSale;
-    }
+    public List<ISalable> ListAllItems() => Menu.forSale;
 
     /// <summary>
     /// The stats of the items on sale, this also includes the currency this shop accepts and the available items
@@ -177,16 +155,9 @@ public class Shop
     /// <returns>The stock info for each item in the shop as a dictionary. If a shop is not open everything will return the lowest possible value</returns>
     public Dictionary<ISalable,ItemStockInformation> ForSaleStats(out List<ISalable> items, out int currency)
     {
-        if (_currentShop is null)
-        {
-            currency = -1;
-            items = new List<ISalable>();
-            return new Dictionary<ISalable, ItemStockInformation>();
-        }
-        
-        currency = _currentShop.currency;
-        items = _currentShop.forSale;
-        return _currentShop.itemPriceAndStock;
+        currency = Menu.currency;
+        items = Menu.forSale;
+        return Menu.itemPriceAndStock;
     }
     
     /// <summary>
@@ -195,11 +166,9 @@ public class Shop
     /// <param name="newTab">index of new tab.</param>
     public void ChangeTab(int newTab)
     {
-        if (_currentShop is null) return;
+        if (Menu.tabButtons.Count == 0) return;
         
-        if (_currentShop.tabButtons.Count == 0) return;
-        
-        _currentShop.switchTab(newTab);
+        Menu.switchTab(newTab);
     }
     
     /// <summary>
@@ -209,22 +178,18 @@ public class Shop
     /// <returns>The amount the item has sold for. However, if this returns -1 it means there has been an issue with selling item</returns>
     public int SellBackItem(int index) // Item item
     {
-        if (_currentShop is null) return -1;
-        
-        if (_currentShop is null) return -1;
-
-        if (!_currentShop.CanBuyback())
+        if (!Menu.CanBuyback())
         {
             Logger.Error($"shop cannot buy back");
             return -1;
         }
 
-        List<ClickableComponent> inventory = _currentShop.inventory.inventory;
+        List<ClickableComponent> inventory = Menu.inventory.inventory;
 
-        int itemSalePrice = _currentShop.inventory.actualInventory[index].GetSalableInstance().sellToStorePrice();
-        int itemStackSize = _currentShop.inventory.actualInventory[index].Stack;
+        int itemSalePrice = Menu.inventory.actualInventory[index].GetSalableInstance().sellToStorePrice();
+        int itemStackSize = Menu.inventory.actualInventory[index].Stack;
         
-        _currentShop.receiveLeftClick(inventory[index].bounds.X,inventory[index].bounds.Y);
+        LeftClick(inventory[index]);
         
         return itemSalePrice * itemStackSize;
     }

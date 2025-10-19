@@ -20,12 +20,6 @@ public class BuyAnimalMenu : MenuHandler
 	
 	public void SetUI(PurchaseAnimalsMenu menu) => Menu = menu;
 
-	public void ExitStoreMenu()
-	{
-		Menu.exitThisMenu();
-		RemoveMenu();
-	}
-
 	public void ExitFarmMenu() => Menu.setUpForReturnToShopMenu();
 
 	public void SelectAnimal(ClickableTextureComponent cc) => LeftClick(cc);

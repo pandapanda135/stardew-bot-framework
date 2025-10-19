@@ -17,12 +17,6 @@ public class CraftingMenu : MenuHandler
 
 	public void SetUI(CraftingPage menu) => Menu = menu;
 
-	public void ExitUI()
-	{
-		Menu.exitThisMenu();
-		RemoveMenu();
-	}
-
 	public List<Dictionary<ClickableTextureComponent, CraftingRecipe>> GetAllItems() => Menu.pagesOfCraftingRecipes;
 
 	public Dictionary<ClickableTextureComponent, CraftingRecipe> GetPageComponents() => GetAllItems()[CurrentPage];

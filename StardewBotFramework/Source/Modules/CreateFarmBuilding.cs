@@ -1,68 +1,58 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using StardewBotFramework.Source.Modules.Menus;
 using StardewBotFramework.Source.Utilities;
 using StardewValley;
 using StardewValley.Buildings;
-using StardewValley.Enchantments;
 using StardewValley.GameData.Buildings;
 using StardewValley.Menus;
 using xTile.Dimensions;
 using Object = StardewValley.Object;
-using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace StardewBotFramework.Source.Modules;
 
-public class CreateFarmBuilding
+public class CreateFarmBuilding : CraftingMenu
 {
-    public CarpenterMenu? _carpenterMenu;
-    public BuildingSkinMenu? _buildingSkinMenu;
-
-    public Building Building
+    public CarpenterMenu CarpenterMenu
     {
-        get
-        {
-            if (_carpenterMenu is null) return new Building();
-            return _carpenterMenu.currentBuilding;
-        }
+        get => _menu as CarpenterMenu ?? throw new InvalidOperationException("Menu has not been initialized. Call either SetStoredMenu() or another method around setting UI first.");
+        private set => _menu = value;
+    }
+    public BuildingSkinMenu BuildingSkinMenu
+    {
+        get => _childMenu as BuildingSkinMenu ?? throw new InvalidOperationException("Menu has not been initialized. Call either SetStoredMenu() or another method around setting UI first.");
+        private set => _childMenu = value;
     }
 
-    public CarpenterMenu.BlueprintEntry? BlueprintEntry => _carpenterMenu?.Blueprint;
+    public Building Building => CarpenterMenu.currentBuilding;
+
+    public CarpenterMenu.BlueprintEntry? BlueprintEntry => CarpenterMenu.Blueprint;
     
-    public void SetCarpenterUI(CarpenterMenu menu)
-    {
-        _carpenterMenu = menu;
-    }
+    public void SetCarpenterUi(CarpenterMenu menu) => CarpenterMenu = menu;
 
-    public void SetBuildingUI(BuildingSkinMenu menu)
-    {
-        _buildingSkinMenu = menu;
-    }
-
+    public void SetSkinUi(BuildingSkinMenu menu) => BuildingSkinMenu = menu;
+    
     /// <summary>
     /// Change buildings current skin.
     /// </summary>
     /// <param name="skin"><see cref="BuildingSkinMenu.SkinEntry"/></param>
     public void ChangeSkin(BuildingSkinMenu.SkinEntry skin)
     {
-        if (_buildingSkinMenu is null || _carpenterMenu is null) return;
-        for (int i = 0; i < _buildingSkinMenu.Skins.Count; i++)
+        for (int i = 0; i < BuildingSkinMenu.Skins.Count; i++)
         {
-            if (_buildingSkinMenu.Skin == skin)
+            if (BuildingSkinMenu.Skin == skin)
             {
                 break;
             }
-            _buildingSkinMenu.receiveLeftClick(_buildingSkinMenu.NextSkinButton.bounds.X,_buildingSkinMenu.NextSkinButton.bounds.Y);
+            LeftClick(BuildingSkinMenu.NextSkinButton);
         }
-
-        _carpenterMenu.SetChildMenu(null);
     }
 
     public void ChangeBuilding(CarpenterMenu.BlueprintEntry blueprintEntry)
     {
-        if (_carpenterMenu is null) return;
-        if (blueprintEntry == _carpenterMenu.Blueprint) return;
-        int blueprintIndex = _carpenterMenu.Blueprints.IndexOf(blueprintEntry);
-        int changeIndex = blueprintIndex - _carpenterMenu.Blueprints.IndexOf(_carpenterMenu.Blueprint);
+        if (blueprintEntry == CarpenterMenu.Blueprint) return;
+        int blueprintIndex = CarpenterMenu.Blueprints.IndexOf(blueprintEntry);
+        int changeIndex = blueprintIndex - CarpenterMenu.Blueprints.IndexOf(CarpenterMenu.Blueprint);
         for (int i = 0; i < changeIndex; i++)
         {
             MoveBluePrintCarouselRight();
@@ -70,28 +60,13 @@ public class CreateFarmBuilding
     }
     
     /// <summary>
-    /// use button from <see cref="CarpenterMenu"/>
+    /// use button from <see cref="StardewValley.Menus.CarpenterMenu"/>
     /// </summary>
-    public void InteractWithButton(ClickableComponent button)
-    {
-        if (_carpenterMenu is null) return;
-        Rectangle bounds = button.bounds;
-        _carpenterMenu.receiveLeftClick(bounds.X + 5,bounds.Y + 5);
-    }
+    public void InteractWithButton(ClickableComponent button) => LeftClick(button);
 
-    public void MoveBluePrintCarouselLeft()
-    {
-        if (_carpenterMenu is null) return;
-        Rectangle bounds = _carpenterMenu.backButton.bounds;
-        _carpenterMenu.receiveLeftClick(bounds.X + 5,bounds.Y + 5);
-    }
+    public void MoveBluePrintCarouselLeft() => LeftClick(CarpenterMenu.backButton);
     
-    public void MoveBluePrintCarouselRight()
-    {
-        if (_carpenterMenu is null) return;
-        Rectangle bounds = _carpenterMenu.forwardButton.bounds;
-        _carpenterMenu.receiveLeftClick(bounds.X + 1,bounds.Y + 1);
-    }
+    public void MoveBluePrintCarouselRight() => LeftClick(CarpenterMenu.forwardButton);
 
     public void SetSelectedTile(Point tile)
     {
@@ -118,24 +93,23 @@ public class CreateFarmBuilding
     /// <returns>Will return true if, can build a building at tile location else false</returns>
     public bool CreateBuilding(Point tile)
     {
-        if (_carpenterMenu is null) return false;
         SetSelectedTile(tile);
         // tryToBuild uses oldMouseState
 
-        if (!CanPlaceBuilding(_carpenterMenu.currentBuilding))
+        if (!CanPlaceBuilding(CarpenterMenu.currentBuilding))
         {
             return false;
         }
         
-        bool tryToBuild = _carpenterMenu.tryToBuild();
+        bool tryToBuild = CarpenterMenu.tryToBuild();
         if (!tryToBuild)
         {
             return false;
         }
         
-        _carpenterMenu.ConsumeResources();
-        DelayedAction.functionAfterDelay(_carpenterMenu.returnToCarpentryMenuAfterSuccessfulBuild, 2000);
-        _carpenterMenu.freeze = true;
+        CarpenterMenu.ConsumeResources();
+        DelayedAction.functionAfterDelay(CarpenterMenu.returnToCarpentryMenuAfterSuccessfulBuild, 2000);
+        CarpenterMenu.freeze = true;
         return true;
     }
     
@@ -145,24 +119,19 @@ public class CreateFarmBuilding
     /// <param name="building">Building to select</param>
     public void SelectBuilding(Building building)
     {
-        if (_carpenterMenu is null) return;
-        var menu = new PurchaseAnimalsMenu(new List<Object>(),_carpenterMenu.TargetLocation);
+        var menu = new PurchaseAnimalsMenu(new List<Object>(),CarpenterMenu.TargetLocation);
         Location location = menu.GetTopLeftPixelToCenterBuilding(building);
         Game1.viewport.Location = location;
         Point tile = new Point(building.tileX.Value, building.tileY.Value);
         Point screenTile = TileUtilities.TileToScreen(new Vector2(tile.X, tile.Y));
         Game1.oldMouseState = new MouseState(screenTile.X, screenTile.Y, 0, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
-        _carpenterMenu.receiveLeftClick(screenTile.X,screenTile.Y);
+        LeftClick(screenTile.X,screenTile.Y);
     }
 
     /// <summary>
     /// The currently displayed blueprint's required resources
     /// </summary>
-    public List<BuildingMaterial> BluePrintResources()
-    {
-        if (_carpenterMenu is null) return new ();
-        return _carpenterMenu.Blueprint.BuildMaterials;
-    }
+    public List<BuildingMaterial> BluePrintResources() => CarpenterMenu.Blueprint.BuildMaterials;
 
     /// <summary>
     /// All blueprint's required resources 
@@ -170,9 +139,8 @@ public class CreateFarmBuilding
     /// <returns>key will be the translated display name of the blueprint</returns>
     public Dictionary<string, List<BuildingMaterial>> AllBluePrintResources()
     {
-        if (_carpenterMenu is null) return new ();
         Dictionary<string, List<BuildingMaterial>> buildingMaterials = new();
-        foreach (var blueprint in _carpenterMenu.Blueprints)
+        foreach (var blueprint in CarpenterMenu.Blueprints)
         {
             buildingMaterials.Add(blueprint.DisplayName,blueprint.BuildMaterials);
         }
@@ -183,41 +151,21 @@ public class CreateFarmBuilding
     /// <summary>
     /// Get the current building's resources this should be used when you are creating a building
     /// </summary>
-    public List<Item> CurrentBuildingResources()
-    {
-        if (_carpenterMenu is null) return new ();
-        return _carpenterMenu.ingredients;
-    }
+    public List<Item> CurrentBuildingResources() => CarpenterMenu.ingredients;
 
-    public Building BuildingSkin()
-    {
-        if (_buildingSkinMenu is null) return new Building();
-        return _buildingSkinMenu.Building;
-    }
-
-    public List<BuildingSkinMenu.SkinEntry> GetBuildingSkins()
-    {
-        if (_buildingSkinMenu is null) return new ();
-        return _buildingSkinMenu.Skins;
-    }
+    public Building SkinMenuBuiding() => BuildingSkinMenu.Building;
+    
+    public List<BuildingSkinMenu.SkinEntry> GetBuildingSkins() => BuildingSkinMenu.Skins;
 
     public void MoveCarousel(bool left)
     {
-        if (_buildingSkinMenu is null) return;
-        Rectangle bounds = _buildingSkinMenu.NextSkinButton.bounds;
-        if (left)
-        {
-            _buildingSkinMenu.receiveLeftClick(bounds.X + 5,bounds.Y + 5);
-        }
-        else
-        {
-            _buildingSkinMenu.receiveLeftClick(bounds.X + 5,bounds.Y + 5);
-        }
+        ClickableComponent cc = left ? BuildingSkinMenu.NextSkinButton : BuildingSkinMenu.PreviousSkinButton;
+        LeftClick(cc);
     }
 
-    public void ExitSkinMenu()
+    public void ConfirmSkinAndExit()
     {
-        if (_buildingSkinMenu is null) return;
-        _buildingSkinMenu.receiveLeftClick(_buildingSkinMenu.OkButton.bounds.X + 5,_buildingSkinMenu.OkButton.bounds.Y + 5);
+        LeftClick(BuildingSkinMenu.OkButton);
+        _childMenu = null;
     }
 }

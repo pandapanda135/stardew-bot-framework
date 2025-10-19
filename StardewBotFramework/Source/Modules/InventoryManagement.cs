@@ -1,4 +1,5 @@
 using Netcode;
+using StardewBotFramework.Source.Utilities;
 using StardewValley;
 using StardewValley.Inventories;
 using StardewValley.Menus;
@@ -8,7 +9,7 @@ using Logger = StardewBotFramework.Debug.Logger;
 
 namespace StardewBotFramework.Source.Modules;
 
-public class InventoryManagement
+public class InventoryManagement : MenuHandler
 {
     /// <summary>
     /// The max amount of items in the bots inventory
@@ -146,26 +147,19 @@ public class InventoryManagement
 
     #region UI
 
-    private InventoryPage? Page;
+    public InventoryPage Page
+    {
+        get => _menu as InventoryPage ?? throw new InvalidOperationException("Menu has not been initialized. Call either SetStoredMenu() or another method around setting UI first.");
+        private set => _menu = value;
+    }
 
-    public void setPage(InventoryPage page) => Page = page;
+    public void SetPage(InventoryPage page) => Page = page;
     
-    public void SelectSingleCursorItem(int index, bool playSound = false)
-    {
-        if (Page is null) return;
-        ClickableComponent cc = Page.inventory.inventory[index];
-        Page.receiveRightClick(cc.bounds.X,cc.bounds.Y, playSound);
-    }
+    public void SelectSingleCursorItem(int index, bool playSound = false) => RightClick(Page.inventory.inventory[index], playSound);
 
-    public void ClickOutOfBounds()
-    {
-        Page?.receiveLeftClick(0,0);
-    }
+    public void ClickOutOfBounds() => LeftClick(0,0);
 
-    public void ClickBin()
-    {
-        Page?.receiveLeftClick(Page.trashCan.bounds.X,Page.trashCan.bounds.Y);
-    }
+    public void ClickBin() => LeftClick(Page.trashCan);
 
     #endregion
 
