@@ -1,84 +1,55 @@
 using StardewBotFramework.Debug;
+using StardewBotFramework.Source.Utilities;
 using StardewValley;
 using StardewValley.Menus;
 
 namespace StardewBotFramework.Source.Modules.Menus;
 
-public class CraftingMenu
+public class CraftingMenu : MenuHandler
 {
-	public CraftingPage? Menu;
-
-	public int CurrentPage
+	public CraftingPage Menu
 	{
-		get
-		{
-			if (Menu is null) return -1;
-			return Menu.currentCraftingPage;
-		}
+		get => _menu as CraftingPage ?? throw new InvalidOperationException("Menu has not been initialized. Call either SetStoredMenu() or another method around setting UI first.");
+		private set => _menu = value;
 	}
 
-	public void SetUI(CraftingPage menu)
-	{
-		Menu = menu;
-	}
+	public int CurrentPage => Menu.currentCraftingPage;
 
-	public void ExitUI()
-	{
-		Menu?.exitThisMenu();
-		Menu = null;
-	}
+	public void SetUI(CraftingPage menu) => Menu = menu;
 
-	public List<Dictionary<ClickableTextureComponent, CraftingRecipe>> GetAllItems()
-	{
-		if (Menu is null) return new();
-		return Menu.pagesOfCraftingRecipes;
-	}
+	public List<Dictionary<ClickableTextureComponent, CraftingRecipe>> GetAllItems() => Menu.pagesOfCraftingRecipes;
 
-	public Dictionary<ClickableTextureComponent, CraftingRecipe> GetPageComponents()
-	{
-		if (Menu is null) return new();
-		return GetAllItems()[CurrentPage];
-	}
+	public Dictionary<ClickableTextureComponent, CraftingRecipe> GetPageComponents() => GetAllItems()[CurrentPage];
 
-	public List<CraftingRecipe> GetPageItems()
-	{
-		if (Menu is null) return new();
-		return Menu.pagesOfCraftingRecipes[CurrentPage].Values.ToList();
-	}
+	public List<CraftingRecipe> GetPageItems() => Menu.pagesOfCraftingRecipes[CurrentPage].Values.ToList();
 
 	public void SetPageUI()
 	{
 		GameMenu? gameMenu = new GameMenu();
 		Game1.activeClickableMenu = gameMenu;
-		gameMenu = Game1.activeClickableMenu as GameMenu;
-		gameMenu?.receiveLeftClick(gameMenu.tabs[4].bounds.X + 5,gameMenu.tabs[4].bounds.Y + 5);
+		LeftClick(gameMenu.tabs[4]);
 
-		if (gameMenu?.GetCurrentPage() is CraftingPage page)
+		if (gameMenu.GetCurrentPage() is CraftingPage page)
 		{
 			SetUI(page);
 		}
-		return;
 	}
 
 	public bool CraftItem(CraftingRecipe recipe,int amount = 1)
 	{
-		if (Menu is null) return false;
-
 		List<ClickableTextureComponent> components = GetPageComponents().Keys.ToList(); 
 		int index = GetPageItems().IndexOf(recipe);
 		for (int i = 0; i < amount; i++)
 		{
-			Menu.receiveLeftClick(components[index].bounds.X,components[index].bounds.Y);
+			LeftClick(components[index]);
 		}
 		return true;
 	}
 
 	public void ChangePage(bool up)
 	{
-		if (Menu is null) return;
-
 		Logger.Info($"changing page");
 		ClickableComponent cc = up ? Menu.upButton : Menu.downButton;
-		Menu.receiveLeftClick(cc.bounds.X,cc.bounds.Y);
+		LeftClick(cc);
 	}
 }

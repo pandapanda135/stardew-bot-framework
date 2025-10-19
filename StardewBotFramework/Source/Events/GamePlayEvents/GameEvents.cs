@@ -4,6 +4,7 @@ using StardewBotFramework.Source.Events.EventArgs;
 using StardewBotFramework.Source.Events.World_Events;
 using StardewBotFramework.Source.Modules;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
+using StardewBotFramework.Source.Utilities;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -12,32 +13,35 @@ using StardewValley.Monsters;
 
 namespace StardewBotFramework.Source.Events.GamePlayEvents;
 
+/// <summary>
+/// This will set up all events, this should be initialized before modules are.
+/// </summary>
 public class GameEvents
 {
-    public GameEvents(IModHelper _helper)
+    public GameEvents(IModHelper helper)
     {
-        _helper.Events.GameLoop.GameLaunched += OnGameLaunch;
-        _helper.Events.GameLoop.DayStarted += OnDayStarted;
-        _helper.Events.GameLoop.DayEnding += OnDayEnding;
-        _helper.Events.GameLoop.TimeChanged += OnTimeChanged;
-        _helper.Events.Display.MenuChanged += DisplayOnMenuChanged;
+        helper.Events.GameLoop.GameLaunched += OnGameLaunch;
+        helper.Events.GameLoop.DayStarted += OnDayStarted;
+        helper.Events.GameLoop.DayEnding += OnDayEnding;
+        helper.Events.GameLoop.TimeChanged += OnTimeChanged;
+        helper.Events.Display.MenuChanged += DisplayOnMenuChanged;
         
-        _helper.Events.Multiplayer.PeerConnected += OnPeerConnected;
-        _helper.Events.Multiplayer.PeerDisconnected += OnPeerDisconnected;
+        helper.Events.Multiplayer.PeerConnected += OnPeerConnected;
+        helper.Events.Multiplayer.PeerDisconnected += OnPeerDisconnected;
         
-        _helper.Events.Player.Warped += OnWarped;
-        _helper.Events.Player.InventoryChanged += OnInventoryChanged;
-        _helper.Events.Player.LevelChanged += OnLevelChanged;
+        helper.Events.Player.Warped += OnWarped;
+        helper.Events.Player.InventoryChanged += OnInventoryChanged;
+        helper.Events.Player.LevelChanged += OnLevelChanged;
         
-        _helper.Events.World.ObjectListChanged += OnObjectListChanged;
-        _helper.Events.World.NpcListChanged += OnNpcListChanged;
-        _helper.Events.World.DebrisListChanged += OnDebrisListChanged;
-        _helper.Events.World.FurnitureListChanged += OnFurnitureListChanged;
-        _helper.Events.World.BuildingListChanged += OnBuildingListChanged;
-        _helper.Events.World.TerrainFeatureListChanged += OnTerrainFeatureListChanged;
-        _helper.Events.World.LargeTerrainFeatureListChanged += OnLargeTerrainFeatureListChanged;
+        helper.Events.World.ObjectListChanged += OnObjectListChanged;
+        helper.Events.World.NpcListChanged += OnNpcListChanged;
+        helper.Events.World.DebrisListChanged += OnDebrisListChanged;
+        helper.Events.World.FurnitureListChanged += OnFurnitureListChanged;
+        helper.Events.World.BuildingListChanged += OnBuildingListChanged;
+        helper.Events.World.TerrainFeatureListChanged += OnTerrainFeatureListChanged;
+        helper.Events.World.LargeTerrainFeatureListChanged += OnLargeTerrainFeatureListChanged;
         
-        _helper.Events.GameLoop.UpdateTicking += FishingBar.Update;
+        helper.Events.GameLoop.UpdateTicking += FishingBar.Update;
         
         FishingBar.StaticCaughtFish += OnStaticCaughtFish;
         StaticChatMessageReceived += OnStaticChatMessageReceived;
@@ -46,9 +50,10 @@ public class GameEvents
         StaticOnOtherPlayerDeath += OnStaticOnOtherPlayerDeath;
         StaticHudMessageAdded += OnStaticHUDMessageAdded;
         StaticEventFinished += OnStaticEventFinished;
+        GameEvents._helper = helper;
     }
 
-    private static IModHelper? _helper;
+    public static IModHelper? _helper;
 
     public static void SetHelper(IModHelper helper)
     {

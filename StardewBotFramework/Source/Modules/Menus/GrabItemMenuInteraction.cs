@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using StardewBotFramework.Source.Utilities;
 using StardewValley;
 using StardewValley.Inventories;
 using StardewValley.Menus;
@@ -8,25 +9,17 @@ namespace StardewBotFramework.Source.Modules.Menus;
 /// <summary>
 /// This is for UIs that typically have a square above the inventory that you either take an item from or into e.g. the shipping bin
 /// </summary>
-public class GrabItemMenuInteraction
+public class GrabItemMenuInteraction : MenuHandler
 {
-    protected ItemGrabMenu? _menu;
+    public ItemGrabMenu Menu
+    {
+        get => _menu as ItemGrabMenu ?? throw new InvalidOperationException("Menu has not been initialized. Call either SetStoredMenu() or another method around setting UI first.");
+        private set => _menu = value;
+    }
     
-    public void SetUI(ItemGrabMenu menu)
-    {
-        _menu = menu;
-    }
-
-    public void RemoveUi()
-    {
-        _menu = null;
-    }
-
-    public IList<Item> GetItemsInMenu()
-    {
-        if (_menu is null) return new Inventory();
-        return _menu.ItemsToGrabMenu.actualInventory;
-    }
+    public void SetUI(ItemGrabMenu menu) => Menu = menu;
+    
+    public IList<Item> GetItemsInMenu() => Menu.ItemsToGrabMenu.actualInventory;
     
     /// <summary>
     /// Add item to this <see cref="ItemGrabMenu"/>
@@ -35,32 +28,28 @@ public class GrabItemMenuInteraction
     /// <returns>Will return false if this item cannot be added, else true.</returns>
     public bool AddItem(Item item)
     {
-        if (_menu is null) return false;
         if (!BotBase.Farmer.Items.Contains(item)) return false;
 
-        int itemIndex = _menu.ItemsToGrabMenu.actualInventory.IndexOf(item);
-        ClickableComponent cc = _menu.inventory.inventory[itemIndex];
-        _menu.receiveLeftClick(cc.bounds.X, cc.bounds.Y);
+        int itemIndex = Menu.ItemsToGrabMenu.actualInventory.IndexOf(item);
+        ClickableComponent cc = Menu.inventory.inventory[itemIndex];
+        LeftClick(cc);
         return true;
     }
 
     public void TakeItem(Item item)
     {
-        if (_menu is null) return;
-
-        int index = _menu.ItemsToGrabMenu.actualInventory.IndexOf(item);
+        int index = Menu.ItemsToGrabMenu.actualInventory.IndexOf(item);
         if (index == -1) return;
-        Rectangle rect = _menu.ItemsToGrabMenu.inventory[index].bounds;
+        Rectangle rect = Menu.ItemsToGrabMenu.inventory[index].bounds;
         
-        _menu.receiveLeftClick(rect.X + 5,rect.Y + 5);
+        LeftClick(rect.X + 5,rect.Y + 5);
     }
 
     public void ChangeColour(int selection)
     {
-        if (_menu is null) return;
-        if (!_menu.CanHaveColorPicker() || !_menu.colorPickerToggleButton.visible) return;
+        if (!Menu.CanHaveColorPicker() || !Menu.colorPickerToggleButton.visible) return;
 
-        ClickableComponent cc = _menu.discreteColorPickerCC[selection];
-        _menu.receiveLeftClick(cc.bounds.X,cc.bounds.Y);
+        ClickableComponent cc = Menu.discreteColorPickerCC[selection];
+        LeftClick(cc);
     }
 }

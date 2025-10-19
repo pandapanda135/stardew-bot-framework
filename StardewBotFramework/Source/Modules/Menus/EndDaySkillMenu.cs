@@ -1,47 +1,46 @@
+using StardewBotFramework.Source.Utilities;
 using StardewValley;
 using StardewValley.Menus;
 
 namespace StardewBotFramework.Source.Modules.Menus;
 
-public class EndDaySkillMenu
+public class EndDaySkillMenu : MenuHandler
 {
-    private LevelUpMenu? _levelUpMenu;
+    public LevelUpMenu Menu
+    {
+        get => _menu as LevelUpMenu ?? throw new InvalidOperationException("Menu has not been initialized. Call either SetStoredMenu() or another method around setting UI first.");
+        private set => _menu = value;
+    }
 
     public int CurrentSkill => BotBase.GetLevelUpMenuSkill();
     public int CurrentLevel => BotBase.GetLevelUpMenuLevel();
 
     public List<int> ProfessionsToChoose => BotBase.GetLevelUpMenuProfessions();
     
-    public void SetMenu(LevelUpMenu levelUpMenu)
-    {
-        _levelUpMenu = levelUpMenu;
-    }
-
+    public void SetMenu(LevelUpMenu levelUpMenu) => Menu = levelUpMenu;
+    
     public void SelectPerk(bool left)
     {
-        if (_levelUpMenu is null) return;
         if (left) // we do this because this uses mouse state instead of how everything else in the game works.
         {
-            Game1.player.professions.Add(ProfessionsToChoose[0]);
-            _levelUpMenu.getImmediateProfessionPerk(ProfessionsToChoose[0]);
+            BotBase.Farmer.professions.Add(ProfessionsToChoose[0]);
+            Menu.getImmediateProfessionPerk(ProfessionsToChoose[0]);
         }
         else
         {
-            Game1.player.professions.Add(ProfessionsToChoose[1]);
-            _levelUpMenu.getImmediateProfessionPerk(ProfessionsToChoose[1]);
+            BotBase.Farmer.professions.Add(ProfessionsToChoose[1]);
+            Menu.getImmediateProfessionPerk(ProfessionsToChoose[1]);
         }
 
-        _levelUpMenu.isActive = false;
-        _levelUpMenu.informationUp = false;
-        _levelUpMenu.isProfessionChooser = false;
-        _levelUpMenu.RemoveLevelFromLevelList();
+        Menu.isActive = false;
+        Menu.informationUp = false;
+        Menu.isProfessionChooser = false;
+        Menu.RemoveLevelFromLevelList();
     }
 
     public void SelectOkButton()
     {
-        if (_levelUpMenu is null) return;
-        _levelUpMenu.okButtonClicked();
-        // _levelUpMenu.receiveLeftClick(_levelUpMenu.okButton.bounds.X + 5,_levelUpMenu.okButton.bounds.Y + 5);
-        _levelUpMenu = null;
+        Menu.okButtonClicked();
+        _menu = null;
     }
 }

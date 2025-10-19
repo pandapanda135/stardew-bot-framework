@@ -1,43 +1,42 @@
 using Netcode;
+using StardewBotFramework.Source.Utilities;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Quests;
 
 namespace StardewBotFramework.Source.Modules.Menus;
 
-public class QuestLogInteraction
+public class QuestLogInteraction : MenuHandler
 {
-	private static QuestLog? _currentMenu = null;
-
+	public QuestLog Menu
+	{
+		get => _menu as QuestLog ?? throw new InvalidOperationException("Menu has not been initialized. Call either SetStoredMenu() or another method around setting UI first.");
+		private set => _menu = value;
+	}
+	
 	/// <summary>
 	/// The quests the bot has access to.
 	/// </summary>
 	public NetObjectList<Quest> Quests => Game1.player.questLog;
 
-	public void SetMenu(QuestLog? menu)
-	{
-		_currentMenu = menu;
-	}
+	public void SetMenu(QuestLog menu) => Menu = menu;
 	
 	public void OpenLog()
 	{
+		QuestLog log = new QuestLog();
 		Game1.activeClickableMenu = new QuestLog();
-		SetMenu(Game1.activeClickableMenu as QuestLog);
+		SetMenu(log);
 	}
 
-	public void CloseLog()
-	{
-		if (_currentMenu is null) return;
-		ClickableComponent button = _currentMenu.upperRightCloseButton;
-		_currentMenu.receiveLeftClick(button.bounds.X,button.bounds.Y);
-	}
+	public void CloseLog() => LeftClick(Menu.upperRightCloseButton);
 
-	public void CloseQuest()
-	{
-		if (_currentMenu is null) return;
-		ClickableComponent button = _currentMenu.backButton;
-		_currentMenu.receiveLeftClick(button.bounds.X,button.bounds.Y);
-	}
+	public void CloseQuest() => LeftClick(Menu.backButton);
+
+	public void NextRightPage() => LeftClick(Menu.forwardButton);
+
+	public void NextLeftPage() => LeftClick(Menu.backButton);
+
+	public void GetReward() => LeftClick(Menu.rewardBox);
 	
 	/// <summary>
 	/// This must be between 0-5, as that is the amount of quests that can be shown on one page.
@@ -46,41 +45,12 @@ public class QuestLogInteraction
 	/// <returns>This will return false if you gave an invalid index, or you have not opened quest log through OpenLog or set menu.</returns>
 	public bool OpenQuestIndex(int index)
 	{
-		if (index >= QuestLog.questsPerPage || index < 0 || _currentMenu is null)
+		if (index >= QuestLog.questsPerPage || index < 0)
 		{
 			return false;
 		}
-
-		ClickableComponent questButton = _currentMenu.questLogButtons[index]; 
-		_currentMenu.receiveLeftClick(questButton.bounds.X + 2,questButton.bounds.Y + 2);
+		
+		LeftClick(Menu.questLogButtons[index]);
 		return true;
-	}
-
-	public void NextRightPage()
-	{
-		if (_currentMenu is null)
-		{
-			return;
-		}
-		ClickableComponent button = _currentMenu.forwardButton;
-		_currentMenu.receiveLeftClick(button.bounds.X + 2,button.bounds.Y + 2);
-	}
-
-	public void NextLeftPage()
-	{
-		if (_currentMenu is null)
-		{
-			return;
-		}
-		ClickableComponent button = _currentMenu.backButton;
-		_currentMenu.receiveLeftClick(button.bounds.X + 2,button.bounds.Y + 2);
-	}
-
-	public void GetReward()
-	{
-		if (_currentMenu is null) return;
-
-		ClickableComponent rewardButton = _currentMenu.rewardBox;
-		_currentMenu.receiveLeftClick(rewardButton.bounds.X + 2,rewardButton.bounds.Y + 2);
 	}
 }

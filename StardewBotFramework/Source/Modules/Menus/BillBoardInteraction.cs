@@ -1,21 +1,21 @@
-using System.Net.Http.Headers;
+using StardewBotFramework.Source.Utilities;
 using StardewValley;
 using StardewValley.Menus;
 
-namespace StardewBotFramework.Source.Modules;
+namespace StardewBotFramework.Source.Modules.Menus;
 
-public class BillBoardInteraction
+public class BillBoardInteraction : MenuHandler
 {
-	public Billboard? Menu;
-
-	public void SetMenu(Billboard billboard)
+	public Billboard Menu
 	{
-		Menu = billboard;
+		get => _menu as Billboard ?? throw new InvalidOperationException("Menu has not been initialized. Call either SetStoredMenu() or another method around setting UI first.");
+		private set => _menu = value;
 	}
+
+	public void SetMenu(Billboard billboard) => Menu = billboard;
 
 	public Dictionary<int,Billboard.BillboardDay> GetCalendar()
 	{
-		if (Menu is null) return new();
 		if (Menu.acceptQuestButton is null || Menu.acceptQuestButton.visible)
 		{
 			return new();
@@ -28,7 +28,7 @@ public class BillBoardInteraction
 		title = "";
 		description = "";
 		objective = "";
-		if (Menu is null || Menu.acceptQuestButton is null || !Menu.acceptQuestButton.visible) return;
+		if (Menu.acceptQuestButton is null || !Menu.acceptQuestButton.visible) return;
 
 		title = Game1.questOfTheDay.questTitle;
 		description = Game1.questOfTheDay.questDescription;
@@ -41,20 +41,9 @@ public class BillBoardInteraction
 	/// <returns>Return null, if quest cannot be accepted, else false</returns>
 	public bool AcceptDailyQuest()
 	{
-		if (Menu is null) return false;
 		if (Menu.acceptQuestButton is null || !Menu.acceptQuestButton.visible) return false;
 		
 		Menu.receiveLeftClick(Menu.acceptQuestButton.bounds.X,Menu.acceptQuestButton.bounds.Y);
 		return true;
-	}
-
-	/// <summary>
-	/// Exit the current menu
-	/// </summary>
-	public void ExitMenu()
-	{
-		if (Menu is null) return;
-		Menu.exitThisMenu();
-		Menu = null;
 	}
 }

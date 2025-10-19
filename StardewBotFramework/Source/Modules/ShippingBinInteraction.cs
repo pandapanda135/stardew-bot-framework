@@ -74,17 +74,15 @@ public class ShippingBinInteraction : GrabItemMenuInteraction
 
     public Item? GrabLastItem()
     { 
-        if (_menu is null) return null;
-        
-        ClickableComponent cc = _menu.lastShippedHolder;
+        ClickableComponent cc = Menu.lastShippedHolder;
         
         Item? grabItem = GetLastItem();
         if (grabItem is null) return null;
         
-        _menu.receiveLeftClick(cc.bounds.X, cc.bounds.Y);
+        LeftClick(cc);
 
         int emptyIndex = InventoryUtilities.GetFirstEmptySlot(BotBase.Farmer.Items);
-        _menu.receiveLeftClick(_menu.inventory.inventory[emptyIndex].bounds.X, _menu.inventory.inventory[emptyIndex].bounds.Y);
+        LeftClick(Menu.inventory.inventory[emptyIndex]);
         return grabItem;
     }
 
@@ -93,8 +91,6 @@ public class ShippingBinInteraction : GrabItemMenuInteraction
     /// </summary>
     public void ShipMultipleItems(Item[] items)
     {
-        if (_menu is null) return;
-        
         foreach (var item in items)
         {
             AddItem(item);
