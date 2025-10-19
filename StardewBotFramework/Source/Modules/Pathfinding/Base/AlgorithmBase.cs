@@ -57,27 +57,27 @@ public class AlgorithmBase
         }
 
         /// <summary>
-        /// This will do checks to the node to check for conditions these include: if it is at the end, if it is larger than map 
+        /// This will do checks to the node to check for conditions these include: if it is larger than map and if it is present in the ClosedList 
         /// </summary>
-        /// <returns>will return true for either is end or if it is not in ClosedList yet else will return false for if it is larger than map or if already in ClosedList</returns>
-        public static bool NodeChecks(PathNode currentNode, PathNode startNode, Goal goal,
+        /// <returns>will return true for if it is not in ClosedList yet else will return false for if it is larger than map or if already in ClosedList</returns>
+        public static bool NodeChecks(PathNode currentNode,
             GameLocation location)
         {
             Logger.Info($"Current tile {currentNode.X},{currentNode.Y}");
             
-            // We reduce by 1 to avoid pathfinding going along the side of the map
-            if (currentNode.X > location.Map.DisplayWidth / Game1.tileSize - 1 ||
-                currentNode.Y > Game1.currentLocation.Map.DisplayHeight / Game1.tileSize - 1 ||
+            // look into if removing 1 from the greater than check is needed anywhere as I don't think it is right now
+            if (currentNode.X > (location.Map.DisplayWidth / Game1.tileSize) ||
+                currentNode.Y > (location.Map.DisplayHeight / Game1.tileSize) ||
                 currentNode.X < -1 || currentNode.Y < -1)
             {
                 Logger.Info($"Blocking this tile due to off map: {currentNode.X},{currentNode.Y}");
                 return false;
             }
 
+            // if (currentNode.Equals(startNode)) return false;
             // check if node == current and node is not start if none return true else false
-            return !Equals(
-                ClosedList.Where(node => node.X == currentNode.X && node.Y == currentNode.Y && !node.Equals(startNode)),
-                ImmutableList<PathNode>.Empty);
+            return ClosedList.All(node => node.VectorLocation != currentNode.VectorLocation);
+            // return true;
         }
 
         /// <summary>
@@ -89,38 +89,16 @@ public class AlgorithmBase
             switch (goal)
             {
                 case Goal.GoalPosition:
-                    if (goal.IsEnd(currentNode))
-                    {
-                        return true;
-                    }
-                    break;
+                        return goal.IsEnd(currentNode);
                 case Goal.GoalNearby goalNearby: //TODO: maybe make cardinal optional as it being false is better for movement but doesn't work for using items
-                    if (goalNearby.IsInEndRadius(currentNode, goalNearby.Radius,cardinal))
-                    {
-                        return true;
-                    }
-                    break;
+                    return goalNearby.IsInEndRadius(currentNode, goalNearby.Radius,cardinal);
                 case Goal.GoalDynamic goalDynamic:
-                    if (goalDynamic.IsInEndRadius(currentNode, goalDynamic.Radius,cardinal))
-                    {
-                        return true;
-                    }
-                    break;
+                    return goalDynamic.IsInEndRadius(currentNode, goalDynamic.Radius, cardinal);
                 case Goal.GetToTile getToTile:
-                    if (getToTile.IsInEndRadius(currentNode, getToTile.Radius,cardinal))
-                    {
-                        return true;
-                    }
-                    break;
+                    return getToTile.IsInEndRadius(currentNode, getToTile.Radius, cardinal);
                 default:
-                    if (goal.IsEnd(currentNode))
-                    {
-                        return true;
-                    }
-                    break;
+                    return goal.IsEnd(currentNode);
             }
-
-            return false;
         }
 
         /// <summary>

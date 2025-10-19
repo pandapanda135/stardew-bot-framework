@@ -57,7 +57,7 @@ public class BreadthFirstSearch : AlgorithmBase
 
                 PathNode current = IPathing.Frontier.Dequeue(); // issue with going through same tile multiple times (This might actually be fine according to some stuff I've read I'll keep it here though)
 
-                if (!IPathing.NodeChecks(current, startNode, goal, location)) continue;
+                if (!IPathing.NodeChecks(current, location)) continue;
 
                 IPathing.ClosedList.Add(current);
 

@@ -23,6 +23,8 @@ public static class CsvWriter
 		for (int i = 0; i < values.Keys.Count; i++)
 		{
 			string key = $"{values.Keys.ToList()[i]},";
+			// remove unused keys
+			if (values[values.Keys.ToList()[i]].Count == 0) continue;
 			if (values.Keys.ToList()[i].Contains(','))
 			{
 				key = $"\"{key}\"";
@@ -51,6 +53,7 @@ public static class CsvWriter
 			builder.AppendLine(line);
 		}
 		
+		Logger.Info($"Writing: {path}");
 		File.AppendAllText(path, builder.ToString());
 	}
 }

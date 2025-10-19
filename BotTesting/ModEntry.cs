@@ -69,7 +69,7 @@ internal sealed class ModEntry : Mod
 
     private void GameLoopOnUpdateTicking(object? sender, UpdateTickingEventArgs e)
     {
-        PathfindPerformace.TaskDispatcher.RunPending();
+        PathfindPerformance.TaskDispatcher.RunPending();
     }
 
     private void BotOnBotWarped(object? sender, BotWarpedEventArgs e)
@@ -285,7 +285,7 @@ internal sealed class ModEntry : Mod
         }
         else if (e.Button == SButton.Delete)
         {
-            await PathfindPerformace.Test(new Goal.GoalPosition((int)Game1.currentCursorTile.X,(int)Game1.currentCursorTile.Y),10);
+            await PathfindPerformance.Test(new Goal.GoalPosition((int)Game1.currentCursorTile.X,(int)Game1.currentCursorTile.Y),5);
         }
     }
 

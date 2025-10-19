@@ -30,14 +30,15 @@ public class AStar : AlgorithmBase
         private Stack<PathNode> RunAStar(PathNode startPoint, Goal goal, GameLocation location,int limit, bool canDestroyObjects)
         {
             ClearVariables();
-            
-            PathNode startNode = new PathNode(startPoint.X, startPoint.Y, null);
-            int increase = 0;
 
-            IPathing.PriorityFrontier.Enqueue(startNode, 0);
-            IPathing.ClosedList.Add(startNode);
+            startPoint.Parent = null;
             
-            SerializableDictionary<Vector2, Object> locationObjects = new();
+            int increase = 0;
+            IPathing.PriorityFrontier.Enqueue(startPoint, 0);
+            // may need this later so will keep for now
+            // IPathing.ClosedList.Add(startPoint);
+            
+            Dictionary<Vector2, Object> locationObjects = new();
             
             if (canDestroyObjects)
             {
@@ -58,7 +59,7 @@ public class AStar : AlgorithmBase
                 }
                 else
                 {
-                    Logger.Info($"goal is not an available tile");
+                    Logger.Warning($"goal is not an available tile");
                     return new Stack<PathNode>();    
                 }
             }
@@ -73,7 +74,7 @@ public class AStar : AlgorithmBase
 
                 PathNode current = IPathing.PriorityFrontier.Dequeue();
 
-                if (!IPathing.NodeChecks(current,startNode,goal, location)) continue;
+                if (!IPathing.NodeChecks(current, location)) continue;
                 
                 IPathing.ClosedList.Add(current);
                 
@@ -88,11 +89,13 @@ public class AStar : AlgorithmBase
                 Logger.Info($"this is current: {current.VectorLocation}");
                 // Neighbour search
                 Queue<PathNode> neighbours = IPathing.Graph.Neighbours(current);
-                foreach (var next in neighbours.Where(node => !IPathing.ClosedList.Contains(node) && !IPathing.collisionMap.IsBlocked(node.X, node.Y) 
-                            || canDestroyObjects && locationObjects.ContainsKey(node.VectorLocation.ToVector2())))
+                foreach (var next in neighbours.Where(node => 
+                             IPathing.ClosedList.All(n => n.VectorLocation != node.VectorLocation) 
+                             && !IPathing.collisionMap.IsBlocked(node.X, node.Y) || canDestroyObjects
+                             && locationObjects.ContainsKey(node.VectorLocation.ToVector2())))
                 {
                     int newCumulative = current.GCost + next.Cost;
-                    Logger.Info($"this is new cost at start: {newCumulative}   next.cost: {next.Cost}    contains: {IPathing.PriorityFrontier.Contains(next)}");
+                    Logger.Info($"this is new cost at start: {newCumulative}   next.cost: {next.Cost}");
                     
                     if (IPathing.PriorityFrontier.Contains(next) && newCumulative >= next.GCost) continue;
                     StardewClient.debugNode.Add(next);
@@ -105,20 +108,18 @@ public class AStar : AlgorithmBase
                     }
 
                     next.GCost = newCumulative;
-                    Logger.Info($"new cost after cost: {newCumulative}   tile cost: {next.Cost}");
                     // we weight heuristic to find a path quicker, this may lead to more inefficient paths though.
                     // Also multiply to make heuristic be similar to GCost.
                     int priority = next.GCost + (PathNode.ManhattanHeuristic(next.VectorLocation,goal.VectorLocation) * AverageTileCost);
                     Logger.Info($"A Star estimated heuristic {priority}");
                     IPathing.PriorityFrontier.Enqueue(next, priority);
-                    IPathing.EndNode = next;
                 }
 
                 increase++;
             }
             
             Logger.Info($"AStar about to return");
-            return IPathing.RebuildPath(startNode, goal,IPathing.EndNode);
+            return IPathing.RebuildPath(startPoint, goal,IPathing.EndNode);
         }
 
         #endregion
@@ -128,8 +129,6 @@ public class AStar : AlgorithmBase
             IPathing.PriorityFrontier.Clear();
             IPathing.ClosedList.Clear();
             IPathing.EndNode = null;
-            
-            StardewClient.debugNode.Clear();
         }
     }
 }
