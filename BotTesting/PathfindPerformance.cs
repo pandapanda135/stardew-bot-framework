@@ -16,7 +16,7 @@ namespace BotTesting;
 /// </summary>
 public static class PathfindPerformance
 {
-	public static async Task Test(Goal goal, int amount, bool includeCollision = true, bool pathfinding = true,
+	public static async Task TestMethods(Goal goal, int amount, bool includeCollision = true, bool pathfinding = true,
 		bool controller = false)
 	{
 		TaskDispatcher.Initialize();
@@ -76,7 +76,7 @@ public static class PathfindPerformance
 	private static KeyValuePair<string, Stopwatch> Collision(AlgorithmBase.IPathing pathing)
 	{
 		var collision = Stopwatch.StartNew();
-		AlgorithmBase.IPathing.collisionMap = new CollisionMap();
+		AlgorithmBase.IPathing.CollisionMap = new CollisionMap();
 		pathing.BuildCollisionMap(Game1.currentLocation);
 		collision.Stop();
 		return new("Collision", collision);

@@ -1,10 +1,9 @@
 using Microsoft.Xna.Framework;
-using StardewBotFramework.Debug;
 using StardewValley;
 
 namespace StardewBotFramework.Source.Modules.Pathfinding.Base;
 
-// possibly move these all to separate files in a separate directory? 
+// possibly move these all to separate files in a separate directory?
 public class Goal
 {
     public int X;
@@ -19,7 +18,7 @@ public class Goal
     /// <returns>estimated distance to end</returns>
     public int ManhattanHeuristic(PathNode node)
     {
-        return Math.Abs(X - node.X) + Math.Abs(Y - node.Y);
+        return Math.Abs(node.X - X) + Math.Abs(node.Y - Y);
     }
 
     /// <summary>
@@ -27,19 +26,17 @@ public class Goal
     /// </summary>
     /// <param name="node">The node you want to now if it is end</param>
     /// <returns>true if end otherwise false </returns>
-    public bool IsEnd(PathNode node)
+    private bool IsEnd(PathNode node)
     {
-        if (VectorLocation == node.VectorLocation) return true;
-        
-        return false;
+        return VectorLocation == node.VectorLocation;
     }
 
-    public bool IsInEndRadius(PathNode node, int radius, bool cardinal = false)
+    private bool IsInEndRadius(PathNode node, int radius, bool cardinal = false)
     {
-        return IsInEndRadius(new Point(node.X, node.Y), radius, cardinal);
+        return IsInEndRadius(node.VectorLocation, radius, cardinal);
     }
     
-    public bool IsInEndRadius(Point node,int radius,bool cardinal = false)
+    private bool IsInEndRadius(Point node,int radius,bool cardinal = false)
     {
         if (cardinal && !(node.X != X && node.Y == Y ||
                          node.X == X && node.Y != Y))
@@ -49,7 +46,11 @@ public class Goal
         
         return Math.Abs(node.X - X) <= radius && Math.Abs(node.Y - Y) <= radius;
     }
-    
+
+    public virtual bool CanEnd(PathNode node, bool cardinal)
+    {
+        return VectorLocation == node.VectorLocation;
+    }
     /// <summary>
     /// A specific position the bot should stand on.
     /// </summary>
@@ -60,6 +61,8 @@ public class Goal
             X = x;
             Y = y;
         }
+
+        public override bool CanEnd(PathNode node, bool cardinal) => IsEnd(node);
     }
 
     /// <summary>
@@ -67,14 +70,16 @@ public class Goal
     /// </summary>
     public class GoalNearby : Goal
     {
-        public int Radius;
+        private readonly int _radius;
 
         public GoalNearby(int x, int y, int radius)
         {
             X = x;
             Y = y;
-            Radius = radius;
+            _radius = radius;
         }
+
+        public override bool CanEnd(PathNode node, bool cardinal) => IsInEndRadius(node, _radius, cardinal);
     }
 
     /// <summary>
@@ -82,13 +87,15 @@ public class Goal
     /// </summary>
     public class GetToTile : Goal
     {
-        public int Radius = 1;
+        private readonly int _radius = 1;
         
         public GetToTile(int x,int y)
         {
             X = x;
             Y = y;
         }
+
+        public override bool CanEnd(PathNode node, bool cardinal) => IsInEndRadius(node, _radius, cardinal);
     }
 
     /// <summary>
@@ -96,15 +103,17 @@ public class Goal
     /// </summary>
     public class GoalDynamic : Goal
     {
-        public Character character;
-        public int Radius;
+        public readonly Character Character;
+        private readonly int _radius;
 
-        public GoalDynamic(Character _character, int range)
+        public GoalDynamic(Character character, int range)
         {
-            X = _character.TilePoint.X;
-            Y = _character.TilePoint.Y;
-            character = _character;
-            Radius = range;
+            X = character.TilePoint.X;
+            Y = character.TilePoint.Y;
+            Character = character;
+            _radius = range;
         }
+
+        public override bool CanEnd(PathNode node, bool cardinal) => IsInEndRadius(Character.TilePoint, _radius, cardinal);
     }
 }

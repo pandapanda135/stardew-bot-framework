@@ -31,6 +31,7 @@ public class AStar : AlgorithmBase
         {
             ClearVariables();
 
+            // Doesn't happen with Pathfinder, but it could if some calls this directly
             startPoint.Parent = null;
             
             int increase = 0;
@@ -52,7 +53,7 @@ public class AStar : AlgorithmBase
             }
 
             // check if goal is blocked before pathfinding
-            if (IPathing.collisionMap.IsBlocked(goal.X, goal.Y))
+            if (IPathing.CollisionMap.IsBlocked(goal.X, goal.Y))
             {
                 if (goal is Goal.GoalNearby or Goal.GetToTile or Goal.GoalDynamic) // should probably check radius
                 {
@@ -91,17 +92,17 @@ public class AStar : AlgorithmBase
                 Queue<PathNode> neighbours = IPathing.Graph.Neighbours(current);
                 foreach (var next in neighbours.Where(node => 
                              IPathing.ClosedList.All(n => n.VectorLocation != node.VectorLocation) 
-                             && !IPathing.collisionMap.IsBlocked(node.X, node.Y) || canDestroyObjects
-                             && locationObjects.ContainsKey(node.VectorLocation.ToVector2())))
+                             && !IPathing.CollisionMap.IsBlocked(node.X, node.Y)
+                             || canDestroyObjects && locationObjects.ContainsKey(node.VectorLocation.ToVector2())))
                 {
                     int newCumulative = current.GCost + next.Cost;
                     Logger.Info($"this is new cost at start: {newCumulative}   next.cost: {next.Cost}");
                     
                     if (IPathing.PriorityFrontier.Contains(next) && newCumulative >= next.GCost) continue;
                     StardewClient.debugNode.Add(next);
-                    
+       
                     // ugly but it works
-                    if (canDestroyObjects && IPathing.collisionMap.IsBlocked(next.X,next.Y))
+                    if (canDestroyObjects && IPathing.CollisionMap.IsBlocked(next.X,next.Y))
                     {
                         if (DestroyLitterObject.IsDestructible(locationObjects[next.VectorLocation.ToVector2()]))
                             next.Destroy = true;
@@ -109,8 +110,8 @@ public class AStar : AlgorithmBase
 
                     next.GCost = newCumulative;
                     // we weight heuristic to find a path quicker, this may lead to more inefficient paths though.
-                    // Also multiply to make heuristic be similar to GCost.
-                    int priority = next.GCost + (PathNode.ManhattanHeuristic(next.VectorLocation,goal.VectorLocation) * AverageTileCost);
+                    // Also multiply to make heuristic be similar to GCost. This stops issues like waving in and out of a straight line.
+                    int priority = next.GCost + (goal.ManhattanHeuristic(next) * AverageTileCost);
                     Logger.Info($"A Star estimated heuristic {priority}");
                     IPathing.PriorityFrontier.Enqueue(next, priority);
                 }

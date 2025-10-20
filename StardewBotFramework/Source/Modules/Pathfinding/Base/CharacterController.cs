@@ -116,7 +116,6 @@ public class CharacterController : PathFindController
 
 		if (_pausedTimer < MaxPauseTime)
 		{
-			Logger.Info($"standard return false");
 			return false;
 		}
 		
@@ -158,14 +157,14 @@ public class CharacterController : PathFindController
 		Character.controller = this;
 		
 		Logger.Info($"setting move");
-		moveCharacter(Game1.currentGameTime);
+		// remove temporarily to test if causes stuttering
+		// moveCharacter(Game1.currentGameTime);
 	}
 	
 	private static bool _recalculatingPath;
 	// different naming convention so we can override PathFindController's moveCharacter
 	protected override void moveCharacter(GameTime time) // TODO: figure out why _character.movePosition does not change character's animation.
 	{
-		Logger.Info($"move character");
 		if (_recalculatingPath) return;
 		
 		if (BotBase.Farmer.UsingTool) return; // check if animation running
@@ -243,6 +242,7 @@ public class CharacterController : PathFindController
 
 		if (_currentLocation is not MovieTheater)
 		{
+			// TODO: had a moment where this didn't work for pet, idk why.
 			var characters = _currentLocation.characters.Where(npc => npc.GetBoundingBox()
 				.Intersects(Character.GetBoundingBox())).ToList(); // probably don't need  && npc.isMoving()
 			if (characters.Count > 0)
@@ -250,7 +250,7 @@ public class CharacterController : PathFindController
 				Logger.Warning($"Ran into character");
 				foreach (var npc in characters)
 				{
-					AlgorithmBase.IPathing.collisionMap.AddBlockedTile(npc.TilePoint.X, npc.TilePoint.Y);
+					AlgorithmBase.IPathing.CollisionMap.AddBlockedTile(npc.TilePoint.X, npc.TilePoint.Y);
 				}
 
 				PathNode endNode = _endPath.ToList()[_endPath.Count - 1];
@@ -302,12 +302,12 @@ public class CharacterController : PathFindController
 		{
 			if (objectAtNextTile != null && !objectAtNextTile.isPassable())
 			{
-				AlgorithmBase.IPathing.collisionMap.AddBlockedTile(_nextNode.X,_nextNode.Y);
+				AlgorithmBase.IPathing.CollisionMap.AddBlockedTile(_nextNode.X,_nextNode.Y);
 			}
 
 			if (objectInCurrentTile != null && !objectInCurrentTile.isPassable())
 			{
-				AlgorithmBase.IPathing.collisionMap.AddBlockedTile(node.X,node.Y);
+				AlgorithmBase.IPathing.CollisionMap.AddBlockedTile(node.X,node.Y);
 			}
 			
 			PathNode endNode = _endPath.ToList()[_endPath.Count - 1];

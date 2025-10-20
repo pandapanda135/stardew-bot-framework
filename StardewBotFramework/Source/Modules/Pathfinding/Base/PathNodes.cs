@@ -51,13 +51,13 @@ public class PathNode : IComparable<PathNode>
         switch (type?.ToLower()) // we take these values from the game, it probably knows best.
         {
             case "stone":
-                return 1; // -7
+                return -7; // -7
             case "wood":
-                return 2; // -4
+                return -4; // -4
             case "dirt":
-                return 4; // -2
+                return -2; // -2
             case "grass":
-                return 6; // -1
+                return -1; // -1
             default:
                 return 0;
         }
@@ -74,8 +74,7 @@ public class PathNode : IComparable<PathNode>
 
     public override bool Equals(object? obj)
     {
-        if (obj is not PathNode other) return false;
-        return VectorLocation == other.VectorLocation;
+        return obj is PathNode node && VectorLocation == node.VectorLocation;
     }
 
     public override int GetHashCode()

@@ -1,9 +1,7 @@
-using System.Reflection.Metadata.Ecma335;
 using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
 using StardewValley;
-using StardewValley.TerrainFeatures;
 
 namespace StardewBotFramework.Source.Modules.Pathfinding.GroupTiles;
 
@@ -60,7 +58,6 @@ public class GetNearestWaterTiles : AlgorithmBase
             int maxWidth = location.Map.DisplayWidth / 64;
             int maxHeight = location.Map.DisplayHeight / 64;
             Stack<WaterTile> correctPath = new();
-            Stack<WaterTile> allWaterTiles = new();
             for (int x = 0; x < maxWidth; x++)
             {
                 for (int y = 0; y < maxHeight; y++)
@@ -72,31 +69,28 @@ public class GetNearestWaterTiles : AlgorithmBase
                         WaterTiles.Add(new Point(x,y),tile);
                         correctPath = await Task.Run(() => RunBreadthFirstWater(new Point(x,y), location, limit));
                         UsedWaterTiles.AddRange(correctPath);
-                        foreach (var waterTile in correctPath)
-                        {
-                            allWaterTiles.Push(waterTile);
-                        }
+                        UsedWaterTiles.AddRange(correctPath);
                     }
                 }
             }
             
-            if (allWaterTiles.Count == 0)
+            if (correctPath.Count == 0)
             {
                 Logger.Error($"Rebuild path returned empty stack");
                 return new Stack<WaterTile>();
             }
-            _usedStartPoint.Clear();
-            return allWaterTiles;
+            UsedStartPoint.Clear();
+            return correctPath;
         }
 
-        private static readonly Stack<WaterTile> _WaterTileGroup = new();
-        public static List<Point> _usedStartPoint = new();
+        private static readonly Stack<WaterTile> WaterTileGroup = new();
+        public static readonly List<Point> UsedStartPoint = new();
         private static Stack<WaterTile> RunBreadthFirstWater(Point startTile, GameLocation location ,int limit)
         {
             var locationWater = WaterTiles;
             int runs = 0;
             
-            _usedStartPoint.Add(startTile);
+            UsedStartPoint.Add(startTile);
             Frontier.Enqueue(startTile);
             ClosedList.Push(startTile);
     
@@ -111,7 +105,7 @@ public class GetNearestWaterTiles : AlgorithmBase
                 
                 Point current = Frontier.Dequeue();
 
-                if (_usedStartPoint.Contains(current) && runs != 0) return new();
+                if (UsedStartPoint.Contains(current) && runs != 0) return new();
     
                 // We reduce by 1 to avoid pathfinding going along the side of the map
                 if (current.X > location.Map.DisplayWidth / Game1.tileSize - 1 ||
@@ -136,13 +130,13 @@ public class GetNearestWaterTiles : AlgorithmBase
                     WaterTile waterTile = new WaterTile(current,location);
                     if (UsedWaterTiles.Contains(waterTile)) continue;
                     Frontier.Enqueue(new Point(node.X,node.Y));
-                    _WaterTileGroup.Push(waterTile);
+                    WaterTileGroup.Push(waterTile);
                 }
     
                 runs++;
             }
 
-            return _WaterTileGroup;
+            return WaterTileGroup;
         }
 
         internal static Group RemoveNonBorderWater(Group group,GameLocation location)
@@ -195,7 +189,7 @@ public class GetNearestWaterTiles : AlgorithmBase
         private static void ClearVariables()
         {
             Frontier.Clear();
-            _WaterTileGroup.Clear();
+            WaterTileGroup.Clear();
             WaterTiles.Clear();
             ClosedList.Clear();
         }

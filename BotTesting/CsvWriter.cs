@@ -20,11 +20,12 @@ public static class CsvWriter
 		
 		StringBuilder builder = new();
 		string keys = "";
+		foreach (var key in values.Keys.Where(key => values[key].Count == 0)) values.Remove(key);
+		
 		for (int i = 0; i < values.Keys.Count; i++)
 		{
 			string key = $"{values.Keys.ToList()[i]},";
 			// remove unused keys
-			if (values[values.Keys.ToList()[i]].Count == 0) continue;
 			if (values.Keys.ToList()[i].Contains(','))
 			{
 				key = $"\"{key}\"";

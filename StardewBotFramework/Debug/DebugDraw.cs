@@ -77,7 +77,7 @@ public class DebugDraw
         InitializeOutlineTextures();
 
         Vector2 tileLocation = new Vector2(Game1.tileSize, Game1.tileSize);
-        foreach (var kvp in AlgorithmBase.IPathing.collisionMap.BlockedTiles)
+        foreach (var kvp in AlgorithmBase.IPathing.CollisionMap.BlockedTiles)
         {
             Color tileColor = Color.Red;
 		

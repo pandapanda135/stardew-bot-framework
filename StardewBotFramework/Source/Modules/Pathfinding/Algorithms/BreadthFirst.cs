@@ -41,7 +41,7 @@ public class BreadthFirstSearch : AlgorithmBase
             int increase = 0;
             
             // check if goal is blocked before pathfinding
-            if (IPathing.collisionMap.IsBlocked(goal.X, goal.Y))
+            if (IPathing.CollisionMap.IsBlocked(goal.X, goal.Y))
             {
                 Logger.Info($"goal is not an available tile");
                 return new Stack<PathNode>();
@@ -61,14 +61,14 @@ public class BreadthFirstSearch : AlgorithmBase
 
                 IPathing.ClosedList.Add(current);
 
-                if (goal.IsEnd(current))
+                if (IPathing.CanEnd(current,goal))
                 {
                     Logger.Info($"breaking as current is equal to goal");
                     break; // this is here as cant return in NodeChecks. This checks if this is goal
                 }
 
                 Queue<PathNode> neighbours = IPathing.Graph.Neighbours(current);
-                foreach (var node in neighbours.Where(node => !IPathing.ClosedList.Contains(node) && !IPathing.collisionMap.IsBlocked(node.X,node.Y)))
+                foreach (var node in neighbours.Where(node => !IPathing.ClosedList.Contains(node) && !IPathing.CollisionMap.IsBlocked(node.X,node.Y)))
                 {
                     Logger.Info($"in foreach this is node: {node.X},{node.Y}");
                     IPathing.Frontier.Enqueue(node);

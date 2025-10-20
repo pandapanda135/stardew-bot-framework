@@ -81,7 +81,7 @@ public class Graph : IGraph
             int neighborX = startTile.X + IGraph.GroupDirections[i, 0];
             int neighborY = startTile.Y + IGraph.GroupDirections[i, 1];
 
-            if (!AlgorithmBase.IPathing.collisionMap.IsBlocked(neighborX, neighborY))
+            if (!AlgorithmBase.IPathing.CollisionMap.IsBlocked(neighborX, neighborY))
             {
                 blocked = false;
                 continue;

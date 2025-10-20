@@ -34,10 +34,12 @@ public abstract class MenuHandler
 	/// Remove the ui stored in this class
 	/// </summary>
 	public void RemoveStoredMenu() => _menu = null;
+	
 	/// <summary>
 	/// Remove the stored and currently displayed ui
 	/// </summary>
-	public void RemoveMenu()
+	/// <returns>This will return true if <see cref="Game1.activeClickableMenu"/> is null, else return false</returns>
+	public virtual bool RemoveMenu()
 	{
 		_menu?.exitThisMenu();
 		// upper should work but just doing a sanity check
@@ -47,6 +49,7 @@ public abstract class MenuHandler
 		}
 		
 		_menu = null;
+		return Game1.activeClickableMenu is null;
 	}
 
 	public void RemoveChildMenu()

@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Utilities;
 using StardewValley;
@@ -26,7 +25,7 @@ public class AlgorithmBase
 
         protected static readonly Graph Graph = new();
 
-        public static CollisionMap collisionMap = new();
+        public static CollisionMap CollisionMap = new();
 
         public Task<Stack<PathNode>> FindPath(PathNode startPoint, Goal goal, GameLocation location,
             int limit,bool canDestroy = false);
@@ -49,7 +48,7 @@ public class AlgorithmBase
                 if (current.Parent is null) break;
                 
                 Logger.Info($"{current.VectorLocation} checking parent {current.Parent.VectorLocation}");
-                current = current.Parent!;
+                current = current.Parent;
             }
             
             Logger.Info($"Ending RebuildPath");
@@ -74,10 +73,8 @@ public class AlgorithmBase
                 return false;
             }
 
-            // if (currentNode.Equals(startNode)) return false;
-            // check if node == current and node is not start if none return true else false
-            return ClosedList.All(node => node.VectorLocation != currentNode.VectorLocation);
-            // return true;
+            // We don't check if it is in closed list as they should never be added to the neighbour foreach
+            return true;
         }
 
         /// <summary>
@@ -86,19 +83,7 @@ public class AlgorithmBase
         /// <returns>Will return true if at end or in within radius else false</returns>
         public static bool CanEnd(PathNode currentNode,Goal goal,bool cardinal = true)
         {
-            switch (goal)
-            {
-                case Goal.GoalPosition:
-                        return goal.IsEnd(currentNode);
-                case Goal.GoalNearby goalNearby: //TODO: maybe make cardinal optional as it being false is better for movement but doesn't work for using items
-                    return goalNearby.IsInEndRadius(currentNode, goalNearby.Radius,cardinal);
-                case Goal.GoalDynamic goalDynamic:
-                    return goalDynamic.IsInEndRadius(currentNode, goalDynamic.Radius, cardinal);
-                case Goal.GetToTile getToTile:
-                    return getToTile.IsInEndRadius(currentNode, getToTile.Radius, cardinal);
-                default:
-                    return goal.IsEnd(currentNode);
-            }
+            return goal.CanEnd(currentNode,cardinal);
         }
 
         /// <summary>
@@ -109,7 +94,7 @@ public class AlgorithmBase
         /// <param name="maxY">Max Y of the current location, you should only use this if you are looking to update a subset of a location</param>
         /// <param name="minX">Minimum X of the current location, this should never be below 0</param>
         /// <param name="minY">Minimum Y of the current location, this should never be below 0</param>
-        /// <returns>A <see cref="CollisionMap"/> however this is only useful if you want to make changes otherwise you should use IPathing.collisionMap</returns>
+        /// <returns>A <see cref="Pathfinding.CollisionMap"/> however this is only useful if you want to make changes otherwise you should use IPathing.collisionMap</returns>
         CollisionMap BuildCollisionMap(GameLocation location,int maxX = -1, int maxY = -1, int minX = 0,
             int minY = 0)
         {
@@ -125,11 +110,11 @@ public class AlgorithmBase
                 {
                     if (!CollisionMap.IsCurrentlyBlocked(location, x, y)) continue;
                     
-                    collisionMap.AddBlockedTile(x,y);
+                    CollisionMap.AddBlockedTile(x,y);
                 }
             }
 
-            return collisionMap;
+            return CollisionMap;
         }
     }
 }

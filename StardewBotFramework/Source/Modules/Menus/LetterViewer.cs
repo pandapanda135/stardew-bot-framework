@@ -54,10 +54,11 @@ public class LetterViewer : MenuHandler
 	public void NextPage() => LeftClick(Menu.forwardButton);
 	
 	public void PastPage() => LeftClick(Menu.backButton);
-
-	public void ExitMenu()
+	
+	public bool ClickCloseButton()
 	{
 		LeftClick(Menu.upperRightCloseButton);
 		_menu = null;
+		return Game1.activeClickableMenu is null;
 	}
 }

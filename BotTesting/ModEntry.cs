@@ -24,7 +24,7 @@ namespace BotTesting;
 
 internal sealed class ModEntry : Mod
 {
-    private StardewClient _bot = null!;
+    public static StardewClient Bot = null!;
 
     private NPC? Npc;
 
@@ -35,7 +35,7 @@ internal sealed class ModEntry : Mod
         try
         {
             Logger.Info($"Setting up bot");
-            _bot = new StardewClient(helper, ModManifest,Monitor, helper.Multiplayer);
+            Bot = new StardewClient(helper, ModManifest,Monitor, helper.Multiplayer);
         }
         catch (Exception e)
         {
@@ -91,20 +91,20 @@ internal sealed class ModEntry : Mod
         if (e.Button == SButton.J)
         {
             Logger.Info($"current menu: {Game1.activeClickableMenu}");
-            Logger.Info($"bot: {_bot}");
-            Logger.Info($"shipping menu: {_bot.EndDayShippingMenu}");
-            _bot.EndDayShippingMenu.SetMenu(Game1.activeClickableMenu as ShippingMenu);
-            _bot.EndDayShippingMenu.OpenItemTypeMenu(3);
+            Logger.Info($"bot: {Bot}");
+            Logger.Info($"shipping menu: {Bot.EndDayShippingMenu}");
+            Bot.EndDayShippingMenu.SetMenu(Game1.activeClickableMenu as ShippingMenu);
+            Bot.EndDayShippingMenu.OpenItemTypeMenu(3);
         }
         else if (e.Button == SButton.K)
         {
             Goal end = new Goal.GoalPosition((int)Game1.currentCursorTile.X, (int)Game1.currentCursorTile.Y);
-            _bot.Pathfinding.Goto(end, false, true);
-            _bot.Chat.SendPublicMessage("This should send after the bot has path-found :)");
+            Bot.Pathfinding.Goto(end, false, true);
+            Bot.Chat.SendPublicMessage("This should send after the bot has path-found :)");
         }
         else if (e.Button == SButton.U)
         {
-            _bot.Inventory.PossibleCrafts();
+            Bot.Inventory.PossibleCrafts();
         }
         else if (e.Button == SButton.I)
         {
@@ -124,7 +124,7 @@ internal sealed class ModEntry : Mod
         }
         else if (e.Button == SButton.Y)
         {
-            _bot.Tool.UseTool();
+            Bot.Tool.UseTool();
         }
         else if (e.Button == SButton.O)
         {
@@ -135,7 +135,7 @@ internal sealed class ModEntry : Mod
                     Logger.Info($"tile: {kvp.Key} object: {kvp.Value.name}");
                     if (kvp.Key == Game1.currentCursorTile)
                     {
-                        _bot.Player.AddItemToObject(kvp.Value, Game1.player.CurrentItem);
+                        Bot.Player.AddItemToObject(kvp.Value, Game1.player.CurrentItem);
                     }
                 }
             }
@@ -155,7 +155,7 @@ internal sealed class ModEntry : Mod
                     if (kvp.Value is Chest chest)
                     {
                         Logger.Info(chest.name);
-                        IInventory inventory = _bot.Chest.OpenChest(chest)!;
+                        IInventory inventory = Bot.Chest.OpenChest(chest)!;
                         foreach (var item in inventory)
                         {
                             Logger.Info($"inventory item: {item.Name}");
@@ -177,18 +177,18 @@ internal sealed class ModEntry : Mod
                 if (character.Name == "Pierre")
                 {
                     Stack<Dialogue> dialogues = new();
-                    _bot.Dialogue.InteractWithCharacter(character,out dialogues,out var loadedDialogue);
+                    Bot.Dialogue.InteractWithCharacter(character,out dialogues,out var loadedDialogue);
                 }
             }
         }
         else if (e.Button == SButton.R)
         {
-            _bot.Dialogue.AdvanceDialogBox(out var line);
+            Bot.Dialogue.AdvanceDialogBox(out var line);
             Logger.Info($"Dialogue Line from advance: {line}");
         }
         else if (e.Button == SButton.C)
         {
-            _bot.Shop.BuyItem(3, 1);
+            Bot.Shop.BuyItem(3, 1);
         }
         else if (e.Button == SButton.T)
         {
@@ -196,18 +196,18 @@ internal sealed class ModEntry : Mod
         }
         else if (e.Button == SButton.X)
         {
-            _bot.Shop.SellBackItem(11);
+            Bot.Shop.SellBackItem(11);
         }
         else if (e.Button == SButton.Q)
         {
-            Inventory inventory = _bot.Inventory.GetInventory();
+            Inventory inventory = Bot.Inventory.GetInventory();
             foreach (var item in inventory)
             {
                 if (item is null) continue;
                 Logger.Info($"item name: {item.Name}  item stack: {item.Stack}  item index: {inventory.IndexOf(item)}");
                 if (item.Name == "Blueberry Seeds")
                 {
-                    Logger.Info(_bot.Shop.SellBackItem(item).ToString());
+                    Logger.Info(Bot.Shop.SellBackItem(item).ToString());
                 }
             }
         }
@@ -241,7 +241,7 @@ internal sealed class ModEntry : Mod
         // }
         else if (e.Button == SButton.H)
         {
-            foreach (var skill in _bot.PlayerInformation.SkillLevel())
+            foreach (var skill in Bot.PlayerInformation.SkillLevel())
             {
                 Logger.Info($"skill: {skill}");
             }
@@ -252,7 +252,7 @@ internal sealed class ModEntry : Mod
         // }
         else if (e.Button == SButton.B)
         {
-            _bot.Tool.RemoveObjectsInRadius(Game1.player.TilePoint,10);
+            Bot.Tool.RemoveObjectsInRadius(Game1.player.TilePoint,10);
         }
         else if (e.Button == SButton.Z)
         {
@@ -285,7 +285,7 @@ internal sealed class ModEntry : Mod
         }
         else if (e.Button == SButton.Delete)
         {
-            await PathfindPerformance.Test(new Goal.GoalPosition((int)Game1.currentCursorTile.X,(int)Game1.currentCursorTile.Y),5);
+            await PathfindPerformance.TestMethods(new Goal.GoalPosition((int)Game1.currentCursorTile.X,(int)Game1.currentCursorTile.Y),1000);
         }
     }
 
@@ -296,15 +296,15 @@ internal sealed class ModEntry : Mod
         int endX = int.Parse(args[2]);
         int endY = int.Parse(args[3]);
 
-        List<GroundTile> tiles = _bot.Tool.CreateFarmLandTiles(new Rectangle(startX, startY, endX, endY));
-        _bot.Tool.MakeFarmLand(tiles);
+        List<GroundTile> tiles = Bot.Tool.CreateFarmLandTiles(new Rectangle(startX, startY, endX, endY));
+        Bot.Tool.MakeFarmLand(tiles);
     }
 
     private void AddItemToBinCommand(string arg, string[] args)
     {
         ItemGrabMenu binMenu = Game1.activeClickableMenu as ItemGrabMenu;
-        _bot.ShippingBinInteraction.SetUI(binMenu);
-        _bot.ShippingBinInteraction.ShipMultipleItems(Game1.player.Items.GetRange(8,11).ToArray());
+        Bot.ShippingBinInteraction.SetUI(binMenu);
+        Bot.ShippingBinInteraction.ShipMultipleItems(Game1.player.Items.GetRange(8,11).ToArray());
         // List<ShippingBin> shippingBins = _bot.ShippingBinInteraction.GetShippingBinsInLocation(Game1.currentLocation);
         // _bot.ShippingBinInteraction.ShipHeldItem(shippingBins[0]);
         
@@ -312,21 +312,21 @@ internal sealed class ModEntry : Mod
     private void PlaceBuildingCommand(string arg,string[] args)
     {
         CarpenterMenu carpenterMenu = Game1.activeClickableMenu as CarpenterMenu;
-        _bot.FarmBuilding.SetCarpenterUi(carpenterMenu);
-        _bot.FarmBuilding.InteractWithButton(carpenterMenu.okButton);
-        _bot.FarmBuilding.CreateBuilding(new Point(int.Parse(args[0]), int.Parse(args[1])));
+        Bot.FarmBuilding.SetCarpenterUi(carpenterMenu);
+        Bot.FarmBuilding.InteractWithButton(carpenterMenu.okButton);
+        Bot.FarmBuilding.CreateBuilding(new Point(int.Parse(args[0]), int.Parse(args[1])));
     }
     
     private void DialogueInteractCommand(string arg, string[] args)
     {
         Point point = new Point(int.Parse(args[0]), int.Parse(args[1]));
-        NPC? npc = _bot.Dialogue.GetCharacterAtTile(point);
+        NPC? npc = Bot.Dialogue.GetCharacterAtTile(point);
 
         if (npc is null)
         {
             Logger.Warning($"There is no npc at {point}");
         }
-        _bot.Dialogue.InteractWithCharacter(npc,out var dialogues,out var loadedDialogue);
+        Bot.Dialogue.InteractWithCharacter(npc,out var dialogues,out var loadedDialogue);
         Logger.Info($"Loaded dialogue is {loadedDialogue}");
 
         _dialogue = loadedDialogue;
@@ -343,20 +343,20 @@ internal sealed class ModEntry : Mod
 
     private void AdvanceDialogueCommand(string arg, string[] args)
     {
-        _bot.Dialogue.AdvanceDialogBox(out var line);
+        Bot.Dialogue.AdvanceDialogBox(out var line);
         Logger.Info($"Line: {line}");
     }
 
     private void ResponseCommand(string arg, string[] args)
     {
-        List<NPCDialogueResponse>? responses = _bot.Dialogue.PossibleNpcDialogueResponses();
+        List<NPCDialogueResponse>? responses = Bot.Dialogue.PossibleNpcDialogueResponses();
 
         // Response[] responsesArray = _bot.Dialogue.PossibleResponses(_dialogue);
         
         int intargs = Convert.ToInt32(args[0]);
             
         // _bot.Dialogue.ChooseResponse(_dialogue,responsesArray[intargs]);
-        _bot.Dialogue.ChooseResponse(responses[intargs]);
+        Bot.Dialogue.ChooseResponse(responses[intargs]);
     }
     
     private void PlaceObjectCommand(string arg, string[] args)
@@ -368,20 +368,20 @@ internal sealed class ModEntry : Mod
             return;
         }
         
-        Logger.Info(_bot.ObjectInteraction.TryToPlaceObject(Game1.player.CurrentItem as Object, (int)Game1.player.position.X + 64,
+        Logger.Info(Bot.ObjectInteraction.TryToPlaceObject(Game1.player.CurrentItem as Object, (int)Game1.player.position.X + 64,
             (int)Game1.player.Position.Y + 64).ToString());
     }
     
     private void SetShopCommand(string arg, string[] args)
     {
-        _bot.Blacksmith.OpenGeodeMenu(Game1.activeClickableMenu as GeodeMenu);
+        Bot.Blacksmith.OpenGeodeMenu(Game1.activeClickableMenu as GeodeMenu);
     }
 
     private void UseGeodeCommand(string arg, string[] args)
     {
         int index = int.Parse(args[0]);
         
-        Item? item = _bot.Blacksmith.OpenGeode(index);
+        Item? item = Bot.Blacksmith.OpenGeode(index);
         Logger.Info($"Item: {item}");
     }
     
@@ -391,11 +391,11 @@ internal sealed class ModEntry : Mod
         
         LoadGameMenu? loadGameMenu = TitleMenu.subMenu as LoadGameMenu;
         
-        _bot.LoadMenu.SetLoadMenu(loadGameMenu);
+        Bot.LoadMenu.SetLoadMenu(loadGameMenu);
         
         int intargs = Convert.ToInt32(args[0]);
 
-        _bot.LoadMenu.LoadSlot(intargs);
+        Bot.LoadMenu.LoadSlot(intargs);
     }
     
     private void MainMenuCommand(string arg, string[] args)
@@ -406,9 +406,9 @@ internal sealed class ModEntry : Mod
         
         IClickableMenu menu = Game1.activeClickableMenu;
 
-        _bot.MainMenuNavigation.SetTitleMenu((TitleMenu)menu);
+        Bot.MainMenuNavigation.SetTitleMenu((TitleMenu)menu);
         
-        _bot.MainMenuNavigation.GotoLoad();
+        Bot.MainMenuNavigation.GotoLoad();
     }
 
     private void CharacterCreatorCommand(string arg, string[] args)
@@ -417,11 +417,11 @@ internal sealed class ModEntry : Mod
         
         CharacterCustomization? characterCustomization = TitleMenu.subMenu as CharacterCustomization;
         
-        _bot.CharacterCreation.SetCreator(characterCustomization);
+        Bot.CharacterCreation.SetCreator(characterCustomization);
         
         int intargs = Convert.ToInt32(args[0]);
 
-        _bot.CharacterCreation.ChangeFarmTypes(intargs);
+        Bot.CharacterCreation.ChangeFarmTypes(intargs);
     }
     
     private void BuyCommand(string arg, string[] args)
@@ -429,7 +429,7 @@ internal sealed class ModEntry : Mod
         int intargs = Convert.ToInt32(args[0]);
         int quantity = Convert.ToInt32(args[1]);
         
-        _bot.Shop.BuyItem(intargs,quantity);
+        Bot.Shop.BuyItem(intargs,quantity);
     }
     
     private void ChatCommand(string arg, string[] args)
@@ -440,12 +440,12 @@ internal sealed class ModEntry : Mod
             message += word + " ";
         }
         
-        _bot.Chat.SendPublicMessage(message);
+        Bot.Chat.SendPublicMessage(message);
     }
     
     private void ColourCommand(string arg, string[] args)
     {
-        if (!_bot.Chat.ChangeColour(args[0]))
+        if (!Bot.Chat.ChangeColour(args[0]))
         {
             Logger.Error($"\"{args[0]}\" is not an available colour");
         }
@@ -453,7 +453,7 @@ internal sealed class ModEntry : Mod
     
     private void EmoteCommand(string arg, string[] args)
     {
-        if (!_bot.Chat.UseEmote(args[0]))
+        if (!Bot.Chat.UseEmote(args[0]))
         {
             
             Logger.Error($"\"{args[0]}\" is not an available emote");
@@ -465,14 +465,14 @@ internal sealed class ModEntry : Mod
     {
         args[0] = args[0].ToLower();
         
-        List<CraftingRecipe> craftingRecipes = _bot.Inventory.PossibleCrafts();
+        List<CraftingRecipe> craftingRecipes = Bot.Inventory.PossibleCrafts();
         
         foreach (var recipe in craftingRecipes)
         {
             if (recipe.name.ToLower() == args[0])
             {
                 Logger.Info($"making {args[0]}");
-                _bot.Inventory.CraftItem(recipe);
+                Bot.Inventory.CraftItem(recipe);
             }
         }
     }
@@ -489,10 +489,10 @@ internal sealed class ModEntry : Mod
                 building.tileY.Value + building.humanDoor.Y);
             if (buildingDoorVector == tileVector)
             {
-                _bot.Building.DoBuildingAction(building, tileVector);
+                Bot.Building.DoBuildingAction(building, tileVector);
                 if (building.textureName() == "Buildings\\Coop")
                 {
-                    _bot.Building.UseAnimalDoor(building);
+                    Bot.Building.UseAnimalDoor(building);
                 }
             }
         }

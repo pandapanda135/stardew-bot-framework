@@ -534,7 +534,7 @@ public class ToolHandling
             ChangeFacingDirection(pathDirection);
             DestroyObjectType(tile);
         }
-        AlgorithmBase.IPathing.collisionMap.RemoveBlockedTile(tile.X,tile.Y); // should get around not being able to rebuild collision map
+        AlgorithmBase.IPathing.CollisionMap.RemoveBlockedTile(tile.X,tile.Y); // should get around not being able to rebuild collision map
     }
     
     /// <summary>
@@ -730,7 +730,7 @@ public class ToolHandling
         bool isPassable = BotBase.Farmer.ActiveObject.isPassable();
         if (PlaceCurrentItem(tile))
         {
-            if (!isPassable) AlgorithmBase.IPathing.collisionMap.AddBlockedTile(tile.X,tile.Y);
+            if (!isPassable) AlgorithmBase.IPathing.CollisionMap.AddBlockedTile(tile.X,tile.Y);
             return true;
         }
 

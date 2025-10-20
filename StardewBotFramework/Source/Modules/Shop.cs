@@ -39,15 +39,15 @@ public class Shop : MenuHandler
     /// </summary>
     /// <param name="shopMenu">Shop to open</param>
     public void OpenShop(ShopMenu shopMenu) => Menu = shopMenu;
-    
+
     /// <summary>
     /// Close selected shop menu.
     /// </summary>
-    /// <returns>This will return false if the current menu cannot be closed according to Menu.readyToClose</returns>
-    public bool CloseShop()
+    /// <returns>This will not close the current menu if it cannot be closed according to Menu.readyToClose</returns>
+    public override bool RemoveMenu()
     {
-        if (!Menu.readyToClose()) return false;
-        RemoveMenu();
+        if (!Menu.readyToClose()) return false; 
+        base.RemoveMenu();
         return true;
     }
     

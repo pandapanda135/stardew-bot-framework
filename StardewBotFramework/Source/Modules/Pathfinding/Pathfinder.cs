@@ -29,7 +29,7 @@ public class Pathfinder
         Stack<PathNode> path = await pathing.FindPath(start, goal, BotBase.CurrentLocation, 10000, canDestroy);
 
         Character? npc = null;
-        if (goal is Goal.GoalDynamic dynamic) npc = dynamic.character;
+        if (goal is Goal.GoalDynamic dynamic) npc = dynamic.Character;
 
         var controller = new CharacterController(new(), BotBase.Farmer, BotBase.CurrentLocation);
         controller.StartMoveCharacter(path,npc);
@@ -56,7 +56,7 @@ public class Pathfinder
         Stack<PathNode> path = await pathing.FindPath(start, goal, BotBase.CurrentLocation, 10000, canDestroy);
 
         Character? npc = null;
-        if (goal is Goal.GoalDynamic dynamic) npc = dynamic.character; 
+        if (goal is Goal.GoalDynamic dynamic) npc = dynamic.Character; 
         var controller = new CharacterController(new(), BotBase.Farmer, BotBase.CurrentLocation);
         controller.StartMoveCharacter(path,npc as Monster,true);
 
@@ -90,7 +90,7 @@ public class Pathfinder
     /// </summary>
     public bool IsBlocked(int x, int y)
     {
-        return AlgorithmBase.IPathing.collisionMap.IsBlocked(x,y);
+        return AlgorithmBase.IPathing.CollisionMap.IsBlocked(x,y);
     }
     
    

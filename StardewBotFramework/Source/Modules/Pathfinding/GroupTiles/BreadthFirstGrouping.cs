@@ -144,7 +144,7 @@ public class BreadthFirstGrouping : AlgorithmBase
                 _closedList.Push(current);
 
                 Queue<PathNode> neighbours = IPathing.Graph.Neighbours(new PathNode(current.X,current.Y,null));
-                foreach (var node in neighbours.Where(node => !_closedList.Contains(new Point(node.X,node.Y)) && !IPathing.collisionMap.IsBlocked(node.X,node.Y)))
+                foreach (var node in neighbours.Where(node => !_closedList.Contains(new Point(node.X,node.Y)) && !IPathing.CollisionMap.IsBlocked(node.X,node.Y)))
                 {
                     Logger.Info($"in foreach this is node: {node.X},{node.Y}");
                     _frontier.Enqueue(new Point(node.X,node.Y));
