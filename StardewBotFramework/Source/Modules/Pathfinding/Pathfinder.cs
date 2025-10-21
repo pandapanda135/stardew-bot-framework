@@ -31,7 +31,7 @@ public class Pathfinder
         Character? npc = null;
         if (goal is Goal.GoalDynamic dynamic) npc = dynamic.Character;
 
-        var controller = new CharacterController(new(), BotBase.Farmer, BotBase.CurrentLocation);
+        var controller = new CharacterController(BotBase.CurrentLocation);
         controller.StartMoveCharacter(path,npc);
 
         // slightly jank way to get around MovingCharacter not being async
@@ -57,7 +57,7 @@ public class Pathfinder
 
         Character? npc = null;
         if (goal is Goal.GoalDynamic dynamic) npc = dynamic.Character; 
-        var controller = new CharacterController(new(), BotBase.Farmer, BotBase.CurrentLocation);
+        var controller = new CharacterController(BotBase.CurrentLocation);
         controller.StartMoveCharacter(path,npc as Monster,true);
 
         while (CharacterController.IsMoving())

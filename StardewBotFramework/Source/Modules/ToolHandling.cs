@@ -237,7 +237,7 @@ public class ToolHandling
                     continue;
                 }
                 
-                var controller = new CharacterController(new(), BotBase.Farmer, BotBase.CurrentLocation);
+                var controller = new CharacterController(BotBase.CurrentLocation);
                 controller.StartMoveCharacter(path.Result);
                 while (CharacterController.IsMoving()) {} // this is not async
                 
@@ -327,7 +327,7 @@ public class ToolHandling
                 break;
             }
 
-            var controller = new CharacterController(new(), BotBase.Farmer, BotBase.CurrentLocation);
+            var controller = new CharacterController(BotBase.CurrentLocation);
             controller.StartMoveCharacter(path.Result);
 
             while (CharacterController.IsMoving())
@@ -454,7 +454,7 @@ public class ToolHandling
                     continue;
                 }
                 
-                var controller = new CharacterController(new(), BotBase.Farmer, BotBase.CurrentLocation);
+                var controller = new CharacterController(BotBase.CurrentLocation);
                 controller.StartMoveCharacter(path.Result);
 
                 while (CharacterController.IsMoving()){} // this is not async
@@ -516,7 +516,7 @@ public class ToolHandling
                 DestroyObjectType(tile);
             }
 
-            var controller = new CharacterController(new(), BotBase.Farmer, BotBase.CurrentLocation);
+            var controller = new CharacterController(BotBase.CurrentLocation);
             controller.StartMoveCharacter(pathTask.Result);
 
             while (CharacterController.IsMoving()) {} // this is not async
@@ -774,7 +774,7 @@ public class ToolHandling
             // return PlaceCurrentAndModifyMap(tile.Position);
         }
 
-        var controller = new CharacterController(new(), BotBase.Farmer, BotBase.CurrentLocation);
+        var controller = new CharacterController(BotBase.CurrentLocation);
         controller.StartMoveCharacter(path.Result);
 
         while (CharacterController.IsMoving())

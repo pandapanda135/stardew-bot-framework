@@ -1,3 +1,4 @@
+using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Utilities;
 using StardewValley;
@@ -25,10 +26,11 @@ public class CraftingMenu : MenuHandler
 
 	public void SetPageUI()
 	{
-		GameMenu? gameMenu = new GameMenu();
+		GameMenu gameMenu = new GameMenu();
+		Rectangle bounds = gameMenu.tabs[4].bounds;
+		gameMenu.receiveLeftClick(bounds.X,bounds.Y);
 		Game1.activeClickableMenu = gameMenu;
-		LeftClick(gameMenu.tabs[4]);
-
+		
 		if (gameMenu.GetCurrentPage() is CraftingPage page)
 		{
 			SetUI(page);

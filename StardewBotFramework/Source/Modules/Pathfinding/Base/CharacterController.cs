@@ -1,11 +1,13 @@
 using Microsoft.Xna.Framework;
+using StardewBotFramework.Source.Events.GamePlayEvents;
 using StardewBotFramework.Source.Modules.Pathfinding.Algorithms;
 using StardewBotFramework.Source.ObjectDestruction;
 using StardewBotFramework.Source.ObjectToolSwaps;
+using StardewModdingAPI;
+using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Monsters;
-using StardewValley.Pathfinding;
 using StardewValley.Tools;
 using Logger = StardewBotFramework.Debug.Logger;
 using Object = StardewValley.Object;
@@ -13,15 +15,21 @@ using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace StardewBotFramework.Source.Modules.Pathfinding.Base;
 
-public class CharacterController : PathFindController
+public class CharacterController
 {
-	/// <param name="pathToEndPoint">This is not used</param>
-	/// <param name="c">This is not used</param>
 	/// <param name="l">This is used to set location</param>
-	public CharacterController(Stack<Point> pathToEndPoint, Character c, GameLocation l) : base(pathToEndPoint, c, l)
+	public CharacterController(GameLocation l)
 	{
 		_currentLocation = l;
 	}
+	
+	private static readonly sbyte[,] Directions =
+	{
+		{ -1, 0 },
+		{ 1, 0 },
+		{ 0, 1 },
+		{ 0, -1 }
+	};
 	
 	public enum FailureReason
 	{
@@ -58,6 +66,7 @@ public class CharacterController : PathFindController
 	private static Point _lastDynamicCharacterTile;
 	private static PathNode _currentNode = null!;
 	private static PathNode _nextNode = null!;
+	private static GameTime Time => Game1.currentGameTime;
 
 	private static bool _attacking;
 	private static int _pausedTimer;
@@ -66,16 +75,28 @@ public class CharacterController : PathFindController
 	/// </summary>
 	private static int MaxPauseTime => _attacking ? 30000 : 5000;
 
-	private int _updateCallAmount;
-	private int _moveCallAmount;
-	// this gets called in farmer's update, return true if end else false
-	public override bool update(GameTime time)
+	private bool _initialized;
+	private void Initialize()
 	{
-		_updateCallAmount += 1;
+		if (_initialized || GameEvents._helper == null) return;
+		
+		GameEvents._helper.Events.GameLoop.UpdateTicking += Update;
+		_initialized = true;
+	}
+	
+	// this gets called in farmer's update, return true if end else false
+	private Vector2 _previousPosition;
+	public void Update(object? obj, UpdateTickingEventArgs e)
+	{
+		if (_endPath.Count == 0)
+		{
+			return;
+		}
+		
 		if (_recalculatingPath)
 		{
 			Logger.Info($"recalculating path: {_endPath.Count}");
-			return false;
+			return;
 		}
 
 		// Logger.Info($"update called  {_updateCallAmount}     {_moveCallAmount}");
@@ -85,7 +106,7 @@ public class CharacterController : PathFindController
 		{
 			Logger.Info($"return true as ended");
 			ForceStopMoving();
-			return true;
+			return;
 		}
 	
 		// stop issue with continuing pathfinding when going through warp
@@ -93,42 +114,44 @@ public class CharacterController : PathFindController
 		{
 			Logger.Info($"location change return true");
 			ForceStopMoving();
-			return true;
+			return;
 		}
 		
 		// This is here as otherwise, it will get into a loop of fading to black and never warping. Might have issues with multiplayer?
 		if (Game1.isWarping)
 		{
 			ForceStopMoving();
-			return true;
+			return;
 		}
 		
-		Vector2 position = Character.Position;
-		moveCharacter(time);
-		if (position == Character.Position)
+		MoveCharacter();
+		if (_previousPosition == Character.Position)
 		{
-			_pausedTimer += time.ElapsedGameTime.Milliseconds;
+			_pausedTimer += Time.ElapsedGameTime.Milliseconds;
 		}
 		else
 		{
 			_pausedTimer = 0;
 		}
 
+		// character moves across frames so we set this here
+		_previousPosition = Character.Position;
 		if (_pausedTimer < MaxPauseTime)
 		{
-			return false;
+			return;
 		}
 		
 		Logger.Error($"Paused for too long");
 		ForceStopMoving();
 		FailedPathFinding?.Invoke(this, FailureReason.Paused);
-		return true;
 	}
 	/// <summary>
 	/// This is used to start the process of moving.
 	/// </summary>
 	public void StartMoveCharacter(Stack<PathNode> endPointPath, Character? dynamicCharacter = null,bool attacking = false)
 	{
+		if (!_initialized) Initialize();
+
 		Logger.Info($"start move character");
 		if (IsMoving())
 		{
@@ -154,7 +177,6 @@ public class CharacterController : PathFindController
 		if (dynamicCharacter is not null) _lastDynamicCharacterTile = dynamicCharacter.TilePoint;
 
 		Logger.Info($"set character");
-		Character.controller = this;
 		
 		Logger.Info($"setting move");
 		// remove temporarily to test if causes stuttering
@@ -163,7 +185,7 @@ public class CharacterController : PathFindController
 	
 	private static bool _recalculatingPath;
 	// different naming convention so we can override PathFindController's moveCharacter
-	protected override void moveCharacter(GameTime time) // TODO: figure out why _character.movePosition does not change character's animation.
+	private void MoveCharacter()
 	{
 		if (_recalculatingPath) return;
 		
@@ -226,11 +248,9 @@ public class CharacterController : PathFindController
 		{
 			Logger.Error($"remove from end path {node.VectorLocation}");
 			_endPath.Pop();
-			Character.stopWithoutChangingFrame();
 			
 			if (_endPath.Count == 0)
 			{
-				// OnGoalReached.Invoke();
 				Logger.Error("Halt character");
 				Character.Halt();
 			}
@@ -260,19 +280,19 @@ public class CharacterController : PathFindController
 		
 		if (bbox.Left < targetTile.Left && bbox.Right < targetTile.Right)
 		{
-			Character.SetMovingRight(true);
+			GameEvents._helper?.Input.OverrideButton(SButton.D,true);
 		}
 		else if (bbox.Right > targetTile.Right && bbox.Left > targetTile.Left)
 		{
-			Character.SetMovingLeft(true);
+			GameEvents._helper?.Input.OverrideButton(SButton.A,true);
 		}
 		else if (bbox.Top <= targetTile.Top)
 		{
-			Character.SetMovingDown(true);
+			GameEvents._helper?.Input.OverrideButton(SButton.S,true);
 		}
 		else if (bbox.Bottom >= targetTile.Bottom - 2)
 		{
-			Character.SetMovingUp(true);
+			GameEvents._helper?.Input.OverrideButton(SButton.W,true);
 		}
 
 		// destroy object
@@ -298,13 +318,14 @@ public class CharacterController : PathFindController
 
 		if ((objectAtNextTile is not null && !objectAtNextTile.isPassable() 
 		                                  && !DestroyLitterObject.IsDestructible(objectAtNextTile)) ||
-		    (objectInCurrentTile is not null && !objectInCurrentTile.isPassable()))
+		    (objectInCurrentTile is not null && !objectInCurrentTile.isPassable() 
+		                                     && !DestroyLitterObject.IsDestructible(objectInCurrentTile)))
 		{
 			if (objectAtNextTile != null && !objectAtNextTile.isPassable())
 			{
 				AlgorithmBase.IPathing.CollisionMap.AddBlockedTile(_nextNode.X,_nextNode.Y);
 			}
-
+		
 			if (objectInCurrentTile != null && !objectInCurrentTile.isPassable())
 			{
 				AlgorithmBase.IPathing.CollisionMap.AddBlockedTile(node.X,node.Y);
@@ -330,9 +351,6 @@ public class CharacterController : PathFindController
 		{
 			try
 			{
-				_moveCallAmount += 1;
-				Character.MovePosition(time, Game1.viewport, _currentLocation);
-				Character.updateMovementAnimation(time);
 				HandleWarp(Character.nextPosition(Character.getFacingDirection()));
 			}
 			catch (Exception e) // sometimes error here IDK why might be because character controller is made on non-main thread
@@ -368,13 +386,12 @@ public class CharacterController : PathFindController
 					break;
 			}
 			
-			Logger.Info($"trying to use tool");
+			Logger.Warning($"trying to use tool");
 			_isDestroying = true;
 			SwapItem(node.VectorLocation);
 			BotBase.Farmer.BeginUsingTool();
 			try // incase upper error also happens here
 			{
-				Character.MovePosition(time, Game1.viewport, _currentLocation);
 				HandleWarp(Character.nextPosition(Character.getFacingDirection()));
 			}
 			catch (Exception e)
@@ -425,7 +442,17 @@ public class CharacterController : PathFindController
 		});
 		
 		path.Wait();
+
 		_recalculatingPath = false;
+		if (path.Result.Count == 0) return path.Result;
+		
+		// this should fix issue with new path's end node not reaching wanted goal
+		PathNode newEnd = path.Result.ToArray()[path.Result.Count - 1];
+		if (newEnd.VectorLocation != _endPath.ToArray()[_endPath.Count - 1].VectorLocation)
+		{
+			Logger.Error($"node was: {newEnd.VectorLocation}   end was:   {_endPath.ToArray()[_endPath.Count - 1].VectorLocation}");
+			return new();
+		}
 		return path.Result;
 	}
 	

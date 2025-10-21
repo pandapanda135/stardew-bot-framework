@@ -155,7 +155,7 @@ public class Player
                 continue;
             }
 
-            var controller = new CharacterController(new(), BotBase.Farmer, BotBase.CurrentLocation);
+            var controller = new CharacterController(BotBase.CurrentLocation);
             controller.StartMoveCharacter(path);
 
             while (CharacterController.IsMoving()) continue; // this is not async

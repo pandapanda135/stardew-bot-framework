@@ -96,7 +96,7 @@ public static class PathfindPerformance
 	{
 		var controllerWatch = Stopwatch.StartNew();
 		
-		var characterController = new CharacterController(new(),Game1.player,Game1.currentLocation);
+		var characterController = new CharacterController(Game1.currentLocation);
 		characterController.StartMoveCharacter(path);
 		while (CharacterController.IsMoving()) {}
 		controllerWatch.Stop();
