@@ -45,6 +45,46 @@ public class GrabItemMenuInteraction : MenuHandler
         LeftClick(rect.X + 5,rect.Y + 5);
     }
 
+    public void AddItemAmount(Item item, int amount)
+    {
+        if (!BotBase.Farmer.Items.Contains(item)) return;
+
+        int itemIndex = Menu.inventory.actualInventory.IndexOf(item);
+        ClickableComponent cc = Menu.inventory.inventory[itemIndex];
+
+        ClickAmount(cc,amount);
+    }
+    
+    public void TakeItemAmount(Item item, int amount)
+    {
+        if (!BotBase.Farmer.Items.Contains(item)) return;
+
+        int itemIndex = Menu.ItemsToGrabMenu.actualInventory.IndexOf(item);
+        ClickableComponent cc = Menu.ItemsToGrabMenu.inventory[itemIndex];
+
+        ClickAmount(cc,amount);
+    }
+
+    private void ClickAmount(ClickableComponent cc, int amount)
+    {
+        for (int i = 0; i < amount; i++)
+        {
+            RightClick(cc);
+        }
+    }
+
+    /// <summary>
+    /// Click on the first empty slot in a menu.
+    /// </summary>
+    public void ClickFirstOpen(InventoryMenu menu)
+    {
+        foreach (var cc in menu.inventory.Where(cc => cc.item is null))
+        {
+            LeftClick(cc);
+            break;
+        }
+    }
+
     public void ChangeColour(int selection)
     {
         if (!Menu.CanHaveColorPicker() || !Menu.colorPickerToggleButton.visible) return;

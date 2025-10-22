@@ -63,6 +63,7 @@ internal sealed class ModEntry : Mod
         helper.ConsoleCommands.Add("placeBuilding", "", PlaceBuildingCommand);
         helper.ConsoleCommands.Add("shippingBin", "", AddItemToBinCommand);
         helper.ConsoleCommands.Add("farm-land", "", CreateFarmLandCommand);
+        helper.ConsoleCommands.Add("performance", "", PathfindPerformance.Command);
 
         helper.Events.Display.Rendered += DebugDraw.OnRenderTiles;
     }

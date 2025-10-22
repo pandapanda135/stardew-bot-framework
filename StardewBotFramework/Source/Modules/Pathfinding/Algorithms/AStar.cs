@@ -18,7 +18,7 @@ public class AStar : AlgorithmBase
             int limit, bool canDestroy)
         {
              // this is for it to run on a background thread to stop stutter
-            Stack<PathNode> correctPath = await Task.Run(() => RunAStar(startPoint, goal, location, limit,canDestroy));
+             Stack<PathNode> correctPath = await Task.Run(() => RunAStar(startPoint, goal, location, limit, canDestroy));
             
             ClearVariables();
             if (correctPath.Count != 0) return correctPath;
@@ -108,7 +108,8 @@ public class AStar : AlgorithmBase
                             next.Destroy = true;
                     }
 
-                    next.GCost = newCumulative;
+                    // we don't use newCumulative as that leads to it being incredibly inefficient
+                    next.GCost = current.GCost + 1;
                     // we weight heuristic to find a path quicker, this may lead to more inefficient paths though.
                     // Also multiply to make heuristic be similar to GCost. This stops issues like waving in and out of a straight line.
                     int priority = next.GCost + (goal.ManhattanHeuristic(next) * AverageTileCost);

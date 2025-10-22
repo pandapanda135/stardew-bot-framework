@@ -102,6 +102,18 @@ public static class PathfindPerformance
 		controllerWatch.Stop();
 		return Task.FromResult<KeyValuePair<string, Stopwatch>>(new("Controller", controllerWatch));
 	}
+
+	public static async void Command(string arg, string[] args)
+	{
+		try
+		{
+			await TestMethods(new Goal.GoalPosition(int.Parse(args[0]), int.Parse(args[1])), int.Parse(args[2]));
+		}
+		catch (Exception e)
+		{
+			Logger.Error($"{e}");
+		}
+	}
 	
 	internal static class TaskDispatcher
 	{

@@ -18,7 +18,7 @@ public class Goal
     /// <returns>estimated distance to end</returns>
     public int ManhattanHeuristic(PathNode node)
     {
-        return Math.Abs(node.X - X) + Math.Abs(node.Y - Y);
+        return Math.Abs(X - node.X) + Math.Abs(Y - node.Y);
     }
 
     /// <summary>

@@ -35,9 +35,10 @@ public class Pathfinder
         controller.StartMoveCharacter(path,npc);
 
         // slightly jank way to get around MovingCharacter not being async
-        while (CharacterController.IsMoving())
+        await Task.Run(() =>
         {
-        }
+            while (CharacterController.IsMoving()) {}
+        });
     }
 
     /// <summary>
