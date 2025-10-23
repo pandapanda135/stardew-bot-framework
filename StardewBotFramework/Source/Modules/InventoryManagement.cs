@@ -161,6 +161,19 @@ public class InventoryManagement : MenuHandler
 
     public void ClickBin() => LeftClick(Page.trashCan);
 
+    public void SetHeldItem(Item slotItem,int stack)
+    {
+        int slotIndex = Inventory.IndexOf(slotItem);
+        
+        var newItem = Inventory[slotIndex].getOne();
+        newItem.Stack = stack;
+        Page.inventory.actualInventory[slotIndex] = slotItem.ConsumeStack(newItem.Stack);
+        
+        // this replicates setHeldItem
+        slotItem.onDetachedFromParent();
+        BotBase.Farmer.CursorSlotItem = newItem;
+    }
+
     #endregion
 
     #region ClothingItems

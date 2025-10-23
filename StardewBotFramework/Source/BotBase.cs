@@ -11,7 +11,7 @@ namespace StardewBotFramework.Source;
 
 public abstract class BotBase
 {
-    protected static BotBase? Instance = null;
+    public static BotBase? Instance = null;
     protected IModHelper _helper = null!;
     protected IManifest _manifest = null!;
     protected IMonitor _monitor = null!;

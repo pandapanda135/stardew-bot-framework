@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework.Input;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.ObjectToolSwaps;
+using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Menus;
@@ -12,11 +13,11 @@ public class FishingBar
 {
 	internal static event EventHandler? StaticCaughtFish;
 	private static FishingRod? fishingRod;
-	static BobberBar? bobberBar
+	private static BobberBar? BobberBar
 	{
 		get
 		{
-			if (Game1.activeClickableMenu is not BobberBar)
+			if (Game1.activeClickableMenu is not StardewValley.Menus.BobberBar)
 			{
 				return null;
 			}
@@ -29,16 +30,11 @@ public class FishingBar
 		return StartFishing(power);
 	}
 
+	private static float _selectedPower = -1;
 	public static void Update(object? sender, UpdateTickingEventArgs e)
 	{
-		if (BotBase.Farmer.CurrentTool is FishingRod rod)
-		{
-			fishingRod = rod;
-		}
-		else
-		{
-			return;
-		}
+		if (BotBase.Farmer.CurrentTool is FishingRod rod) fishingRod = rod;
+		else return;
 
 		if (fishingRod.fishCaught)
 		{
@@ -46,17 +42,23 @@ public class FishingBar
 			StaticCaughtFish.Invoke(new FishingBar(),EventArgs.Empty);
 		}
 		
-		if (!BotBase.Farmer.UsingTool || BotBase.Farmer.CurrentTool is not FishingRod) return;
+		if (!BotBase.Farmer.UsingTool && _selectedPower < 0) return;
 
 		if (fishingRod.isNibbling && !fishingRod.hit && (!fishingRod.isReeling || !fishingRod.isFishing)) 
 		{
 			BotBase.Farmer.CurrentTool.DoFunction(BotBase.CurrentLocation,0,0,0,BotBase.Farmer);
 		}
 		
-		if (bobberBar is null) return;
+		if (fishingRod.castingPower < Math.Clamp(_selectedPower,0,0.98))
+		{
+			BotBase.Instance?.Helper.Input.OverrideButton(SButton.MouseLeft, true);
+		}
+		else _selectedPower = -1;
 		
-		var barCenter = bobberBar.bobberBarPos + bobberBar.bobberBarHeight / 3f; // this should be the top quarter of the bar
-		if (barCenter <= bobberBar.bobberPosition) // the higher the bar is the lower the pos
+		if (BobberBar is null) return;
+		
+		var barCenter = BobberBar.bobberBarPos + BobberBar.bobberBarHeight / 3f; // this should be the top quarter of the bar
+		if (barCenter <= BobberBar.bobberPosition) // the higher the bar is the lower the pos
 		{
 			Logger.Info($"returning: {Game1.oldMouseState.LeftButton}");
 			return;
@@ -68,17 +70,16 @@ public class FishingBar
 			ButtonState.Released, ButtonState.Released, ButtonState.Released);
 	}
 
-	private bool StartFishing(int power)
+	/// <summary>
+	/// Start fishing, if the current tool is not a fishing rod this will return false.
+	/// </summary>
+	/// <param name="power">This should be between 0 and 1, if this is greater or lower than it will be clamped in update to 1 or 0</param>
+	private bool StartFishing(float power)
 	{
-		if (BotBase.Farmer.CurrentTool is not FishingRod)
-		{
-			SwapItemHandler.SwapItem(typeof(FishingRod),"");
-			if (BotBase.Farmer.CurrentItem is not FishingRod) return false; // if no fishing rod in inv
-		}
+		if (BotBase.Farmer.CurrentTool is not FishingRod) return false;
 		
 		fishingRod = BotBase.Farmer.CurrentTool as FishingRod ?? new FishingRod();
-		BotBase.Farmer.BeginUsingTool();
-		fishingRod.castingPower = power; // TODO: this solution is a bit jank as it will just teleport to be full. A better way would be using Update idk how to keep it running across frames though rn
+		_selectedPower = power;
 		
 		return true;
 	}

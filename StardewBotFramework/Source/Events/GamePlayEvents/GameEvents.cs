@@ -50,10 +50,10 @@ public class GameEvents
         StaticOnOtherPlayerDeath += OnStaticOnOtherPlayerDeath;
         StaticHudMessageAdded += OnStaticHUDMessageAdded;
         StaticEventFinished += OnStaticEventFinished;
-        GameEvents._helper = helper;
+        _helper = helper;
     }
 
-    public static IModHelper? _helper;
+    private static IModHelper? _helper;
 
     public static void SetHelper(IModHelper helper)
     {

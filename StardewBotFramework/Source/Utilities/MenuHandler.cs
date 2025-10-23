@@ -11,8 +11,8 @@ public abstract class MenuHandler
 {
 	protected MenuHandler()
 	{
-		if (GameEvents._helper is null) return;
-		GameEvents._helper.Events.GameLoop.UpdateTicking += Update;
+		if (BotBase.Instance is null) return;
+		BotBase.Instance.Helper.Events.GameLoop.UpdateTicking += Update;
 	}
 	
 	/// <summary>
@@ -65,6 +65,7 @@ public abstract class MenuHandler
 	private void Update(object? sender, UpdateTickingEventArgs e)
 	{
 		if (_desiredTime < 0 || _hoverPoint == Point.Zero) return;
+		Logger.Info($"timer: {_timer}");
 
 		_timer += Game1.currentGameTime.ElapsedGameTime.Milliseconds;
 
@@ -76,8 +77,7 @@ public abstract class MenuHandler
 			return;
 		}
 		
-		// TODO: I don't think this works due to both cursor and this being counted, might be wrong though.
-		_menu?.performHoverAction(_hoverPoint.X,_hoverPoint.X);
+		BotBase.Instance?.Helper.Input.SetCursorPosition(_hoverPoint.X,_hoverPoint.Y);
 	}
 
 	public void Hover(int x, int y, float seconds)

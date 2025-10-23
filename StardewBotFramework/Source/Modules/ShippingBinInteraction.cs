@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using StardewBotFramework.Source.Modules.Menus;
 using StardewBotFramework.Source.Utilities;
+using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Menus;
@@ -59,11 +60,12 @@ public class ShippingBinInteraction : GrabItemMenuInteraction
     }
 
     /// <summary>
-    /// This dont work :(
+    /// This will open the shipping bin that is in front of the player, the player must be looking at the shipping bin and next to it. 
     /// </summary>
     public void OpenBin(ShippingBin shippingBin)
     {
-        // TODO: this does not work as need to use non-old MouseState
+        BotBase.Instance?.Helper.Input.SetCursorPosition(shippingBin.tileX.Value, shippingBin.tileY.Value);
+        BotBase.Instance?.Helper.Input.OverrideButton(SButton.MouseRight, true);
         shippingBin.doAction(new Vector2(shippingBin.tileX.Value, shippingBin.tileY.Value), BotBase.Farmer);
     }
 

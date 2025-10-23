@@ -20,13 +20,14 @@ public class ChestModule
     public IInventory? OpenChest(Chest chest)
     {
         if (ChestOpen) return null;
-
+        
+        // TODO: does not do the opening chest animation
         _currentChestInventory = chest.GetItemsForPlayer();
-
+        
         chest.ShowMenu();
-
+        
         Game1.playSound(chest.fridge.Value ? "doorCreak" : "openChest");    
-
+        
         // gift boxes cause crashes if performOpenChest runs
         if (chest.giftbox.Value || chest.giftboxIsStarterGift.Value) return _currentChestInventory;
         

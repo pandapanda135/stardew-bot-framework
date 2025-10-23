@@ -73,14 +73,14 @@ public class CharacterController
 	/// <summary>
 	/// The maximum amount of time the bot can stay in the same position for, this is in milliseconds.
 	/// </summary>
-	private static int MaxPauseTime => _attacking ? 30000 : 5000;
+	private static int MaxPauseTime => _attacking ? 30000 : 7500;
 
 	private bool _initialized;
 	private void Initialize()
 	{
-		if (_initialized || GameEvents._helper == null) return;
+		if (_initialized || BotBase.Instance == null) return;
 		
-		GameEvents._helper.Events.GameLoop.UpdateTicking += Update;
+		BotBase.Instance.Helper.Events.GameLoop.UpdateTicking += Update;
 		_initialized = true;
 	}
 	
@@ -176,11 +176,7 @@ public class CharacterController
 
 		if (dynamicCharacter is not null) _lastDynamicCharacterTile = dynamicCharacter.TilePoint;
 
-		Logger.Info($"set character");
-		
 		Logger.Info($"setting move");
-		// remove temporarily to test if causes stuttering
-		// moveCharacter(Game1.currentGameTime);
 	}
 	
 	private static bool _recalculatingPath;
@@ -280,19 +276,19 @@ public class CharacterController
 		
 		if (bbox.Left < targetTile.Left && bbox.Right < targetTile.Right)
 		{
-			GameEvents._helper?.Input.OverrideButton(SButton.D,true);
+			BotBase.Instance?.Helper.Input.OverrideButton(SButton.D,true);
 		}
 		else if (bbox.Right > targetTile.Right && bbox.Left > targetTile.Left)
 		{
-			GameEvents._helper?.Input.OverrideButton(SButton.A,true);
+			BotBase.Instance?.Helper.Input.OverrideButton(SButton.A,true);
 		}
 		else if (bbox.Top <= targetTile.Top)
 		{
-			GameEvents._helper?.Input.OverrideButton(SButton.S,true);
+			BotBase.Instance?.Helper.Input.OverrideButton(SButton.S,true);
 		}
 		else if (bbox.Bottom >= targetTile.Bottom - 2)
 		{
-			GameEvents._helper?.Input.OverrideButton(SButton.W,true);
+			BotBase.Instance?.Helper.Input.OverrideButton(SButton.W,true);
 		}
 
 		// destroy object

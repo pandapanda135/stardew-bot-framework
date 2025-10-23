@@ -3,6 +3,7 @@ using Netcode;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Modules.Pathfinding.Algorithms;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
+using StardewBotFramework.Source.Utilities;
 using StardewValley;
 using StardewValley.GameData.Characters;
 using StardewValley.Inventories;
@@ -146,19 +147,7 @@ public class Player
                 continue;
             }
 
-            PathNode start = new PathNode(BotBase.Farmer.TilePoint, null);
-            
-            Stack<PathNode> path = await pathing.FindPath(start, new Goal.GoalPosition(debris.X, debris.Y), BotBase.CurrentLocation, 10000,canDestroy);
-            if (path == new Stack<PathNode>())
-            {
-                Logger.Error($"Stack was empty");
-                continue;
-            }
-
-            var controller = new CharacterController(BotBase.CurrentLocation);
-            controller.StartMoveCharacter(path);
-
-            while (CharacterController.IsMoving()) continue; // this is not async
+            await PathfindingHelper.Goto(new Goal.GoalPosition(debris.X, debris.Y),canDestroy);
         }
     }
 

@@ -45,15 +45,15 @@ public class GrabItemMenuInteraction : MenuHandler
         LeftClick(rect.X + 5,rect.Y + 5);
     }
 
-    public void AddItemAmount(Item item, int amount)
-    {
-        if (!BotBase.Farmer.Items.Contains(item)) return;
-
-        int itemIndex = Menu.inventory.actualInventory.IndexOf(item);
-        ClickableComponent cc = Menu.inventory.inventory[itemIndex];
-
-        ClickAmount(cc,amount);
-    }
+    // public void AddItemAmount(Item item, int amount)
+    // {
+    //     if (!BotBase.Farmer.Items.Contains(item)) return;
+    //
+    //     int itemIndex = Menu.inventory.actualInventory.IndexOf(item);
+    //     ClickableComponent cc = Menu.inventory.inventory[itemIndex];
+    //
+    //     ClickAmount(cc,amount);
+    // }
     
     public void TakeItemAmount(Item item, int amount)
     {
@@ -91,5 +91,63 @@ public class GrabItemMenuInteraction : MenuHandler
 
         ClickableComponent cc = Menu.discreteColorPickerCC[selection];
         LeftClick(cc);
+    }
+
+    /// <summary>
+    /// Remove the amount from an item and return that new item. 
+    /// </summary>
+    /// <returns>Returns the amount of the item specified</returns>
+    public Item? GetItemAmount(List<Item?> inventory,Item slotItem, int stack)
+    {
+        int slotIndex = inventory.IndexOf(slotItem);
+
+        var newItem = inventory[slotIndex]?.getOne();
+        if (newItem is null) return null;
+        newItem.Stack = stack;
+        Item? consumeItem = slotItem.ConsumeStack(newItem.Stack);
+        if (consumeItem is null)
+            ItemGrabBehaviour(inventory[slotIndex]);
+        else
+            inventory[slotIndex] = consumeItem;
+
+        return newItem;
+    }
+    
+    public void AddItemAmount(Item slotItem, int stack)
+    {
+        int slotIndex = Menu.inventory.actualInventory.IndexOf(slotItem);
+        
+        var newItem = Menu.inventory.actualInventory[slotIndex].getOne();
+        newItem.Stack = stack;
+        Menu.inventory.actualInventory[slotIndex] = slotItem.ConsumeStack(newItem.Stack);
+        
+        ItemSelectBehaviour(newItem);
+    }
+    
+    public void RemoveItemAmount(Item slotItem, int stack)
+    {
+        int slotIndex = Menu.ItemsToGrabMenu.actualInventory.IndexOf(slotItem);
+        
+        var newItem = Menu.ItemsToGrabMenu.actualInventory[slotIndex].getOne();
+        newItem.Stack = stack;
+        Menu.ItemsToGrabMenu.actualInventory[slotIndex] = slotItem.ConsumeStack(newItem.Stack);
+        
+        ItemGrabBehaviour(newItem);
+    }
+
+    /// <summary>
+    /// This is when an item is taken from the bot's inventory
+    /// </summary>
+    public void ItemSelectBehaviour(Item item)
+    {
+        Menu.behaviorFunction(item, BotBase.Farmer);
+    }
+
+    /// <summary>
+    /// This is when an item is added to the bot's inventory
+    /// </summary>
+    public void ItemGrabBehaviour(Item item)
+    {
+        Menu.behaviorOnItemGrab(item, BotBase.Farmer);
     }
 }
