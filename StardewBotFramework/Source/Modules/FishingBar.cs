@@ -1,6 +1,5 @@
 using Microsoft.Xna.Framework.Input;
 using StardewBotFramework.Debug;
-using StardewBotFramework.Source.ObjectToolSwaps;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -25,7 +24,11 @@ public class FishingBar
 		}
 	}
 
-	public bool Fish(int power)
+	/// <summary>
+	/// Start fishing, if the current tool is not a fishing rod this will return false.
+	/// </summary>
+	/// <param name="power">This should be between 0 and 1, if this is greater or lower than it will be clamped in update to 1 or 0</param>
+	public bool Fish(float power)
 	{
 		return StartFishing(power);
 	}
@@ -69,11 +72,7 @@ public class FishingBar
 		Game1.oldMouseState = new MouseState(0, 0, 0, ButtonState.Pressed, ButtonState.Released,
 			ButtonState.Released, ButtonState.Released, ButtonState.Released);
 	}
-
-	/// <summary>
-	/// Start fishing, if the current tool is not a fishing rod this will return false.
-	/// </summary>
-	/// <param name="power">This should be between 0 and 1, if this is greater or lower than it will be clamped in update to 1 or 0</param>
+	
 	private bool StartFishing(float power)
 	{
 		if (BotBase.Farmer.CurrentTool is not FishingRod) return false;
