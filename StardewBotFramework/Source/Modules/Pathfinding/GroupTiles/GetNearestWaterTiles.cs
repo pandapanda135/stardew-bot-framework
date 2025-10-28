@@ -149,12 +149,13 @@ public class GetNearestWaterTiles : AlgorithmBase
                 {
                     try
                     {
-                        if (!waterTiles[groupNeighbour.X, groupNeighbour.Y].isWater)
+                        if (waterTiles.GetUpperBound(0) < groupNeighbour.X ||
+                             waterTiles.GetUpperBound(1) < groupNeighbour.Y
+                            || waterTiles[groupNeighbour.X, groupNeighbour.Y].isWater) continue;
+                        
+                        if (!newGroup.Contains(tile))
                         {
-                            if (!newGroup.Contains(tile))
-                            {
-                                newGroup.Add(new WaterTile(new Point(groupNeighbour.X,groupNeighbour.Y),location));
-                            }
+                            newGroup.Add(new WaterTile(new Point(groupNeighbour.X,groupNeighbour.Y),location));
                         }
                     }
                     catch (Exception e)

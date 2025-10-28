@@ -19,7 +19,7 @@ internal static class PathfindingHelper
 		PathNode start = new PathNode(BotBase.Farmer.TilePoint.X, BotBase.Farmer.TilePoint.Y, null);
 
 		Stack<PathNode> path = await pathing.FindPath(start, goal, BotBase.CurrentLocation, 10000, canDestroy);
-		if (path.Count == 0) return false;
+		if (!path.Any()) return false;
 
 		Character? npc = null;
 		if (goal is Goal.GoalDynamic dynamic) npc = dynamic.Character;
@@ -28,11 +28,7 @@ internal static class PathfindingHelper
 		controller.StartMoveCharacter(path, npc);
 
 		Logger.Info($"thread pool: {Thread.CurrentThread.IsThreadPoolThread}");
-		// gets stuck here :(
-		_ = Task.Run(() =>
-		{
-			while (CharacterController.IsMoving()) {}
-		});
+		while (CharacterController.IsMoving()) {}
 
 		return true;
 	}

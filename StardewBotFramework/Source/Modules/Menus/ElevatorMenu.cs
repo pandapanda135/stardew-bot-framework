@@ -16,9 +16,9 @@ public class ElevatorMenu : MenuHandler
 		Menu = menu;
 	}
 
-	public void RemoveMenu()
+	public new void RemoveMenu()
 	{
-		Menu = null!;
+		_menu = null;
 	}
 
 	public void SelectButton(int index) => LeftClick(Menu.elevators[index]);

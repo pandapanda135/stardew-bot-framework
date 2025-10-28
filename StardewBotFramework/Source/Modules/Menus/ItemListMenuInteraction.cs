@@ -16,7 +16,7 @@ public class ItemListMenuInteraction : MenuHandler
 
 	public void SetMenu(ItemListMenu menu) => Menu = menu;
 
-	public void RemoveMenu() => _menu = null;
+	public new void RemoveMenu() => _menu = null;
 
 	public List<Item> GetItems() => BotBase.GetItemListItems();
 

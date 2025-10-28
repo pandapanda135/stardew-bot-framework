@@ -11,7 +11,7 @@ namespace StardewBotFramework.Source.Modules;
 public class FishingBar
 {
 	internal static event EventHandler? StaticCaughtFish;
-	private static FishingRod? fishingRod;
+	private static FishingRod? _fishingRod;
 	private static BobberBar? BobberBar
 	{
 		get
@@ -36,10 +36,10 @@ public class FishingBar
 	private static float _selectedPower = -1;
 	public static void Update(object? sender, UpdateTickingEventArgs e)
 	{
-		if (BotBase.Farmer.CurrentTool is FishingRod rod) fishingRod = rod;
+		if (BotBase.Farmer.CurrentTool is FishingRod rod) _fishingRod = rod;
 		else return;
 
-		if (fishingRod.fishCaught)
+		if (_fishingRod.fishCaught)
 		{
 			if (StaticCaughtFish is null) return;
 			StaticCaughtFish.Invoke(new FishingBar(),EventArgs.Empty);
@@ -47,12 +47,12 @@ public class FishingBar
 		
 		if (!BotBase.Farmer.UsingTool && _selectedPower < 0) return;
 
-		if (fishingRod.isNibbling && !fishingRod.hit && (!fishingRod.isReeling || !fishingRod.isFishing)) 
+		if (_fishingRod.isNibbling && !_fishingRod.hit && (!_fishingRod.isReeling || !_fishingRod.isFishing)) 
 		{
 			BotBase.Farmer.CurrentTool.DoFunction(BotBase.CurrentLocation,0,0,0,BotBase.Farmer);
 		}
 		
-		if (fishingRod.castingPower < Math.Clamp(_selectedPower,0,0.98))
+		if (_fishingRod.castingPower < Math.Clamp(_selectedPower,0,0.98))
 		{
 			BotBase.Instance?.Helper.Input.OverrideButton(SButton.MouseLeft, true);
 		}
@@ -75,9 +75,9 @@ public class FishingBar
 	
 	private bool StartFishing(float power)
 	{
-		if (BotBase.Farmer.CurrentTool is not FishingRod) return false;
+		if (BotBase.Farmer.CurrentTool is not StardewValley.Tools.FishingRod) return false;
 		
-		fishingRod = BotBase.Farmer.CurrentTool as FishingRod ?? new FishingRod();
+		_fishingRod = BotBase.Farmer.CurrentTool as FishingRod ?? new FishingRod();
 		_selectedPower = power;
 		
 		return true;
@@ -85,6 +85,6 @@ public class FishingBar
 
 	public void CloseRewardMenu()
 	{
-		fishingRod?.doneHoldingFish(BotBase.Farmer);
+		_fishingRod?.doneHoldingFish(BotBase.Farmer);
 	}
 }
