@@ -33,12 +33,15 @@ public class DestroyTerrainFeature
 				
 				while (tree.health.Value > 0)
 				{
+					if (BotBase.Farmer.UsingTool) continue;
+					
 					DestroyObject.UseTool();
 				}
 				
 				Logger.Info($"tree stump: {tree.stump.Value}");
-				while (!tree.stump.Value && tree.growthStage.Value >= 5) // after 5, the chance of moss growing increases 
-				{} // sometimes this doesn't work idk why
+				while (!tree.stump.Value && tree.growthStage.Value >= 5) // after 5 only the chance of moss growing increases 
+				{}
+				
 				if (tree.stump.Value)
 				{
 					Logger.Info($"running if");
@@ -47,6 +50,8 @@ public class DestroyTerrainFeature
 					
 					while (tree.health.Value > 0) // we do this in case there are stumps. ugly solution but it works
 					{
+						if (BotBase.Farmer.UsingTool) continue;
+						
 						DestroyObject.UseTool();
 					}
 				}

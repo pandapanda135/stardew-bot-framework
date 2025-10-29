@@ -27,7 +27,6 @@ internal static class PathfindingHelper
 		var controller = new CharacterController(BotBase.CurrentLocation);
 		controller.StartMoveCharacter(path, npc);
 
-		Logger.Info($"thread pool: {Thread.CurrentThread.IsThreadPoolThread}");
 		while (CharacterController.IsMoving()) {}
 
 		return true;

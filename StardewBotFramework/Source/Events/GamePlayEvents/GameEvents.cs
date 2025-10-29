@@ -20,6 +20,9 @@ public class GameEvents
 {
     public GameEvents(IModHelper helper)
     {
+        TaskDispatcher.Initialize();
+        helper.Events.GameLoop.UpdateTicking += TaskDispatcher.Update;
+        
         helper.Events.GameLoop.GameLaunched += OnGameLaunch;
         helper.Events.GameLoop.DayStarted += OnDayStarted;
         helper.Events.GameLoop.DayEnding += OnDayEnding;
@@ -42,6 +45,7 @@ public class GameEvents
         helper.Events.World.LargeTerrainFeatureListChanged += OnLargeTerrainFeatureListChanged;
         
         helper.Events.GameLoop.UpdateTicking += FishingBar.Update;
+        helper.Events.GameLoop.UpdateTicking += ToolHandling.Update;
         
         FishingBar.StaticCaughtFish += OnStaticCaughtFish;
         StaticChatMessageReceived += OnStaticChatMessageReceived;

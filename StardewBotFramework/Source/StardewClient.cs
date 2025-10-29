@@ -19,8 +19,8 @@ namespace StardewBotFramework.Source;
 /// </summary>
 public class StardewClient : BotBase
 {
-    public static ConcurrentDictionary<ITile,byte> DebugTiles = new();
-    public static ConcurrentDictionary<PathNode,byte> DebugNode = new();
+    public static readonly ConcurrentDictionary<ITile,byte> DebugTiles = new();
+    public static readonly ConcurrentDictionary<PathNode,byte> DebugNode = new();
     // private static BotBase? Instance { get; set; }
 
     // private readonly IModHelper _helper;

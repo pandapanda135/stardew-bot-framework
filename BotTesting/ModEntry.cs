@@ -299,7 +299,7 @@ internal sealed class ModEntry : Mod
         int endY = int.Parse(args[3]);
 
         List<GroundTile> tiles = Bot.Tool.CreateFarmLandTiles(new Rectangle(startX, startY, endX, endY));
-        Bot.Tool.MakeFarmLand(tiles);
+        // Bot.Tool.MakeFarmLand(tiles);
     }
 
     private void AddItemToBinCommand(string arg, string[] args)
