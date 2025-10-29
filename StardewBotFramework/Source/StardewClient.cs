@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using HarmonyLib;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Events.GamePlayEvents;
@@ -18,8 +19,8 @@ namespace StardewBotFramework.Source;
 /// </summary>
 public class StardewClient : BotBase
 {
-    public static List<ITile> debugTiles = new();
-    public static List<PathNode> debugNode = new();
+    public static ConcurrentDictionary<ITile,byte> DebugTiles = new();
+    public static ConcurrentDictionary<PathNode,byte> DebugNode = new();
     // private static BotBase? Instance { get; set; }
 
     // private readonly IModHelper _helper;

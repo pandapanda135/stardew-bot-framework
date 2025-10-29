@@ -31,7 +31,7 @@ public class DebugDraw
         InitializeOutlineTextures();
 
         Vector2 tileLocation = new Vector2(Game1.tileSize, Game1.tileSize);
-        foreach (ITile tile in StardewClient.debugTiles)
+        foreach (ITile tile in StardewClient.DebugTiles.Keys)
         {
             Color tileColor = Color.Green;
         
@@ -54,7 +54,7 @@ public class DebugDraw
         InitializeOutlineTextures();
 
         Vector2 tileLocation = new Vector2(Game1.tileSize, Game1.tileSize);
-        foreach (PathNode tile in StardewClient.debugNode)
+        foreach (PathNode tile in StardewClient.DebugNode.Keys)
         {
             Color tileColor = Color.Green;
         

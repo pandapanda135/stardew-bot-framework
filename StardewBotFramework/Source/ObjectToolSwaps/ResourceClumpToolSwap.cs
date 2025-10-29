@@ -12,9 +12,9 @@ public class ResourceClumpToolSwap
     {
         GameLocation location = BotBase.CurrentLocation;
         
-        int CurrentItemCategory = BotBase.Farmer.CurrentItem.Category;
-        string CurrentItemName = BotBase.Farmer.CurrentItem.Name;
-        bool CurrentItemNull = BotBase.Farmer.CurrentItem == null;
+        int currentItemCategory = BotBase.Farmer.CurrentItem.Category;
+        string currentItemName = BotBase.Farmer.CurrentItem.Name;
+        bool currentItemNull = BotBase.Farmer.CurrentItem == null;
         
         foreach (var clump in location.resourceClumps)
         {
@@ -22,7 +22,7 @@ public class ResourceClumpToolSwap
             {
                 if (clump is GiantCrop)
                 {
-                    if (CurrentItemNull || CurrentItemName != "Tapper")
+                    if (currentItemNull || currentItemName != "Tapper")
                     {
                         SwapItemHandler.SwapItem(typeof(Axe), "");
                     }

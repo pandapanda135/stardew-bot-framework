@@ -5,7 +5,7 @@ using StardewValley.TerrainFeatures;
 
 namespace StardewBotFramework.Source.ObjectDestruction;
 
-public class DestroyResourceClump
+public static class DestroyResourceClump
 {
 	public static void Destroy(ResourceClump clump)
 	{
@@ -39,7 +39,7 @@ public class DestroyResourceClump
 						break;
 				}
 				Logger.Info($"Destroying resourceClump");
-				// if (BotBase.Farmer.UsingTool) continue;
+				if (BotBase.Farmer.UsingTool) continue;
 				DestroyObject.UseTool();
 				Logger.Info($"after DestroyObject useTool");
 			}

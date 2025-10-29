@@ -14,7 +14,7 @@ public class DestroyTerrainFeature
 		GameLocation location = BotBase.CurrentLocation;
 
 		Logger.Info($"terrain feature in destroy: {terrainFeature.GetType()}");
-		if (terrainFeature is Bush)
+		if (terrainFeature is Bush or Grass)
 		{
 			do
 			{ 

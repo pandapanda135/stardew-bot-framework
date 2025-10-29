@@ -8,14 +8,14 @@ namespace StardewBotFramework.Source.ObjectToolSwaps;
 // Thanks to https://www.nexusmods.com/stardewvalley/mods/21050?tab=description as the SwapItem method comes from them,
 // you can see what they allow for their mod to be used for in the "Permissions and credits" tab. 
 
-public class SwapItemHandler
+public static class SwapItemHandler
 {
     /// <summary>
     /// This allows for swapping the currently selected item, this will also change the toolbar
     /// </summary>
     /// <param name="toolType">The <see cref="Type"/> of the tool.</param>
     /// <param name="meleeWeapon">This is for melee weapons, If you want to select the scythe pass "Scythe" else "Weapon"</param>
-    public static void SwapItem(Type toolType,string meleeWeapon)
+    public static bool SwapItem(Type toolType,string meleeWeapon)
     {
         switch (toolType)
         {
@@ -32,11 +32,10 @@ public class SwapItemHandler
                                 ChangeToolbar(BotBase.Farmer.Items.IndexOf(item));
                                 BotBase.Farmer.CurrentToolIndex = BotBase.Farmer.Items.IndexOf(item);
                             }
-
-                            return;
+                            
                         }
-
-                        return;
+                        
+                        break;
                     case "Weapon":
                         foreach (var item in BotBase.Farmer.Items)
                         {
@@ -46,11 +45,10 @@ public class SwapItemHandler
                             {
                                 ChangeToolbar(BotBase.Farmer.Items.IndexOf(item));
                                 BotBase.Farmer.CurrentToolIndex = BotBase.Farmer.Items.IndexOf(item);
-                                return;
                             }
                         }
 
-                        return;
+                        break;
                 }
 
                 break;
@@ -64,11 +62,13 @@ public class SwapItemHandler
                     
                     ChangeToolbar(BotBase.Farmer.Items.IndexOf(item));
                     BotBase.Farmer.CurrentToolIndex = BotBase.Farmer.Items.IndexOf(item);
-                    return;
+                    break;
                 }
 
-                return;
+                break;
         }
+
+        return BotBase.Farmer.CurrentTool.GetType() == toolType;
     }
 
     /// <summary>

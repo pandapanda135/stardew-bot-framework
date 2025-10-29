@@ -99,7 +99,7 @@ public class AStar : AlgorithmBase
                     Logger.Info($"this is new cost at start: {newCumulative}   next.cost: {next.Cost}");
                     
                     if (IPathing.PriorityFrontier.Contains(next) && newCumulative >= next.GCost) continue;
-                    StardewClient.debugNode.Add(next);
+                    StardewClient.DebugNode.GetOrAdd(next,byte.MinValue);
        
                     // ugly but it works
                     if (canDestroyObjects && IPathing.CollisionMap.IsBlocked(next.X,next.Y))
