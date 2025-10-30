@@ -755,7 +755,7 @@ public class ToolHandling
         return false;
     }
 
-    private bool PlaceObject(PlaceTile tile, bool checkPass = true)
+    private async Task<bool> PlaceObject(PlaceTile tile, bool checkPass = true)
     {
         Logger.Info($"starting place object");
         if (tile.ItemToPlace is null) return false;
@@ -763,7 +763,7 @@ public class ToolHandling
         SwapItemHandler.SwapObject(tile.ItemToPlace);
         Logger.Info($"object: {BotBase.Farmer.ActiveObject.Name}");
         
-        if (!BotBase.CurrentLocation.CanItemBePlacedHere(tile.Position.ToVector2()))
+        if (!BotBase.CurrentLocation.CanItemBePlacedHere(tile.Position.ToVector2(),tile.ItemToPlace.isPassable()))
         {
             return false;
         }
@@ -777,20 +777,18 @@ public class ToolHandling
             ChangeFacingDirection(direction);
             return PlaceCurrentAndModifyMap(tile.Position);
         }
+
+        bool result = await PathfindingHelper.Goto(new Goal.GetToTile(tile.X, tile.Y), false, false);
         
-        
-        bool result = Task.Run(async () => await PathfindingHelper.Goto(new Goal.GetToTile(tile.X, tile.Y)
-            , false,false)).Result;
-                
         if (!result)
         {
             Logger.Error($"Stack was empty");
         }
         
         // I don't know if we need this here but, I want to make sure.
-        if (tile.TerrainFeature is HoeDirt dirt && !dirt.canPlantThisSeedHere(tile.ItemToPlace?.ItemId)) return false;
+        if (tile.TerrainFeature is HoeDirt dirt && tile.ItemToPlace.Category == -74 && !dirt.canPlantThisSeedHere(tile.ItemToPlace.ItemId)) return false;
         
-        // will sometimes path-find to tile, this should not happen, I'm too lazy to fix this.
+        // will sometimes path-find to tile.
         if (BotBase.Farmer.TilePoint == tile.Position)
         {
             return tile.TerrainFeature is HoeDirt && PlaceCurrentAndModifyMap(tile.Position);
@@ -812,7 +810,7 @@ public class ToolHandling
     /// <param name="startTile"></param>
     /// <param name="itemToPlace">An instance of the item you want to place, you should probably get this from the bot's inventory.</param>
     /// <param name="radius"></param>
-    public void PlaceObjectsInRadius(Point startTile,Object itemToPlace,int radius)
+    public List<ITile> PlaceObjectsInRadius(Point startTile,Object itemToPlace,int radius)
     {
         List<PlaceTile> tiles = new();
         GameLocation location = BotBase.CurrentLocation;
@@ -844,60 +842,95 @@ public class ToolHandling
                         obj = objDict[new Vector2(x, y)];
                     }
                 }
+                
+                if (!itemToPlace.canBePlacedHere(BotBase.CurrentLocation,new(x,y))) continue;
                 Logger.Info($"Adding tile at: {new Point(x,y)} {itemToPlace.Name}");
                 tiles.Add(new PlaceTile(new Point(x,y),location,terrainFeature,resourceClump,obj,itemToPlace));
             }
         }
 
-        PlaceObjectsAtTiles(tiles);
+        return new List<ITile>(tiles);
     }
 
+    /// <summary>
+    /// This can be used to place objects at the provided tiles.
+    /// </summary>
+    /// <param name="tiles">These should be <see cref="PlaceTile"/> you can get these from <see cref="PlaceObjectsInRadius"/>.
+    /// If you are making your own tiles, you should make sure the item can be placed at the position.</param>
+    /// <param name="checkPass">This will check if the object you are placing is passable.</param>
+    public void PlaceObjects(List<ITile> tiles, bool checkPass = true)
+    {
+        _checkPass = checkPass;
+        _tiles = tiles;
+        _runAction = PlaceObjectsAtTiles;
+    }
+
+    private bool _checkPass;
     /// <summary>
     /// Place the object at the provided tiles.
     /// </summary>
     /// <param name="tiles">Will place the object in <see cref="PlaceTile.ItemToPlace"/> if there is none or that tile
     /// is blocked, that tile will be skipped.
     /// </param>
-    /// <param name="checkPass">Check if the item is passable</param>
-    public void PlaceObjectsAtTiles(List<PlaceTile> tiles, bool checkPass = true)
+    private async void PlaceObjectsAtTiles(List<ITile> tiles)
     {
-        TaskDispatcher.SwitchToMainThread();
-        AlgorithmBase.IPathing pathing = new AStar.Pathing();
-        pathing.BuildCollisionMap(BotBase.CurrentLocation);
-        PriorityQueue<PlaceTile, int> groundTileQueue = new();
-        int tileAmount = tiles.Count;
-        Logger.Info($"tile amount: {tileAmount}  queue amount: {groundTileQueue.Count}");
-        for (int i = 0; i < tileAmount; i++)
+        if (BotBase.Farmer.UsingTool) return;
+
+        try
         {
-            while (BotBase.Farmer.UsingTool)
-            {
-            }
-            groundTileQueue.Clear();
-            // reorder priority queue on new cost
-            foreach (var tile in tiles.Where(tile => !tile.WaterTile && tile.ItemToPlace is not null))
-            {
-                groundTileQueue.Enqueue(tile,tile.Cost);
-            }
-            
-            PlaceTile placeTile = groundTileQueue.Dequeue();
-            tiles.Remove(placeTile);
-            
-            if (placeTile.ItemToPlace is null) continue;
-            
-            // if is blocked
-            if (placeTile.ResourceClump is not null || placeTile.Obj is not null) continue;
-            if (placeTile.ItemToPlace.Category == -47 && (placeTile.TerrainFeature is not HoeDirt ||
-                                                          (placeTile.TerrainFeature is HoeDirt dirt &&
-                                                           !dirt.canPlantThisSeedHere(placeTile.ItemToPlace.ItemId))))
-            {
-                Logger.Info($"skipping: {placeTile.Position}  run: {i}");
-                continue;
-            }
-            
-            Logger.Info($"placing at {placeTile.Position}");
-            bool result = PlaceObject(placeTile,checkPass);
-            
+            await TaskDispatcher.SwitchToMainThread();
+            AlgorithmBase.IPathing pathing = new AStar.Pathing();
+            pathing.BuildCollisionMap(BotBase.CurrentLocation);
+        }
+        catch (Exception e)
+        {
+            Logger.Error($"{e}");
+            return;
+        }
+        
+        PriorityQueue<PlaceTile, int> groundTileQueue = new();
+
+        // reorder priority queue on new cost
+        foreach (var tile in tiles.Where(tile => tile is PlaceTile { WaterTile: false, ItemToPlace: not null }))
+        {
+            if (tile is not PlaceTile pt) continue;
+            groundTileQueue.Enqueue(pt, pt.Cost);
+        }
+
+        if (groundTileQueue.Count == 0) return;
+        PlaceTile placeTile = groundTileQueue.Dequeue();
+        tiles.Remove(placeTile);
+
+        if (placeTile.ItemToPlace is null) return;
+        
+        // if the tile is already blocked
+        if (placeTile.ResourceClump is not null || placeTile.Obj is not null) return;
+        
+        // if the item to place is seed or fertilizer and the tile does not support the seed or fertilizer return
+        // these are separated to stop it from being as ugly
+        if (placeTile.ItemToPlace.Category == -74 && (placeTile.TerrainFeature is not HoeDirt || (placeTile.TerrainFeature is HoeDirt dirt 
+                && !dirt.canPlantThisSeedHere(Crop.ResolveSeedId(placeTile.ItemToPlace.ItemId,BotBase.CurrentLocation)))))
+        {
+            Logger.Info($"skipping: {placeTile.Position}");
+            return;
+        }
+
+        if (placeTile.ItemToPlace.Category == -19 && (placeTile.TerrainFeature is not HoeDirt ||
+            (placeTile.TerrainFeature is HoeDirt d &&!d.CanApplyFertilizer(placeTile.ItemToPlace.ItemId))))
+        {
+            Logger.Info($"skipping: {placeTile.Position}");
+            return;
+        }
+        
+        Logger.Info($"placing at {placeTile.Position}");
+        try
+        {
+            bool result = await PlaceObject(placeTile,_checkPass);
             Logger.Info($"result of object in way: {result}    false is bad :(");
+        }
+        catch (Exception e)
+        {
+            Logger.Error($"{e}");
         }
     }
 
