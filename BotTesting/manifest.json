@@ -6,5 +6,10 @@
   "UniqueID": "Panda.BotTesting",
   "EntryDll": "BotTesting.dll",
   "MinimumApiVersion": "4.0.0",
-  "UpdateKeys": []
+  "UpdateKeys": [],
+  "Dependencies": [
+      {
+         "UniqueID": "Panda.BotFramework"
+      }
+  ]
 }
