@@ -93,4 +93,25 @@ public class Graph : IGraph
         blockedDirections = blockedAmount;
         return blocked;
     }
+
+    /// <summary>
+    /// Returns the first non-blocked tile found. If no tiles are blocked will return a Point of -1,-1
+    /// </summary>
+    public static Point GetNonBlockedNeighbour(Point startTile,out int direction, int directions = 8)
+    {
+        for (int i = 0; i < directions; i++)
+        {
+            int neighborX = startTile.X + IGraph.GroupDirections[i, 0];
+            int neighborY = startTile.Y + IGraph.GroupDirections[i, 1];
+
+            if (!AlgorithmBase.IPathing.CollisionMap.IsBlocked(neighborX, neighborY))
+            {
+                direction = i;
+                return new Point(neighborX, neighborY);
+            }
+        }
+
+        direction = -1;
+        return new Point(-1, -1);
+    }
 }

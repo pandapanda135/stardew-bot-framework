@@ -26,13 +26,9 @@ public static class SwapItemHandler
                         foreach (var item in BotBase.Farmer.Items)
                         {
                             if (item is not Tool tool || !tool.isScythe() || item.GetType() != toolType) continue;
-                            
-                            if (BotBase.Farmer.CurrentToolIndex != BotBase.Farmer.Items.IndexOf(item))
-                            {
-                                ChangeToolbar(BotBase.Farmer.Items.IndexOf(item));
-                                BotBase.Farmer.CurrentToolIndex = BotBase.Farmer.Items.IndexOf(item);
-                            }
-                            
+
+                            ChangeIndex(item);
+                            break;
                         }
                         
                         break;
@@ -40,12 +36,9 @@ public static class SwapItemHandler
                         foreach (var item in BotBase.Farmer.Items)
                         {
                             if (item is not Tool tool || tool.isScythe() || item.GetType() != toolType) continue;
-                            
-                            if (BotBase.Farmer.CurrentToolIndex != BotBase.Farmer.Items.IndexOf(item))
-                            {
-                                ChangeToolbar(BotBase.Farmer.Items.IndexOf(item));
-                                BotBase.Farmer.CurrentToolIndex = BotBase.Farmer.Items.IndexOf(item);
-                            }
+
+                            ChangeIndex(item);
+                            break;
                         }
 
                         break;
@@ -55,13 +48,9 @@ public static class SwapItemHandler
             default: // non melee weapon items
                 foreach (var item in BotBase.Farmer.Items)
                 {
-                    if (item is null) continue;
-                    if (item.GetType() != toolType) continue;
-                    
-                    if (BotBase.Farmer.CurrentToolIndex == BotBase.Farmer.Items.IndexOf(item)) continue;
-                    
-                    ChangeToolbar(BotBase.Farmer.Items.IndexOf(item));
-                    BotBase.Farmer.CurrentToolIndex = BotBase.Farmer.Items.IndexOf(item);
+                    if (item is null || item.GetType() != toolType) continue;
+
+                    ChangeIndex(item);
                     break;
                 }
 
@@ -69,6 +58,15 @@ public static class SwapItemHandler
         }
 
         return BotBase.Farmer.CurrentTool.GetType() == toolType;
+    }
+
+    private static void ChangeIndex(Item obj)
+    {
+        int index = BotBase.Farmer.Items.IndexOf(obj);
+        if (BotBase.Farmer.CurrentToolIndex == index) return;
+            
+        ChangeToolbar(index);
+        BotBase.Farmer.CurrentToolIndex = index;
     }
 
     /// <summary>
@@ -79,13 +77,15 @@ public static class SwapItemHandler
         foreach (var item in BotBase.Farmer.Items)
         {
             if (item is null || item != obj) continue;
-            if (BotBase.Farmer.CurrentToolIndex == BotBase.Farmer.Items.IndexOf(item)) return;
             
-            ChangeToolbar(BotBase.Farmer.Items.IndexOf(item));
-            BotBase.Farmer.CurrentToolIndex = BotBase.Farmer.Items.IndexOf(item);
-
+            ChangeIndex(item);
             return;
         }
+    }
+    
+    public static void SwapItem(Item item)
+    {
+        SwapObject((Object)item);
     }
     
     private static readonly List<string> FertilizerItemIds = new() { "368", "369", "370", "371" };
