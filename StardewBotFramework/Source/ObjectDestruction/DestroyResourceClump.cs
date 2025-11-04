@@ -10,6 +10,10 @@ public static class DestroyResourceClump
 	public static void Destroy(ResourceClump clump)
 	{
 		GameLocation location = BotBase.CurrentLocation;
+		if (!location.resourceClumps.Contains(clump))
+		{
+			return;
+		}
 
 		if (clump is GiantCrop crop) // idk what these are
 		{

@@ -8,6 +8,11 @@ public class DestroyLitterObject
 {
 	public static void Destroy(Object obj)
 	{
+		if (!BotBase.CurrentLocation.Objects.TryGetValue(obj.TileLocation, out var value) || value is null)
+		{
+			return;
+		}
+		
 		// should work fine for now maybe should be a bit more complicated
 		if (IsDestructible(obj))
 		{

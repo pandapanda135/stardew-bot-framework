@@ -1,4 +1,4 @@
-using StardewBotFramework.Debug;
+using Microsoft.Xna.Framework;
 using StardewBotFramework.Source.Modules.Pathfinding.Algorithms;
 using StardewBotFramework.Source.Modules.Pathfinding.Base;
 using StardewValley;
@@ -54,5 +54,18 @@ internal static class PathfindingHelper
 		while (CharacterController.IsMoving())
 		{
 		}
+	}
+
+	private static readonly AlgorithmBase.IPathing Pathing = new AStar.Pathing();
+	public static void BuildCollisionMap()
+	{
+		Pathing.BuildCollisionMap(BotBase.CurrentLocation);
+	}
+
+	public static void BuildCollisionMapInRadius(Point startTile, int radius)
+	{
+		Pathing.BuildCollisionMap(BotBase.CurrentLocation,
+			startTile.X + radius, startTile.Y + radius,
+			startTile.X - radius, startTile.Y - radius);
 	}
 }

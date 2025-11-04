@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Utilities;
 using StardewValley;
@@ -21,7 +22,7 @@ public class AlgorithmBase
         /// <summary>
         /// this contains Nodes the pathfinding has already reached
         /// </summary>
-        public static readonly HashSet<PathNode> ClosedList = new();
+        public static readonly ConcurrentBag<PathNode> ClosedList = new();
 
         protected static readonly Graph Graph = new();
 

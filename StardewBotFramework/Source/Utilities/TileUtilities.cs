@@ -12,5 +12,8 @@ internal static class TileUtilities
 	internal static Point TileToScreen(Vector2 tile)
 	{
 		return new Point((int)(tile.X * Game1.tileSize) - Game1.viewport.X, (int)(tile.Y * Game1.tileSize) - Game1.viewport.Y);
-	} 
+	}
+
+	internal static bool IsTileTillable(GameLocation location, Point tile) => 
+		location.doesTileHaveProperty((int)tile.X, (int)tile.Y, "Diggable", "Back") != null;
 }
