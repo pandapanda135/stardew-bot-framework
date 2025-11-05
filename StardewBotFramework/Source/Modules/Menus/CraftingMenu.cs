@@ -26,9 +26,8 @@ public class CraftingMenu : MenuHandler
 
 	public void SetPageUI()
 	{
-		GameMenu gameMenu = new GameMenu();
-		Rectangle bounds = gameMenu.tabs[4].bounds;
-		gameMenu.receiveLeftClick(bounds.X,bounds.Y);
+		// this is based on .pages index
+		GameMenu gameMenu = new GameMenu(4);
 		Game1.activeClickableMenu = gameMenu;
 		
 		if (gameMenu.GetCurrentPage() is CraftingPage page)
@@ -40,7 +39,12 @@ public class CraftingMenu : MenuHandler
 	public bool CraftItem(CraftingRecipe recipe,int amount = 1)
 	{
 		List<ClickableTextureComponent> components = GetPageComponents().Keys.ToList(); 
-		int index = GetPageItems().IndexOf(recipe);
+		int index = GetPageItems().Select(r => r.createItem().ItemId).ToList().IndexOf(recipe.createItem().ItemId);
+		if (index == -1)
+		{
+			Logger.Error($"Index was -1");
+			return false;
+		}
 		for (int i = 0; i < amount; i++)
 		{
 			LeftClick(components[index]);
