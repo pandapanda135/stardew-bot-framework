@@ -12,7 +12,7 @@ public class AlgorithmBase
     {
         protected static PathQueue Frontier = new();
 
-        protected static PathPriorityQueue PriorityFrontier = new();
+        protected static readonly PathPriorityQueue PriorityFrontier = new();
         
         /// <summary>
         /// This is used to keep track of the final node as we get the path from traversing the node's parent
@@ -42,17 +42,17 @@ public class AlgorithmBase
             PathNode current = finalNode;
             Stack<PathNode> correctPath = new();
 
-            Logger.Info($"starting while loop in rebuildPath");
             while (!current.Equals(startPoint))
             {
                 correctPath.Push(current);
                 if (current.Parent is null) break;
                 
+                #if DEBUG
                 Logger.Info($"{current.VectorLocation} checking parent {current.Parent.VectorLocation}");
+                #endif
                 current = current.Parent;
             }
             
-            Logger.Info($"Ending RebuildPath");
             return correctPath;
         }
 
@@ -63,7 +63,9 @@ public class AlgorithmBase
         public static bool NodeChecks(PathNode currentNode,
             GameLocation location)
         {
+            #if DEBUG
             Logger.Info($"Current tile {currentNode.X},{currentNode.Y}");
+            #endif
             
             // look into if removing 1 from the greater than check is needed anywhere as I don't think it is right now
             if (currentNode.X > (location.Map.DisplayWidth / Game1.tileSize) ||
@@ -105,6 +107,7 @@ public class AlgorithmBase
             Logger.Error($"size of map {maxX},{maxY}");
             
             // TODO: The walls of caves just don't get added in character controller for some reason when this is ran after already being ran in that location
+            // has this been fixed?
             for (int x = minX; x <= maxX; x++)
             {
                 for (int y = minY; y <= maxY; y++)

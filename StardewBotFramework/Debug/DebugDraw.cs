@@ -8,19 +8,19 @@ using StardewValley;
 
 namespace StardewBotFramework.Debug;
 
-public class DebugDraw
+public static class DebugDraw
 {
-    private static bool _textureInitialized;
+    public static bool TextureInitialized;
     private static Texture2D? _outLineTexture;    
     
     private static void InitializeOutlineTextures()
     {
-        if (_textureInitialized) return;
+        if (TextureInitialized) return;
         
         // Tile outline texture setup            
         _outLineTexture = new Texture2D(Game1.graphics.GraphicsDevice, 1, 1);
         _outLineTexture.SetData(new Color[] { Color.White });
-        _textureInitialized = true;
+        TextureInitialized = true;
     }
 
     /// <summary>

@@ -36,11 +36,8 @@ public class AStar : AlgorithmBase
             
             int increase = 0;
             IPathing.PriorityFrontier.Enqueue(startPoint, 0);
-            // may need this later so will keep for now
-            // IPathing.ClosedList.Add(startPoint);
             
             Dictionary<Vector2, Object> locationObjects = new();
-            
             if (canDestroyObjects)
             {
                 foreach (var locationObject in location.Objects)
@@ -87,7 +84,9 @@ public class AStar : AlgorithmBase
                     break;
                 }
                 
+                #if DEBUG
                 Logger.Info($"this is current: {current.VectorLocation}");
+                #endif
                 // Neighbour search
                 Queue<PathNode> neighbours = IPathing.Graph.Neighbours(current);
                 foreach (var next in neighbours.Where(node => 
@@ -96,10 +95,9 @@ public class AStar : AlgorithmBase
                              || canDestroyObjects && locationObjects.ContainsKey(node.VectorLocation.ToVector2())))
                 {
                     int newCumulative = current.GCost + next.Cost;
-                    Logger.Info($"this is new cost at start: {newCumulative}   next.cost: {next.Cost}");
                     
                     if (IPathing.PriorityFrontier.Contains(next) && newCumulative >= next.GCost) continue;
-                    StardewClient.DebugNode.GetOrAdd(next,byte.MinValue);
+                    if (DebugDraw.TextureInitialized) StardewClient.DebugNode.GetOrAdd(next,byte.MinValue);
        
                     // ugly but it works
                     if (canDestroyObjects && IPathing.CollisionMap.IsBlocked(next.X,next.Y))
@@ -113,7 +111,9 @@ public class AStar : AlgorithmBase
                     // we weight heuristic to find a path quicker, this may lead to more inefficient paths though.
                     // Also multiply to make heuristic be similar to GCost. This stops issues like waving in and out of a straight line.
                     int priority = next.GCost + (goal.ManhattanHeuristic(next) * AverageTileCost);
-                    Logger.Info($"A Star estimated heuristic {priority}");
+                    #if DEBUG
+                    Logger.Info($"A Star estimated heuristic {priority}  cumulative:  {newCumulative}   next.cost: {next.Cost}");
+                    #endif
                     IPathing.PriorityFrontier.Enqueue(next, priority);
                 }
 
