@@ -74,21 +74,23 @@ public class Shop : MenuHandler
     /// </summary>
     /// <param name="index">The index of item to buy.</param>
     /// <param name="quantity">Amount of item to buy.</param>
-    //TODO: Still need padding / bounds? 
-    public void BuyItem(int index, int quantity)
+    public async Task BuyItem(int index, int quantity)
     {
+        await TaskDispatcher.SwitchToMainThread();
         if (index < 4)
         {
             for (int i = 0; i < quantity; i++)
             {
-                LeftClick(Menu.forSaleButtons[index].bounds.X + 10, Menu.forSaleButtons[index].bounds.Y + 10);
+                LeftClick(Menu.forSaleButtons[index]);
             }
+            await Task.Delay(500);
+            await TaskDispatcher.SwitchToMainThread();
 
             for (int i = 0; i < Menu.inventory.actualInventory.Count; i++)
             {
                 if (Menu.inventory.actualInventory[i] is null)
                 {
-                    LeftClick(Menu.inventory.inventory[i].bounds.X + 1, Menu.inventory.inventory[i].bounds.Y + 1);
+                    LeftClick(Menu.inventory.inventory[i]);
                 }
             }
             
@@ -96,29 +98,32 @@ public class Shop : MenuHandler
         }
         
         // use down arrow
-        for (int i = index; i >= 4; i--)
+        for (int i = index; i >= 3; i--)
         {
-            LeftClick(Menu.downArrow);   
+            LeftClick(Menu.downArrow);
         }
+
+        await Task.Delay(500);
+        await TaskDispatcher.SwitchToMainThread();
         
-        // buy amount
-        int maxIndex = Menu.forSaleButtons.Count - 1;
+        // TODO: this may have issues with buttons at the bottom, probably just need to find a new way to handle this.
+        var bottomButton = Menu.forSaleButtons[^1];
         for (int i = 0; i < quantity; i++)
         {
-            Logger.Info($"buying click {i}");
-            LeftClick(Menu.forSaleButtons[maxIndex]);    
+            LeftClick(bottomButton);
         }
-        
+        await Task.Delay(500);
+        await TaskDispatcher.SwitchToMainThread();
+
         for (int i = 0; i < Menu.inventory.actualInventory.Count; i++)
         {
-            if (Menu.inventory.actualInventory[i] is null)
-            {
-                LeftClick(Menu.inventory.inventory[i].bounds.X + 1, Menu.inventory.inventory[i].bounds.Y + 1);
-            }
+            if (Menu.inventory.actualInventory[i] is not null) continue;
+            
+            LeftClick(Menu.inventory.inventory[i]);
         }
-        
+
         // go back to top
-        for (int i = index; i >= 4; i--)
+        for (int i = index; i >= 3; i--)
         {
             Logger.Info($"using down arrow  i: {i}");
             LeftClick(Menu.upArrow);   
@@ -130,14 +135,14 @@ public class Shop : MenuHandler
     /// </summary>
     /// <param name="item">Item to buy.</param>
     /// <param name="quantity">Amount of item to buy.</param>
-    public void BuyItem(Item item, int quantity)
+    public async Task BuyItem(Item item, int quantity)
     {
         for (int i = 0; i < Menu.forSale.Count; i++)
         {
             if (Menu.forSale[i].Name != item.Name) continue;
             
-            BuyItem(i, quantity);
-            return;
+            await BuyItem(i, quantity);
+            await TaskDispatcher.SwitchToMainThread();
         }
     }
 

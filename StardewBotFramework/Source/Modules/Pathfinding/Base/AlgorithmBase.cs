@@ -72,7 +72,9 @@ public class AlgorithmBase
                 currentNode.Y > (location.Map.DisplayHeight / Game1.tileSize) ||
                 currentNode.X < -1 || currentNode.Y < -1)
             {
+                #if DEBUG
                 Logger.Info($"Blocking this tile due to off map: {currentNode.X},{currentNode.Y}");
+                #endif
                 return false;
             }
 
