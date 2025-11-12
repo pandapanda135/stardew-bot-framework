@@ -1,5 +1,7 @@
 using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
+using StardewBotFramework.Source.ObjectToolSwaps;
+using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
@@ -58,6 +60,24 @@ public class ObjectInteraction
     public bool InteractWithObject(Object selectedObject)
     {
         return selectedObject.checkForAction(BotBase.Farmer); // this should change to checkForActionOn{Object} in this function
+    }
+
+    /// <summary>
+    /// This will run the required functions to collect a quest object, quest objects can be found in GameLocation's overlayObject.
+    /// This will also try to switch currently active slot to the first empty one to make sure a tool cannot get in the way to interacting. 
+    /// </summary>
+    /// <param name="o">The quest object</param>
+    /// <returns>if the object has been interacted with.</returns>
+    public bool InteractWithQuestObject(Object o)
+    {
+        Point point = o.TileLocation.ToPoint();
+        SwapItemHandler.EquipFirstEmptySlot();
+        BotBase.Instance?.Helper.Input.SetCursorPosition(point.X * Game1.tileSize + 32,point.Y * Game1.tileSize + 32);
+        BotBase.Instance?.Helper.Input.OverrideButton(SButton.MouseRight,true);
+        o.clicked(BotBase.Farmer);
+        o.checkForAction(BotBase.Farmer);
+        o.performUseAction(BotBase.CurrentLocation);
+        return o.checkForAction(BotBase.Farmer);
     }
 
     /// <summary>

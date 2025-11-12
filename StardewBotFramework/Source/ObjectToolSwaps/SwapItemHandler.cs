@@ -69,6 +69,25 @@ public static class SwapItemHandler
         BotBase.Farmer.CurrentToolIndex = index;
     }
 
+    public static bool EquipFirstEmptySlot()
+    {
+        if (BotBase.Farmer.Items.Count < BotBase.Farmer.MaxItems)
+        {
+            BotBase.Farmer.CurrentToolIndex = BotBase.Farmer.Items.Count + 1;
+            return true;
+        }
+
+        for (int i = 0; i < BotBase.Farmer.Items.Count; i++)
+        {
+            if (BotBase.Farmer.Items[i] is not null) continue;
+
+            BotBase.Farmer.CurrentToolIndex = i;
+            return true;
+        }
+
+        return false;
+    }
+
     /// <summary>
     /// Change the currently selected object to whatever you specify. 
     /// </summary>

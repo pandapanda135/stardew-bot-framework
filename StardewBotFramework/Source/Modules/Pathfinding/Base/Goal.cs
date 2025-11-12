@@ -6,8 +6,33 @@ namespace StardewBotFramework.Source.Modules.Pathfinding.Base;
 // possibly move these all to separate files in a separate directory?
 public class Goal
 {
-    public int X;
-    public int Y;
+    public int X
+    {
+        get
+        {
+            if (this is not GoalDynamic dynamic) return _x;
+            
+            _x = dynamic.Character.TilePoint.X;
+            return _x;
+        }
+        private init => _x = value;
+    }
+
+    private int _x;
+
+    public int Y
+    {
+        get
+        {
+            if (this is not GoalDynamic dynamic) return _y;
+            
+            _y = dynamic.Character.TilePoint.Y;
+            return _y;
+        }
+        private init => _y = value;
+    }
+
+    private int _y;
 
     public Point VectorLocation => new(X, Y);
 
@@ -24,7 +49,7 @@ public class Goal
     /// <summary>
     /// Check if node is at end
     /// </summary>
-    /// <param name="node">The node you want to now if it is end</param>
+    /// <param name="node">The node to check if it is the end</param>
     /// <returns>true if end otherwise false </returns>
     private bool IsEnd(PathNode node)
     {
@@ -108,12 +133,10 @@ public class Goal
 
         public GoalDynamic(Character character, int range)
         {
-            X = character.TilePoint.X;
-            Y = character.TilePoint.Y;
             Character = character;
             _radius = range;
         }
 
-        public override bool CanEnd(PathNode node, bool cardinal) => IsInEndRadius(Character.TilePoint, _radius, cardinal);
+        public override bool CanEnd(PathNode node, bool cardinal) => IsInEndRadius(node, _radius, cardinal);
     }
 }
