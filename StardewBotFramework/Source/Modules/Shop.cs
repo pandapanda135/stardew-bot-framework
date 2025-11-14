@@ -72,7 +72,7 @@ public class Shop : MenuHandler
     /// <summary>
     /// Buy an item from the shop based on it's corresponding index in the shop's UI.
     /// </summary>
-    /// <param name="index">The index of item to buy.</param>
+    /// <param name="index">The index of item to buy, you may need to increase the index by 1.</param>
     /// <param name="quantity">Amount of item to buy.</param>
     public async Task BuyItem(int index, int quantity)
     {
@@ -85,14 +85,8 @@ public class Shop : MenuHandler
             }
             await Task.Delay(500);
             await TaskDispatcher.SwitchToMainThread();
-
-            for (int i = 0; i < Menu.inventory.actualInventory.Count; i++)
-            {
-                if (Menu.inventory.actualInventory[i] is null)
-                {
-                    LeftClick(Menu.inventory.inventory[i]);
-                }
-            }
+            
+            StackHeldInInventory();
             
             return;
         }
@@ -115,12 +109,7 @@ public class Shop : MenuHandler
         await Task.Delay(500);
         await TaskDispatcher.SwitchToMainThread();
 
-        for (int i = 0; i < Menu.inventory.actualInventory.Count; i++)
-        {
-            if (Menu.inventory.actualInventory[i] is not null) continue;
-            
-            LeftClick(Menu.inventory.inventory[i]);
-        }
+        StackHeldInInventory();
 
         // go back to top
         for (int i = index; i >= 3; i--)
@@ -129,7 +118,7 @@ public class Shop : MenuHandler
             LeftClick(Menu.upArrow);   
         }
     }
-
+    
     /// <summary>
     /// Buy an <see cref="Item"/> from the shop.
     /// </summary>
@@ -139,10 +128,42 @@ public class Shop : MenuHandler
     {
         for (int i = 0; i < Menu.forSale.Count; i++)
         {
-            if (Menu.forSale[i].Name != item.Name) continue;
+            Logger.Info($"for sale: {i}   {Menu.forSale[i].DisplayName}");
+            if (Menu.forSale[i].DisplayName != item.DisplayName) continue;
             
-            await BuyItem(i, quantity);
+            // we need to increase by one due to buttons being weird :)
+            await BuyItem(i + 1, quantity);
             await TaskDispatcher.SwitchToMainThread();
+        }
+    }
+    
+    private void StackHeldInInventory()
+    {
+        Item currentlyHeld = ItemRegistry.Create(Menu.heldItem.GetItemTypeId());
+        if (Menu.inventory.actualInventory.Any(item =>
+                item is not null && item.ItemId == currentlyHeld.ItemId && item.Stack < item.maximumStackSize())) 
+        {
+            for (int i = 0; i < Menu.inventory.actualInventory.Count; i++)
+            {
+                Item? item = Menu.inventory.actualInventory[i];
+                if (item.ItemId != currentlyHeld.ItemId && item.Stack >= item.maximumStackSize()) continue;
+            
+                LeftClick(Menu.inventory.inventory[i]);
+                if (Menu.heldItem.Stack != 0) continue;
+				
+                return;
+            }	
+			
+            return;
+        }
+        
+        for (int i = 0; i < Menu.inventory.actualInventory.Count; i++)
+        {
+            Item? item = Menu.inventory.actualInventory[i];
+            if (item is not null && (item.ItemId != currentlyHeld.ItemId ||
+                                     item.Stack >= item.maximumStackSize())) continue;
+            
+            LeftClick(Menu.inventory.inventory[i]);
         }
     }
 

@@ -68,16 +68,13 @@ public class ObjectInteraction
     /// </summary>
     /// <param name="o">The quest object</param>
     /// <returns>if the object has been interacted with.</returns>
-    public bool InteractWithQuestObject(Object o)
+    public void InteractWithQuestObject(Object o)
     {
         Point point = o.TileLocation.ToPoint();
         SwapItemHandler.EquipFirstEmptySlot();
         BotBase.Instance?.Helper.Input.SetCursorPosition(point.X * Game1.tileSize + 32,point.Y * Game1.tileSize + 32);
         BotBase.Instance?.Helper.Input.OverrideButton(SButton.MouseRight,true);
-        o.clicked(BotBase.Farmer);
-        o.checkForAction(BotBase.Farmer);
         o.performUseAction(BotBase.CurrentLocation);
-        return o.checkForAction(BotBase.Farmer);
     }
 
     /// <summary>
