@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
 using StardewBotFramework.Source.ObjectToolSwaps;
+using StardewBotFramework.Source.Utilities;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Objects;
@@ -70,9 +71,9 @@ public class ObjectInteraction
     /// <returns>if the object has been interacted with.</returns>
     public void InteractWithQuestObject(Object o)
     {
-        Point point = o.TileLocation.ToPoint();
+        var (x, y) = TileUtilities.TileToScreen(o.TileLocation);
         SwapItemHandler.EquipFirstEmptySlot();
-        BotBase.Instance?.Helper.Input.SetCursorPosition(point.X * Game1.tileSize + 32,point.Y * Game1.tileSize + 32);
+        BotBase.Instance?.Helper.Input.SetCursorPosition(x + 32,y + 32);
         BotBase.Instance?.Helper.Input.OverrideButton(SButton.MouseRight,true);
         o.performUseAction(BotBase.CurrentLocation);
     }
