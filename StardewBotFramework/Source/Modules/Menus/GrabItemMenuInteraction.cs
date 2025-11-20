@@ -1,7 +1,7 @@
 using Microsoft.Xna.Framework;
+using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Utilities;
 using StardewValley;
-using StardewValley.Inventories;
 using StardewValley.Menus;
 
 namespace StardewBotFramework.Source.Modules.Menus;
@@ -101,38 +101,65 @@ public class GrabItemMenuInteraction : MenuHandler
     {
         int slotIndex = inventory.IndexOf(slotItem);
 
-        var newItem = inventory[slotIndex]?.getOne();
-        if (newItem is null) return null;
+        Item? item = inventory[slotIndex];
+        
+        var newItem = item.getOne();
         newItem.Stack = stack;
         Item? consumeItem = slotItem.ConsumeStack(newItem.Stack);
         if (consumeItem is null)
-            ItemGrabBehaviour(inventory[slotIndex]);
+            ItemGrabBehaviour(item);
         else
             inventory[slotIndex] = consumeItem;
 
         return newItem;
     }
-    
-    public void AddItemAmount(Item slotItem, int stack)
+
+    private void MoveMenuItem(InventoryMenu inventory, Item slotItem, int stack, bool select)
     {
-        int slotIndex = Menu.inventory.actualInventory.IndexOf(slotItem);
+        int slotIndex = inventory.actualInventory.IndexOf(slotItem);
         
-        var newItem = Menu.inventory.actualInventory[slotIndex].getOne();
+        var newItem = inventory.actualInventory[slotIndex].getOne();
+        if (newItem is null)
+        {
+            Logger.Warning($"returning as new item is null");
+            return;
+        }
         newItem.Stack = stack;
-        Menu.inventory.actualInventory[slotIndex] = slotItem.ConsumeStack(newItem.Stack);
+        inventory.actualInventory[slotIndex] = slotItem.ConsumeStack(newItem.Stack);
+        Item item = inventory.actualInventory[slotIndex];
+        Logger.Warning($"new item: {newItem.DisplayName} {newItem.stack}   stack: {stack}");
+        if (item is not null)
+        {
+            Logger.Warning($"item   {item.DisplayName} {item.Stack}");
+        }
         
-        ItemSelectBehaviour(newItem);
-    }
-    
-    public void RemoveItemAmount(Item slotItem, int stack)
-    {
-        int slotIndex = Menu.ItemsToGrabMenu.actualInventory.IndexOf(slotItem);
-        
-        var newItem = Menu.ItemsToGrabMenu.actualInventory[slotIndex].getOne();
-        newItem.Stack = stack;
-        Menu.ItemsToGrabMenu.actualInventory[slotIndex] = slotItem.ConsumeStack(newItem.Stack);
+        if (select)
+        {
+            ItemSelectBehaviour(newItem);
+            return;
+        }
         
         ItemGrabBehaviour(newItem);
+    }
+    
+    /// <summary>
+    /// Add item from the bot's inventory to the menu.
+    /// </summary>
+    /// <param name="slotItem">The item from the slot to move.</param>
+    /// <param name="stack">The amount of that item to move.</param>
+    public void AddItemAmount(Item slotItem, int stack)
+    {
+        MoveMenuItem(Menu.inventory,slotItem,stack,true);
+    }
+    
+    /// <summary>
+    /// Remove an item from this menu.
+    /// </summary>
+    /// <param name="slotItem">The item from the slot to move.</param>
+    /// <param name="stack">The amount of that item to move.</param>
+    public void RemoveItemAmount(Item slotItem, int stack)
+    {
+        MoveMenuItem(Menu.ItemsToGrabMenu,slotItem,stack,false);
     }
 
     /// <summary>
@@ -144,7 +171,7 @@ public class GrabItemMenuInteraction : MenuHandler
     }
 
     /// <summary>
-    /// This is when an item is added to the bot's inventory
+    /// This is when an item is taken from the menu e.g. to add to the bot's inventory
     /// </summary>
     public void ItemGrabBehaviour(Item item)
     {
