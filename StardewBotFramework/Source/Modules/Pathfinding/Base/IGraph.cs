@@ -4,20 +4,6 @@ namespace StardewBotFramework.Source.Modules.Pathfinding.Base;
 
 public interface IGraph
 {
-    protected static readonly sbyte[,] Directions = new sbyte[,]
-    {
-        { -1, 0 }, // west
-        { 1, 0 }, // east
-        { 0, 1 }, // south
-        { 0, -1 }, // north
-        
-        // diagonal 
-        {-1,-1}, // north-west
-        {1,-1}, // north-east
-        {-1,1}, // south-west
-        {1,1}, // south-east
-    };
-    
     /// <summary>
     /// This is so the index is the same as <see cref="Farmer.FacingDirection"/>
     /// </summary>
@@ -39,6 +25,7 @@ public interface IGraph
     /// Get surrounding tiles of node given.
     /// </summary>
     /// <param name="currentNode">Node you want the neighbours of.</param>
+    /// <param name="directions">This can be used to specify which directions you can get the nodes of. 4 is for cardinal directions with 8 including diagonal.</param>
     /// <returns>Queue of Neighbours in order : west,east,south,north  (assuming the Neighbours do not go into an object the player can collide with.) </returns>
-    public Queue<PathNode> Neighbours(PathNode currentNode);
+    public Queue<PathNode> Neighbours(PathNode currentNode, int directions = 4);
 }

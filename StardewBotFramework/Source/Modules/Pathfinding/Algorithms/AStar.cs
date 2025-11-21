@@ -37,14 +37,14 @@ public class AStar : AlgorithmBase
             int increase = 0;
             IPathing.PriorityFrontier.Enqueue(startPoint, 0);
             
-            Dictionary<Vector2, Object> locationObjects = new();
+            Dictionary<Point, Object> locationObjects = new();
             if (canDestroyObjects)
             {
                 foreach (var locationObject in location.Objects)
                 {
                     foreach (var kvp in locationObject.Where(kvp => DestroyLitterObject.IsDestructible(kvp.Value)))
                     {
-                        locationObjects.Add(kvp.Key,kvp.Value);
+                        locationObjects.Add(kvp.Key.ToPoint(),kvp.Value);
                     }
                 }
             }
@@ -92,24 +92,23 @@ public class AStar : AlgorithmBase
                 foreach (var next in neighbours.Where(node => 
                              IPathing.ClosedList.All(n => n.VectorLocation != node.VectorLocation) 
                              && !IPathing.CollisionMap.IsBlocked(node.X, node.Y)
-                             || canDestroyObjects && locationObjects.ContainsKey(node.VectorLocation.ToVector2())))
+                             || canDestroyObjects && locationObjects.ContainsKey(node.VectorLocation)))
                 {
                     int newCumulative = current.GCost + next.Cost;
                     
                     if (IPathing.PriorityFrontier.Contains(next) && newCumulative >= next.GCost) continue;
-                    if (DebugDraw.TextureInitialized) StardewClient.DebugNode.GetOrAdd(next,byte.MinValue);
-       
+                    if (DebugDraw.TextureInitialized) StardewClient.DebugNode.GetOrAdd(next, byte.MinValue);
+
                     // ugly but it works
                     if (canDestroyObjects && IPathing.CollisionMap.IsBlocked(next.X,next.Y))
                     {
-                        if (DestroyLitterObject.IsDestructible(locationObjects[next.VectorLocation.ToVector2()]))
+                        if (DestroyLitterObject.IsDestructible(locationObjects[next.VectorLocation]))
                             next.Destroy = true;
                     }
 
                     // we don't use newCumulative as that leads to it being incredibly inefficient
                     next.GCost = current.GCost + 1;
-                    // we weight heuristic to find a path quicker, this may lead to more inefficient paths though.
-                    // Also multiply to make heuristic be similar to GCost. This stops issues like waving in and out of a straight line.
+                    // multiply to make heuristic be similar to GCost. This stops issues like waving in and out of a straight line.
                     int priority = next.GCost + (goal.ManhattanHeuristic(next) * AverageTileCost);
                     #if DEBUG
                     Logger.Info($"A Star estimated heuristic {priority}  cumulative:  {newCumulative}   next.cost: {next.Cost}");

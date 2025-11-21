@@ -1,8 +1,8 @@
 using Microsoft.Xna.Framework;
-using StardewBotFramework.Source.Events.GamePlayEvents;
 using StardewBotFramework.Source.Modules.Pathfinding.Algorithms;
 using StardewBotFramework.Source.ObjectDestruction;
 using StardewBotFramework.Source.ObjectToolSwaps;
+using StardewBotFramework.Source.Utilities;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -225,10 +225,12 @@ public class CharacterController
 		// recalculate path if character moves away from current path
 		if (_dynamicCharacter is not null && _dynamicCharacter.TilePoint != _lastDynamicCharacterTile)
 		{
+			Logger.Warning($"character moved.");
 			// stop issues with pathing, if in wall or other occupied tile, mainly for monsters. Can't rely on collision map as only the walls are blocked.
 			if (_currentLocation.isCollidingPosition(_dynamicCharacter.GetBoundingBox(),Game1.viewport,_dynamicCharacter)) return;
 			_lastDynamicCharacterTile = _dynamicCharacter.TilePoint;
-			_endPath = RecalculatePath(new Goal.GoalDynamic(_dynamicCharacter, 1));
+			_endPath = RecalculatePath(new Goal.GoalDynamic(_dynamicCharacter, 1)).Result;
+			Logger.Warning($"new end path amount: {_endPath.Count}");
 		}
 
 		if (_endPath.Count < 1) return;
@@ -270,7 +272,7 @@ public class CharacterController
 				}
 
 				PathNode endNode = _endPath.ToList()[_endPath.Count - 1];
-				_endPath = RecalculatePath(new Goal.GoalPosition(endNode.X, endNode.Y));
+				_endPath = RecalculatePath(new Goal.GoalPosition(endNode.X, endNode.Y)).Result;
 			}
 		}
 		
@@ -331,14 +333,14 @@ public class CharacterController
 			Logger.Info($"object in next tile was blocked   goal node: {endNode.VectorLocation}   next node: {_nextNode.VectorLocation}");
 			var path = RecalculatePath(new Goal.GoalPosition(endNode.X,endNode.Y));
 			
-			if (path.Count < 1)
+			if (path.Result.Count < 1)
 			{
 				FailedPathFinding?.Invoke(this,FailureReason.GoalBlocked);
 				ForceStopMoving();
 				return;
 			}
 			
-			_endPath = path;
+			_endPath = path.Result;
 			return;
 		}
 		
@@ -418,38 +420,29 @@ public class CharacterController
 		ForceStopMoving();
 	}
 
-	private static Stack<PathNode> RecalculatePath(Goal goal)
+	private static async Task<Stack<PathNode>> RecalculatePath(Goal goal, bool canDestroy = false)
 	{
 		if (_recalculatingPath) return new();
+		await TaskDispatcher.SwitchToMainThread();
 		_recalculatingPath = true;
 		AlgorithmBase.IPathing pathing = new AStar.Pathing();
-		pathing.BuildCollisionMap(_currentLocation, Character.TilePoint.X + 3, Character.TilePoint.Y + 3
-			,Character.TilePoint.X - 3, Character.TilePoint.Y - 3);
 		
 		PathNode start = new PathNode(Character.TilePoint.X, Character.TilePoint.Y, null);
-		var path = Task.Run(async () =>
-		{
-			var path = await pathing.FindPath(start, goal, _currentLocation, 10000);
-
-			if (path.Count > 0) return path;
-			
-			Logger.Warning($"recalculated path was less than 0");
-			return new();
-		});
-		
-		path.Wait();
+		var path = await pathing.FindPath(start, goal, _currentLocation, 10000,canDestroy);
 
 		_recalculatingPath = false;
-		if (path.Result.Count == 0) return path.Result;
-		
-		// this should fix issue with new path's end node not reaching wanted goal
-		PathNode newEnd = path.Result.ToArray()[path.Result.Count - 1];
-		if (newEnd.VectorLocation != _endPath.ToArray()[_endPath.Count - 1].VectorLocation)
+		if (path.Count == 0)
 		{
-			Logger.Error($"node was: {newEnd.VectorLocation}   end was:   {_endPath.ToArray()[_endPath.Count - 1].VectorLocation}");
+			Logger.Warning($"recalculated path was than 0");
 			return new();
 		}
-		return path.Result;
+		
+		// this should fix issue with new path's end node not reaching wanted goal
+		PathNode newEnd = path.ToArray()[path.Count - 1];
+		if (goal.CanEnd(newEnd,true)) return path;
+		
+		Logger.Error($"node was: {newEnd.VectorLocation}   end was:   {_endPath.ToArray()[_endPath.Count - 1].VectorLocation}");
+		return new();
 	}
 	
 	public static bool IsMoving() => MovingCharacter || _attacking;

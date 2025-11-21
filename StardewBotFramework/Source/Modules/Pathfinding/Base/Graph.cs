@@ -1,23 +1,17 @@
-using System.Text;
 using Microsoft.Xna.Framework;
-using StardewBotFramework.Debug;
-using StardewValley;
-using xTile;
-using Object = System.Object;
 
 namespace StardewBotFramework.Source.Modules.Pathfinding.Base;
 
 public class Graph : IGraph
 {
-    public Queue<PathNode> Neighbours(PathNode currentNode)
+    public Queue<PathNode> Neighbours(PathNode currentNode, int directions = 4)
     {
         Queue<PathNode> nextNodes = new();
         // get tiles in cardinal directions
-        int directions = 4;
         for (int i = 0; i < directions; i++)
         {
-            int neighborX = currentNode.X + IGraph.Directions[i, 0];
-            int neighborY = currentNode.Y + IGraph.Directions[i, 1];
+            int neighborX = currentNode.X + IGraph.GroupDirections[i, 0];
+            int neighborY = currentNode.Y + IGraph.GroupDirections[i, 1];
             
             nextNodes.Enqueue(new PathNode(neighborX, neighborY, currentNode));
         }

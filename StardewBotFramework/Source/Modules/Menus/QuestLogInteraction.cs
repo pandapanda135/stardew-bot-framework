@@ -17,7 +17,11 @@ public class QuestLogInteraction : MenuHandler
 	/// <summary>
 	/// The quests the bot has access to.
 	/// </summary>
-	public NetObjectList<Quest> Quests => Game1.player.questLog;
+	public NetObjectList<Quest> Quests => BotBase.Farmer.questLog;
+	public bool InQuestSubMenu => ShownQuest != null;
+	public IQuest? ShownQuest => BotBase.Instance?.Helper.Reflection.GetField<IQuest>(Menu, "_shownQuest").GetValue();
+	public int? CurrentPage => BotBase.Instance?.Helper.Reflection.GetField<int>(Menu,"currentPage").GetValue();
+	public List<List<IQuest>>? PageQuests => BotBase.Instance?.Helper.Reflection.GetField<List<List<IQuest>>>(Menu,"pages").GetValue();
 
 	public void SetMenu(QuestLog menu) => Menu = menu;
 	
