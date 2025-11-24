@@ -21,12 +21,6 @@ public class StardewClient : BotBase
 {
     public static readonly ConcurrentDictionary<ITile,byte> DebugTiles = new();
     public static readonly ConcurrentDictionary<PathNode,byte> DebugNode = new();
-    // private static BotBase? Instance { get; set; }
-
-    // private readonly IModHelper _helper;
-    // private readonly IManifest _manifest;
-    // private readonly IMonitor _monitor;
-    // private readonly IMultiplayerHelper _multiplayer;
     
     #region Modules
 
@@ -139,6 +133,8 @@ public class StardewClient : BotBase
 
         Harmony.Patch(original: AccessTools.Method(typeof(ChatBox), nameof(ChatBox.receiveChatMessage)),
             postfix: new HarmonyMethod(typeof(GameEvents.MessagePatch), nameof(GameEvents.MessagePatch.receiveChatMessage_Postfix)));
+        Harmony.Patch(original: AccessTools.Method(typeof(ChatBox), nameof(ChatBox.addMessage)),
+            postfix: new HarmonyMethod(typeof(GameEvents.MessagePatch), nameof(GameEvents.MessagePatch.addMessage_Postfix)));
 
         Harmony.Patch(original: AccessTools.Method(typeof(Game1), nameof(Game1.addHUDMessage)),
             postfix: new HarmonyMethod(typeof(GameEvents.HudMessagePatch), nameof(GameEvents.HudMessagePatch.addHUDMessage_postfix)));

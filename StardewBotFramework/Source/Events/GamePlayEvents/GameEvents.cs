@@ -3,7 +3,6 @@ using StardewBotFramework.Debug;
 using StardewBotFramework.Source.Events.EventArgs;
 using StardewBotFramework.Source.Events.World_Events;
 using StardewBotFramework.Source.Modules;
-using StardewBotFramework.Source.Modules.Pathfinding.Base;
 using StardewBotFramework.Source.Utilities;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -54,16 +53,8 @@ public class GameEvents
         StaticOnOtherPlayerDeath += OnStaticOnOtherPlayerDeath;
         StaticHudMessageAdded += OnStaticHUDMessageAdded;
         StaticEventFinished += OnStaticEventFinished;
-        _helper = helper;
     }
-
-    private static IModHelper? _helper;
-
-    public static void SetHelper(IModHelper helper)
-    {
-        _helper = helper;
-    }
-
+    
     #region Events
     /// <summary>
     /// On new Day Started.
@@ -310,27 +301,46 @@ public class GameEvents
 
     public class MessagePatch
     {
-        public static void receiveChatMessage_Postfix()
+        public static void receiveChatMessage_Postfix(long sourceFarmer, int chatKind, LocalizedContentManager.LanguageCode language, string message)
         {
             try
             {
-                ChatMessage message = Game1.chatBox.messages[^1];
-                foreach (var snippet in message.message)
+                Logger.Info($"farmer: {sourceFarmer}   chat kind: {chatKind}    message: {message}");
+                ChatMessage chatMessage = Game1.chatBox.messages[^1];
+                foreach (var snippet in chatMessage.message)
                 {
-                    string[] chat = snippet.message.Split(":");
-                    int index = snippet.message.IndexOf(":", StringComparison.Ordinal);
-                    string removedMessage = snippet.message.Remove(0, index + 2); // we add 2 to remove padding after the colon
-                    if (chat[0] == BotBase.Farmer.Name)
-                    {
-                        Logger.Info($"chat: {chat[0]}  index: {index}  removedMessage: {removedMessage}");
-                        StaticChatMessageReceived?.Invoke(new MessagePatch(), new ChatMessageReceivedEventArgs(chat[0],removedMessage,0,false));
-                    }
+                    var finalMessage = FormatChatMessage(snippet, out var name);
+                    StaticChatMessageReceived?.Invoke(new MessagePatch(), new ChatMessageReceivedEventArgs(name,
+                        finalMessage,chatKind,sourceFarmer == BotBase.Farmer.UniqueMultiplayerID));
                 }
             }
             catch (Exception e)
             {
                 Logger.Error($"Failed in ReceiveChatMessage \n {e} \n This is mostly likely because it is not subscribed to anything");
             }
+        }
+        
+        // this is here to account for stuff like the messages commands send.
+        public static void addMessage_Postfix(string message)
+        {
+            try
+            {
+                StaticChatMessageReceived?.Invoke(new MessagePatch(), new ChatMessageReceivedEventArgs("", message,-1,false));
+            }
+            catch (Exception e)
+            {
+                Logger.Error($"Failed in addMessage \n {e} \n This is mostly likely because it is not subscribed to anything");
+            }
+        }
+        
+        private static string FormatChatMessage(ChatSnippet snippet, out string name)
+        {
+            string[] chat = snippet.message.Split(":");
+            int index = snippet.message.IndexOf(":", StringComparison.Ordinal);
+            string finalMessage = snippet.message.Remove(0, index + 2); // we add 2 to remove padding after the colon
+            
+            name = chat[0];
+            return finalMessage;
         }
     }
 

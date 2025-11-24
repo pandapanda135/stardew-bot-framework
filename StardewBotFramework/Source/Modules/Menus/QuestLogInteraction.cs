@@ -36,9 +36,9 @@ public class QuestLogInteraction : MenuHandler
 
 	public void CloseQuest() => LeftClick(Menu.backButton);
 
-	public void NextRightPage() => LeftClick(Menu.forwardButton);
+	public void ForwardRightPage() => LeftClick(Menu.forwardButton);
 
-	public void NextLeftPage() => LeftClick(Menu.backButton);
+	public void BackLeftPage() => LeftClick(Menu.backButton);
 
 	public void GetReward() => LeftClick(Menu.rewardBox);
 	
