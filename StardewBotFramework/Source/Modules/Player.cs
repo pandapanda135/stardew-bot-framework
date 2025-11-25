@@ -1,9 +1,5 @@
 using Microsoft.Xna.Framework;
 using Netcode;
-using StardewBotFramework.Debug;
-using StardewBotFramework.Source.Modules.Pathfinding.Algorithms;
-using StardewBotFramework.Source.Modules.Pathfinding.Base;
-using StardewBotFramework.Source.Utilities;
 using StardewValley;
 using StardewValley.GameData.Characters;
 using StardewValley.Inventories;
@@ -70,7 +66,7 @@ public class Player
     /// <returns>Usually returns whether the item was accepted by the object.</returns>
     public bool AddItemToObject(Object addObject,Item item)
     {
-        return addObject.performObjectDropInAction(item, false, StardewClient.Farmer);
+        return addObject.performObjectDropInAction(item, false, BotBase.Farmer);
     }
     
     // could use CheckForActionOn{item} in Object.cs for alot of the items
@@ -85,90 +81,6 @@ public class Player
     {
         return Game1.player.TilePoint;
     }
-
-    #region PickUpDebris
-
-    // this is the debris approximate position
-    private static Vector2 DebrisPosition(NetObjectShrinkList<Chunk> chunks)
-    {
-        Vector2 total = new();
-        
-        foreach (var chunk in chunks)
-        {
-            total += chunk.position.Value;
-        }
-        return total / chunks.Count;
-    }
-    public async Task PickUpDebrisInRadius(Point startPoint,int radius,bool canDestroy = false)
-    {
-        GameLocation location = BotBase.CurrentLocation;
-
-        List<Point> radiusPoints = new();
-        Vector2 endPoint = new(startPoint.X + radius, startPoint.Y + radius);
-        startPoint.X -= radius;
-        startPoint.Y -= radius;
-        for (int x = startPoint.X; x < endPoint.X; x++)
-        {
-            for (int y = startPoint.Y; y < endPoint.Y + radius; y++)
-            {
-                radiusPoints.Add(new Point(x,y));
-            }
-        }
-
-        List<Point> points = new();
-        foreach (var debris in location.debris)
-        {
-            Logger.Info($"debris: {debris}  debris message: {DebrisPosition(debris.Chunks) / Game1.tileSize}");
-            if (debris.item is not null)
-            {
-                Logger.Info($"debris: {debris.item.Name}");
-            }
-            Vector2 debrisLocation = DebrisPosition(debris.Chunks) / Game1.tileSize;
-            if (radiusPoints.Contains(debrisLocation.ToPoint()))
-            {
-                points.Add(debrisLocation.ToPoint());      
-                Logger.Info($"debris tile {debrisLocation.ToPoint()}");
-            }
-        }
-        await PickUpDebris(startPoint,points,canDestroy);
-    }
-
-    private static async Task PickUpDebris(Point startPoint, List<Point> debrisTiles,bool canDestroy = false)
-    {
-        AlgorithmBase.IPathing pathing = new AStar.Pathing();
-        pathing.BuildCollisionMap(BotBase.CurrentLocation);
-
-        foreach (var debris in debrisTiles)
-        {
-            Logger.Info($"debris tile point: {debris}");
-            if (InMagneticRadius(BotBase.Farmer.MagneticRadius / Game1.tileSize, debris))
-            {
-                Logger.Info($"in magnetic radius: {debris}  {BotBase.Farmer.MagneticRadius / Game1.tileSize}");
-                continue;
-            }
-
-            await PathfindingHelper.Goto(new Goal.GoalPosition(debris.X, debris.Y),canDestroy);
-        }
-    }
-
-    private static bool InMagneticRadius(int radius, Point tile)
-    {
-        Vector2 endPoint = new(tile.X + radius, tile.Y + radius);
-        tile.X -= radius;
-        tile.Y -= radius;
-        for (int x = tile.X; x < endPoint.X; x++)
-        {
-            for (int y = tile.Y; y < endPoint.Y + radius; y++)
-            {
-                if (BotBase.Farmer.TilePoint == new Point(x, y)) return true;
-            }
-        }
-
-        return false;
-    }
-
-    #endregion
-    
 }
 
 /// <summary>

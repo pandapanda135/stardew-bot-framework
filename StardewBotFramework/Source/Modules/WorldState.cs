@@ -16,7 +16,7 @@ public class WorldState
     /// <summary>
     /// Get all characters in the current <see cref="GameLocation"/>.
     /// </summary>
-    public Dictionary<Point,NPC> CharactersInLocation => _characters.GetCharactersInCurrentLocation(StardewClient.CurrentLocation);
+    public Dictionary<Point,NPC> CharactersInLocation => _characters.GetCharactersInCurrentLocation(BotBase.CurrentLocation);
 
     /// <summary>
     /// Get all <see cref="Object"/> in location as a <see cref="OverlaidDictionary"/>
@@ -132,7 +132,7 @@ public class Time
             return false;
         }
 
-        if (!Event.tryToLoadFestivalData(festivalId, out var assetName, out data, out var stringLocation, out startTime, out endTime))
+        if (!Event.tryToLoadFestivalData(festivalId, out _, out data, out var stringLocation, out startTime, out endTime))
         {
             return false;
         }
