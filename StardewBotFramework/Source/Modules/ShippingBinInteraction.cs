@@ -64,7 +64,9 @@ public class ShippingBinInteraction : GrabItemMenuInteraction
     /// </summary>
     public void OpenBin(ShippingBin shippingBin)
     {
-        BotBase.Instance?.Helper.Input.SetCursorPosition(shippingBin.tileX.Value, shippingBin.tileY.Value);
+        // we need to do this as otherwise there is a chance the bot will use standard right click actions (e.g. blocking) rather than opening the shipping bin.
+        var (x, y) = TileUtilities.TileToScreen(new Vector2(shippingBin.tileX.Value + 0.5f, shippingBin.tileY.Value + 0.5f));
+        BotBase.Instance?.Helper.Input.SetCursorPosition(x, y);
         BotBase.Instance?.Helper.Input.OverrideButton(SButton.MouseRight, true);
         shippingBin.doAction(new Vector2(shippingBin.tileX.Value, shippingBin.tileY.Value), BotBase.Farmer);
     }

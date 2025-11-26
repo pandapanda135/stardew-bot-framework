@@ -15,7 +15,10 @@ public class DebrisHandling
     #region PickUpDebris
 
     // this is the debris approximate position
-    private static Vector2 DebrisPosition(NetObjectShrinkList<Chunk> chunks)
+    /// <summary>
+    /// This is the debris' approximate position in pixel position
+    /// </summary>
+    public Vector2 DebrisPosition(NetObjectShrinkList<Chunk> chunks)
     {
         
         Vector2 total = new();
@@ -77,7 +80,7 @@ public class DebrisHandling
 
     public async Task PickUpDebris(Debris debris)
     {
-        Logger.Info($"debris tile point: {debris}");
+        Logger.Info($"debris tile point: {DebrisPosition(debris.Chunks) / 64}");
         // I think this is pixel position
         var pos = (DebrisPosition(debris.Chunks) / 64).ToPoint();
         if (InMagneticRadius(BotBase.Farmer.MagneticRadius / Game1.tileSize, pos))
