@@ -25,13 +25,27 @@ public class CreateFarmBuilding : CraftingMenu
     }
 
     public Building Building => CarpenterMenu.currentBuilding;
-
-    public CarpenterMenu.BlueprintEntry? BlueprintEntry => CarpenterMenu.Blueprint;
     
     public void SetCarpenterUi(CarpenterMenu menu) => CarpenterMenu = menu;
 
     public void SetSkinUi(BuildingSkinMenu menu) => BuildingSkinMenu = menu;
+
+    #region Menu
     
+    public CarpenterMenu.BlueprintEntry? BlueprintEntry => CarpenterMenu.Blueprint;
+
+    public List<CarpenterMenu.BlueprintEntry> Blueprints => CarpenterMenu.Blueprints;
+    
+    /// <summary>
+    /// The currently displayed blueprint's required resources
+    /// </summary>
+    public List<BuildingMaterial> BluePrintResources() => CarpenterMenu.Blueprint.BuildMaterials;
+    
+    /// <summary>
+    /// Get the current building's resources this should be used when you are creating a building
+    /// </summary>
+    public List<Item> CurrentBuildingResources() => CarpenterMenu.ingredients;
+
     /// <summary>
     /// Change buildings current skin.
     /// </summary>
@@ -58,6 +72,33 @@ public class CreateFarmBuilding : CraftingMenu
             MoveBluePrintCarouselRight();
         }
     }
+
+    public bool CanCreateBluePrint(CarpenterMenu.BlueprintEntry blueprintEntry)
+    {
+        return IsValidBuildingForLocation(blueprintEntry.Id, CarpenterMenu.TargetLocation) && 
+               DoesFarmerHaveEnoughResourcesToBuild(blueprintEntry) && (blueprintEntry.BuildCost <= 0 ||
+                                                               BotBase.Farmer.Money >= blueprintEntry.BuildCost);
+    }
+    
+    private bool IsValidBuildingForLocation(string typeId, GameLocation targetLocation) => typeId != "Cabin" || targetLocation.Name == "Farm";
+    
+    private bool DoesFarmerHaveEnoughResourcesToBuild(CarpenterMenu.BlueprintEntry blueprintEntry)
+    {
+        if (blueprintEntry.BuildCost < 0)
+            return false;
+        if (blueprintEntry.BuildMaterials is null)
+            return true;
+        
+        List<Item> ingredients = blueprintEntry.BuildMaterials.Where(material => material is not null).Select(buildMaterial => ItemRegistry.Create(buildMaterial.ItemId, buildMaterial.Amount)).ToList();
+
+        if (ingredients.Any(ingredient =>
+                !BotBase.Farmer.Items.ContainsId(ingredient.QualifiedItemId, ingredient.Stack)))
+            return false;
+        return BotBase.Farmer.Money >= blueprintEntry.BuildCost;
+    }
+
+    public bool CanDestroyBluePrint(CarpenterMenu.BlueprintEntry blueprintEntry) =>
+        CarpenterMenu.CanDemolishThis(Building.CreateInstanceFromId(blueprintEntry.Id, Vector2.Zero));
     
     /// <summary>
     /// use button from <see cref="StardewValley.Menus.CarpenterMenu"/>
@@ -67,6 +108,44 @@ public class CreateFarmBuilding : CraftingMenu
     public void MoveBluePrintCarouselLeft() => LeftClick(CarpenterMenu.backButton);
     
     public void MoveBluePrintCarouselRight() => LeftClick(CarpenterMenu.forwardButton);
+
+    /// <summary>
+    /// All blueprint's required resources 
+    /// </summary>
+    /// <returns>key will be the translated display name of the blueprint</returns>
+    public Dictionary<string, List<BuildingMaterial>> AllBluePrintResources()
+    {
+        Dictionary<string, List<BuildingMaterial>> buildingMaterials = new();
+        foreach (var blueprint in CarpenterMenu.Blueprints)
+        {
+            buildingMaterials.Add(blueprint.DisplayName,blueprint.BuildMaterials);
+        }
+
+        return buildingMaterials;
+    }
+
+    #endregion
+
+    #region SkinMenu
+    
+    public Building SkinMenuBuiding() => BuildingSkinMenu.Building;
+    
+    public List<BuildingSkinMenu.SkinEntry> GetBuildingSkins() => BuildingSkinMenu.Skins;
+
+    public void MoveSkinCarousel(bool left)
+    {
+        ClickableComponent cc = left ? BuildingSkinMenu.NextSkinButton : BuildingSkinMenu.PreviousSkinButton;
+        LeftClick(cc);
+    }
+    public void ConfirmSkinAndExit()
+    {
+        LeftClick(BuildingSkinMenu.OkButton);
+        _childMenu = null;
+    }
+
+    #endregion
+
+    #region PlacingBuilding
 
     public void SetSelectedTile(Point tile)
     {
@@ -128,44 +207,7 @@ public class CreateFarmBuilding : CraftingMenu
         LeftClick(screenTile.X,screenTile.Y);
     }
 
-    /// <summary>
-    /// The currently displayed blueprint's required resources
-    /// </summary>
-    public List<BuildingMaterial> BluePrintResources() => CarpenterMenu.Blueprint.BuildMaterials;
+    public void ExitPlacingBuilding() => LeftClick(CarpenterMenu.cancelButton);
 
-    /// <summary>
-    /// All blueprint's required resources 
-    /// </summary>
-    /// <returns>key will be the translated display name of the blueprint</returns>
-    public Dictionary<string, List<BuildingMaterial>> AllBluePrintResources()
-    {
-        Dictionary<string, List<BuildingMaterial>> buildingMaterials = new();
-        foreach (var blueprint in CarpenterMenu.Blueprints)
-        {
-            buildingMaterials.Add(blueprint.DisplayName,blueprint.BuildMaterials);
-        }
-
-        return buildingMaterials;
-    }
-
-    /// <summary>
-    /// Get the current building's resources this should be used when you are creating a building
-    /// </summary>
-    public List<Item> CurrentBuildingResources() => CarpenterMenu.ingredients;
-
-    public Building SkinMenuBuiding() => BuildingSkinMenu.Building;
-    
-    public List<BuildingSkinMenu.SkinEntry> GetBuildingSkins() => BuildingSkinMenu.Skins;
-
-    public void MoveCarousel(bool left)
-    {
-        ClickableComponent cc = left ? BuildingSkinMenu.NextSkinButton : BuildingSkinMenu.PreviousSkinButton;
-        LeftClick(cc);
-    }
-
-    public void ConfirmSkinAndExit()
-    {
-        LeftClick(BuildingSkinMenu.OkButton);
-        _childMenu = null;
-    }
+    #endregion
 }
