@@ -102,7 +102,8 @@ public class GrabItemMenuInteraction : MenuHandler
         int slotIndex = inventory.IndexOf(slotItem);
 
         Item? item = inventory[slotIndex];
-        
+
+        if (item is null) return null;
         var newItem = item.getOne();
         newItem.Stack = stack;
         Item? consumeItem = slotItem.ConsumeStack(newItem.Stack);

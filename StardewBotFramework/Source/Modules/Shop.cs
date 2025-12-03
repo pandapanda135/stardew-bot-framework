@@ -79,15 +79,7 @@ public class Shop : MenuHandler
         await TaskDispatcher.SwitchToMainThread();
         if (index < 4)
         {
-            for (int i = 0; i < quantity; i++)
-            {
-                LeftClick(Menu.forSaleButtons[index]);
-            }
-            await Task.Delay(500);
-            await TaskDispatcher.SwitchToMainThread();
-            
-            StackHeldInInventory();
-            
+            await ClickBuyButton(Menu.forSaleButtons[index], index, quantity);
             return;
         }
         
@@ -98,25 +90,32 @@ public class Shop : MenuHandler
         }
 
         await Task.Delay(500);
-        await TaskDispatcher.SwitchToMainThread();
-        
         // TODO: this may have issues with buttons at the bottom, probably just need to find a new way to handle this.
         var bottomButton = Menu.forSaleButtons[^1];
-        for (int i = 0; i < quantity; i++)
-        {
-            LeftClick(bottomButton);
-        }
-        await Task.Delay(500);
-        await TaskDispatcher.SwitchToMainThread();
-
-        StackHeldInInventory();
-
+        await ClickBuyButton(bottomButton, index, quantity);
+        
         // go back to top
         for (int i = index; i >= 3; i--)
         {
             Logger.Info($"using down arrow  i: {i}");
             LeftClick(Menu.upArrow);   
         }
+    }
+
+    private async Task ClickBuyButton(ClickableComponent button, int index, int quantity)
+    {
+        await TaskDispatcher.SwitchToMainThread();
+        ISalable item = Menu.forSale[index];
+        for (int i = 0; i < quantity; i++)
+        {
+            LeftClick(button);
+            if (Menu.heldItem.Stack >= item.maximumStackSize()) StackHeldInInventory();
+        }
+        
+        await Task.Delay(500);
+        await TaskDispatcher.SwitchToMainThread();
+        
+        StackHeldInInventory();
     }
     
     /// <summary>

@@ -12,6 +12,10 @@ public class CommunityCenterMenu : MenuHandler
 		private set => _menu = value;
 	}
 
+	public Bundle CurrentBundle => Menu.currentPageBundle;
+
+	public List<Bundle> Bundles => Menu.bundles;
+
 	public void SetMenu(JunimoNoteMenu menu) => Menu = menu;
 
 	public void ChangePage(bool right)
@@ -22,6 +26,8 @@ public class CommunityCenterMenu : MenuHandler
 	
 	public void SelectBundle(int bundleIndex) => LeftClick(Menu.bundles[bundleIndex]);
 
+	public void ExitCurrentBundle() => LeftClick(Menu.backButton);
+
 	public bool AddItem(Item item)
 	{
 		int itemIndex = Menu.inventory.actualInventory.IndexOf(item);
@@ -30,16 +36,16 @@ public class CommunityCenterMenu : MenuHandler
 			return false;
 		}
 
-		if (Menu.currentPageBundle.complete || !Menu.currentPageBundle.depositsAllowed) // this is also done in canAcceptThisItem
+		if (CurrentBundle.complete || !CurrentBundle.depositsAllowed) // this is also done in canAcceptThisItem
 		{
 			return false;
 		}
 		
 		foreach (var ingCc in Menu.ingredientSlots)
 		{
-			if (!Menu.currentPageBundle.canAcceptThisItem(item, ingCc)) continue;
+			if (!CurrentBundle.canAcceptThisItem(item, ingCc)) continue;
 			
-			Menu.currentPageBundle.tryToDepositThisItem(item, ingCc, "LooseSprites\\JunimoNote", Menu);
+			CurrentBundle.tryToDepositThisItem(item, ingCc, "LooseSprites\\JunimoNote", Menu);
 			return true;
 		}
 
