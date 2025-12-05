@@ -62,6 +62,7 @@ public class StardewClient : BotBase
     public NamingMenuInteraction NamingMenu { get; }
     public Input Input { get; }
     public DebrisHandling Debris { get; }
+    public MultiplayerMenu MultiplayerMenu { get; }
 
     #endregion
     
@@ -120,6 +121,7 @@ public class StardewClient : BotBase
         NamingMenu = new();
         Input = new();
         Debris = new();
+        MultiplayerMenu = new();
 
         #endregion
         

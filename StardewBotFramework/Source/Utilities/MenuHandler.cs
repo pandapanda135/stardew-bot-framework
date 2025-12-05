@@ -1,6 +1,5 @@
 using Microsoft.Xna.Framework;
 using StardewBotFramework.Debug;
-using StardewBotFramework.Source.Events.GamePlayEvents;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Menus;
@@ -110,5 +109,25 @@ public abstract class MenuHandler
 	public void RightClick(ClickableComponent cc, bool sound = false)
 	{
 		RightClick(cc.bounds.X,cc.bounds.Y,sound);
+	}
+	
+	public void MenuLeftClick(IClickableMenu menu, int x, int y, bool sound = false)
+	{
+		menu.receiveLeftClick(x, y);
+	}
+
+	public void MenuLeftClick(IClickableMenu menu, ClickableComponent cc, bool sound = false)
+	{
+		MenuLeftClick(menu, cc.bounds.X, cc.bounds.Y, sound);
+	}
+	
+	public void MenuRightClick(IClickableMenu menu, int x, int y, bool sound = false)
+	{
+		menu.receiveRightClick(x,y);
+	}
+
+	public void MenuRightClick(IClickableMenu menu, ClickableComponent cc, bool sound = false)
+	{
+		MenuRightClick(menu, cc.bounds.X, cc.bounds.Y, sound);
 	}
 }
